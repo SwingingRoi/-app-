@@ -1,0 +1,159 @@
+<resources>
+    <string name="delete">删除</string>
+    <string name="cancel">退出</string>
+    <string name="clear">清空</string>
+
+    <!-- 登录界面的strings-->
+    <string name="AppName">智能有声书</string>
+    <string name="LogButton">登录</string>
+    <string name="ActiveButton">激活账号</string>
+    <string name="LogAccount">请输入用户名</string>
+    <string name="LogPassword">请输入密码</string>
+    <string name="RemindSign">没有账号?快来注册</string>
+    <string name="accountNotExist">用户名不存在!</string>
+    <string name="logError">用户名或密码错误!</string>
+    <string name="activeError">账号未激活!</string>
+
+
+    <!-- 注册界面的strings-->
+    <string name="SignAccount">用户名 (4-20位中文/字母/数字)</string>
+    <string name="SignPassword">密码 (6-16位字母/数字)</string>
+    <string name="SignButton">注册</string>
+    <string name="ConfirmPassword">确认密码</string>
+    <string name="EnterName">请输入姓名</string>
+    <string name="EnterEmail">请输入邮箱</string>
+    <string name="PhoneNumber">请输入电话</string>
+    <string name="Verify">请输入验证码</string>
+    <string name="getVerify">获取验证码</string>
+    <string name="VerifyMsg">验证码已发送到</string>
+    <string name="second">s</string>
+    <string name="Gender">性别</string>
+    <string name="accountPatternError">用户名需为4-20位中文/字母/数字!</string>
+    <string name="passwordPatternError">密码需为6-16位字母/数字!</string>
+    <string name="nameError">姓名不能为空!</string>
+    <string name="checkpasswordError">两次密码不一致!</string>
+    <string name="emailPatternError">请输入正确的邮箱格式!</string>
+    <string name="accountDul">用户名已注册!</string>
+    <string name="emailDul">邮箱已注册!</string>
+    <string name="phoneDul">手机号已注册!</string>
+    <string name="accountPattern">[a-zA-Z0-9\u4E00-\u9FA5]{4,20}</string>
+    <string name="passwordPattern">[a-zA-Z0-9]{6,16}</string>
+    <string name="namePattern">\.+</string>
+    <string name="emailPattern">^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$</string>
+
+
+    <!-- MainActivity界面的strings-->
+    <string name="Home">首页</string>
+    <string name="Make">制作</string>
+    <string name="Share">分享</string>
+    <string name="Personal">账号</string>
+    <string name="unLogged">未登录</string>
+    <string name="avatarDescription">头像</string>
+    <string name="settingDescription">设置</string>
+    <string name="emailDescription">邮件</string>
+    <string name="goLog">点击登陆</string>
+    <string name="SearchAllBook">输入搜索内容</string>
+    <string name="nobook">书库为空＞﹏＜</string>
+
+    <!-- 发送邮件后界面的strings-->
+    <string name="MsgAfterEmail">激活邮件已发送至</string>
+
+    <!-- 设置界面的strings-->
+    <string name="Login">登录</string>
+    <string name="Logout">退出登录</string>
+
+
+    <!-- 个人中心界面的strings-->
+    <string name="InfoEdit">编辑资料</string>
+    <string name="MakeHistory">我的作品</string>
+    <string name="ListenHistory">收听历史</string>
+    <string name="Favorites">收藏夹</string>
+    h
+    <!-- 修改资料界面的strings-->
+    <string name="EditAccount">昵称</string>
+    <string name="EditPassword">密码</string>
+    <string name="EditName">姓名</string>
+    <string name="EditGender">性别</string>
+    <string name="EditEmail">邮箱</string>
+
+    <!--搜索界面的strings-->
+    <string name="Search">搜索</string>
+
+    <!--修改弹窗的strings-->
+    <string name="EditedAccount">修改昵称</string>
+    <string name="EditedPassword">修改密码</string>
+    <string name="EditedName">修改姓名</string>
+    <string name="EditedGender">修改性别</string>
+    <string name="EditedEmail">修改邮箱</string>
+    <string name="Male">男</string>
+    <string name="Female">女</string>
+    <string name="Store">保存</string>
+    <string name="EditSuccess">修改成功</string>
+    <string name="EditFail">修改失败</string>
+
+    <!--我的作品界面的strings-->
+    <string name="nowork">没有发布过作品</string>
+    <string name="make">创作</string>
+    <string name="SearchMyWork">输入作品名</string>
+
+    <!--收听历史界面的strings-->
+    <string name="nohistory">暂无收听历史</string>
+    <string name="SearchHistory">搜索收听历史</string>
+    <string name="today">今天</string>
+    <string name="yesterday">昨天</string>
+    <string name="twodayago">两天前</string>
+    <string name="former">更早</string>
+
+    <!--收藏夹界面的strings-->
+    <string name="nofavorite">暂无收藏作品</string>
+    <string name="SearchFav">搜索收藏夹</string>
+
+    <!--制作新章节界面的strings-->
+    <string name="trylisten">试听</string>
+    <string name="translate">转换</string>
+
+    <!--制作新书界面的strings-->
+    <string name="newbook">新书</string>
+    <string name="title">标题</string>
+    <string name="maketitle">给我取个好听的名字吧</string>
+    <string name="intro">简介</string>
+    <string name="makeintro">介绍本书内容</string>
+    <string name="storenewbook">创建</string>
+    <string name="edittitle">编辑标题</string>
+    <string name="editintro">编辑简介</string>
+    <string name="titlenull">书名不能为空！</string>
+    <string name="titlelong">书名不能超过20个字符！</string>
+    <string name="introlong">简介不能超过200个字！</string>
+    <string name="makesuccess">新书创建成功！</string>
+    <string name="makefail">新书创建失败！</string>
+
+    <!--HTTP请求失败-->
+    <string name="HttpTimeOut">请求超时,请检查网络设置</string>
+    <string name="Disconnect">无法连接到网络</string>
+    <string name="Refresh">刷新界面</string>
+    <string name="TouchRefresh">点击屏幕刷新</string>
+
+    <!--BookActivity界面-->
+    <string name="chapter">章节</string>
+    <string name="fav">收藏成功!</string>
+    <string name="cancelfav">已取消收藏</string>
+    <string name="bookdeleted">该书已被删除</string>
+
+    <!--个人作品和搜索个人作品-->
+    <string name="pullDown">向上轻拉获取更多</string>
+    <string name="isReq">正在获取中......</string>
+    <string name="hasEnd">已经到底啦~</string>
+    <string name="noresult">没有结果</string>
+    <string name="manage">管理</string>
+
+
+    <!--修改书本信息-->
+    <string name="modifybook">修改作品</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_test">Test</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+</resources>

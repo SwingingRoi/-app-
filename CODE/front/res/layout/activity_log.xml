@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.LogSign.LogActivity">
+
+    <LinearLayout
+        android:id="@+id/ActionBar"
+        style="@style/actionbar"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/BackArrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:onClick="onBackPressed"
+            app:srcCompat="?attr/actionModeCloseDrawable" />
+
+        <TextView
+            android:id="@+id/partname"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="-50dp"
+            android:paddingEnd="20dp"
+            android:gravity="center"
+            android:text="@string/LogButton"
+            android:textSize="20sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="344dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.374">
+
+        <TextView
+            android:id="@+id/AppTitle"
+            android:layout_width="136dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.1"
+            android:text="@string/AppName"
+            android:textColor="#67A2CF"
+            android:textSize="24sp" />
+
+        <LinearLayout
+            android:layout_width="230dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/Logaccount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_weight="1.5"
+                android:ems="10"
+                android:gravity="bottom"
+                android:hint="@string/LogAccount"
+                android:inputType="textPersonName" />
+
+            <CheckBox
+                android:id="@+id/Clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.05"
+                android:button="@android:drawable/presence_offline"
+                android:onClick="clearAccount" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="230dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.2"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/Logpassword"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_weight="1.5"
+                android:ems="10"
+                android:gravity="bottom"
+                android:hint="@string/LogPassword"
+                android:inputType="textPassword" />
+
+            <CheckBox
+                android:id="@+id/passwordshowforlog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.05"
+                android:button="@drawable/password_show"
+                android:checked="false"
+                android:onClick="passwordShow" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/LogButton"
+            style="@style/button"
+            android:layout_weight="0.02"
+            android:background="@drawable/log_sign_btn_style"
+            android:onClick="logCheck"
+            android:text="@string/LogButton" />
+
+        <Button
+            android:id="@+id/SignButton"
+            style="@style/button"
+            android:layout_marginTop="20dp"
+            android:layout_weight="0.02"
+            android:background="@drawable/normal_btn_style"
+            android:onClick="jumpToSign"
+            android:text="@string/RemindSign" />
+
+        <Button
+            android:id="@+id/ActiveButton"
+            style="@style/button"
+            android:layout_marginTop="20dp"
+            android:layout_weight="0.02"
+            android:background="@drawable/normal_btn_style"
+            android:onClick="Active"
+            android:text="@string/ActiveButton" />
+
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>
