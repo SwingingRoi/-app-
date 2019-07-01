@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.LogSign.SignActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/ActionBar"
+            style="@style/actionbar"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/BackArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                android:onClick="onBackPressed"
+                app:srcCompat="?attr/actionModeCloseDrawable" />
+
+            <TextView
+                android:id="@+id/partname"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:paddingStart="-50dp"
+                android:paddingEnd="20dp"
+                android:text="@string/SignButton"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/account"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.11"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/SignAccount"
+                android:layout_width="269dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="30dp"
+                android:ems="10"
+                android:hint="@string/SignAccount"
+                android:inputType="textPersonName"
+                android:paddingBottom="15dp" />
+
+            <ImageView
+                android:id="@+id/clearaccount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="1dp"
+                android:layout_weight="0"
+                android:onClick="clearAccount"
+                app:srcCompat="@android:drawable/presence_offline" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.11"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/SignPassword"
+                android:layout_width="269dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="30dp"
+                android:ems="10"
+                android:hint="@string/SignPassword"
+                android:inputType="textPassword"
+                android:paddingBottom="15dp" />
+
+            <CheckBox
+                android:id="@+id/passwordshowsign"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="1dp"
+                android:layout_weight="0"
+                android:button="@drawable/password_show"
+                android:checked="false"
+                android:onClick="passwordShow" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/checkpassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.11"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/ConfirmPassword"
+                android:layout_width="269dp"
+                android:layout_height="47dp"
+                android:layout_marginStart="30dp"
+                android:ems="10"
+                android:hint="@string/ConfirmPassword"
+                android:inputType="textPassword" />
+
+            <ImageView
+                android:id="@+id/clearcomfirmpassword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="1dp"
+                android:layout_weight="0"
+                android:onClick="clearConfirmPassword"
+                app:srcCompat="@android:drawable/presence_offline" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.11"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/SignName"
+                android:layout_width="269dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:height="45dp"
+                android:ems="10"
+                android:hint="@string/EnterName"
+                android:inputType="textPersonName"
+                android:paddingBottom="15dp" />
+
+            <ImageView
+                android:id="@+id/clearname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="1dp"
+                android:layout_weight="0"
+                android:onClick="clearName"
+                app:srcCompat="@android:drawable/presence_offline" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/gender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.11"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/Gender"
+                android:layout_width="57dp"
+                android:layout_height="45dp"
+                android:gravity="center"
+                android:text="@string/Gender"
+                android:textSize="18sp" />
+
+            <RadioGroup
+                android:id="@+id/GenderGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="27dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/Male"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="100dp"
+                    android:layout_marginLeft="180dp"
+                    android:layout_weight="1"
+                    android:button="@drawable/male_choice"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/Female"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="50dp"
+                    android:layout_marginLeft="70dp"
+                    android:layout_weight="1"
+                    android:button="@drawable/female_choice" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.11"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/SignEmail"
+                android:layout_width="269dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:height="45dp"
+                android:ems="10"
+                android:hint="@string/EnterEmail"
+                android:inputType="textEmailAddress"
+                android:paddingBottom="15dp" />
+
+            <ImageView
+                android:id="@+id/clearemail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="1dp"
+                android:layout_weight="0"
+                android:onClick="clearEmail"
+                app:srcCompat="@android:drawable/presence_offline" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.11"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/SignPhone"
+                android:layout_width="269dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="30dp"
+                android:ems="10"
+                android:hint="@string/PhoneNumber"
+                android:inputType="phone"
+                android:paddingBottom="15dp" />
+
+            <ImageView
+                android:id="@+id/clearphone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="1dp"
+                android:layout_weight="0"
+                android:onClick="clearPhone"
+                app:srcCompat="@android:drawable/presence_offline" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/verifycode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.11"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/VerifyCode1"
+                style="@style/verify_code"
+                android:layout_marginStart="30dp" />
+
+            <TextView
+                android:id="@+id/VerifyCode2"
+                style="@style/verify_code" />
+
+            <TextView
+                android:id="@+id/VerifyCode3"
+                style="@style/verify_code" />
+
+            <TextView
+                android:id="@+id/VerifyCode4"
+                style="@style/verify_code" />
+
+            <Button
+                android:id="@+id/GetVerify"
+                android:layout_width="90dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="30dp"
+                android:background="@drawable/log_sign_btn_style"
+                android:onClick="getVerifyCode"
+                android:text="@string/getVerify"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/SignUpload"
+            android:layout_width="213dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_weight="0.11"
+            android:background="@drawable/log_sign_btn_style"
+            android:gravity="center"
+            android:onClick="signCheck"
+            android:text="@string/SignButton"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/VerifyCode"
+        android:layout_width="130dp"
+        android:layout_height="43dp"
+        android:alpha="0"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:maxLength="4"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.33"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.841" />
+
+</android.support.constraint.ConstraintLayout>
