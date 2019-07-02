@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManagerFactory;
+import javax.transaction.Transactional;
 
 
 @Repository
@@ -19,9 +20,8 @@ public class UserDAO implements com.cpd.soundbook.DAO.DAOInterface.UserDAO {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private UserFavBookRepository userFavBookRepository;
 
+    @Transactional
     @Override
     public void addUser(User user) {
         try {
@@ -31,26 +31,31 @@ public class UserDAO implements com.cpd.soundbook.DAO.DAOInterface.UserDAO {
         }
     }
 
+    @Transactional
     @Override
     public User findUserByAccount(String account) {
         return userRepository.findUserByAccount(account);
     }
 
+    @Transactional
     @Override
     public User findUserByPhone(String phone) {
         return userRepository.findUserByPhone(phone);
     }
 
+    @Transactional
     @Override
     public User findUserByEmail(String email) {
         return userRepository.findUserByEmail(email);
     }
 
+    @Transactional
     @Override
     public User findUserByID(int id) {
         return userRepository.findUserById(id);
     }
 
+    @Transactional
     @Override
     public boolean activateUser(String account) {
         try {
@@ -62,6 +67,7 @@ public class UserDAO implements com.cpd.soundbook.DAO.DAOInterface.UserDAO {
         return true;
     }
 
+    @Transactional
     @Override
     public void updateUser(User user) {
         userRepository.modifyInfo(user.getAccount(),user.getPassword(),user.getName(),user.getGender(),user.getEmail(),user.getId());

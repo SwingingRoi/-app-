@@ -15,8 +15,6 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.myapplication.Activity.Work.EditBookActivity;
-import com.example.myapplication.Activity.Work.SearchMyWorkActivity;
 import com.example.myapplication.BookActivity;
 import com.example.myapplication.GetServer;
 import com.example.myapplication.HttpUtils;
@@ -128,7 +126,7 @@ public class SearchActivity extends AppCompatActivity {
             normal.post(new Runnable() {
                 @Override
                 public void run() {
-                    TextView text = pullDown.findViewById(R.id.text);
+                    TextView text = pullDown.findViewById(R.id.requestText);
                     text.setText(getResources().getString(R.string.isReq));
                 }
             });
@@ -206,12 +204,12 @@ public class SearchActivity extends AppCompatActivity {
 
                             bookTable.addView(pullDown);
                             if (resultArray.length() < PAGESIZE) {
-                                TextView textView = pullDown.findViewById(R.id.text);
+                                TextView textView = pullDown.findViewById(R.id.requestText);
                                 textView.setText(getResources().getString(R.string.hasEnd));
                                 isRequesting = false;
                             }//说明书本已请求完毕
                             else {
-                                TextView textView = pullDown.findViewById(R.id.text);
+                                TextView textView = pullDown.findViewById(R.id.requestText);
                                 textView.setText(getResources().getString(R.string.pullDown));
                                 isRequesting = false;
                             }

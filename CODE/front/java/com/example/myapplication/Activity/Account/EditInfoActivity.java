@@ -317,16 +317,6 @@ public class EditInfoActivity extends AppCompatActivity {
         TextView titleView = v.findViewById(R.id.Title);
         titleView.setText(title);
 
-        final EditText editText = findViewById(R.id.Edit);
-
-        CheckBox clear = v.findViewById(R.id.Clear);
-        clear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editText.setText("");
-            }
-        });
-
         builder.setView(v);
 
         builder.setPositiveButton("确定", null);
