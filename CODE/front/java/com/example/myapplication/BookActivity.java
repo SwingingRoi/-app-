@@ -14,7 +14,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.EditText;
+
+
+import com.example.myapplication.Activity.Work.NewChapterActivity;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -29,7 +31,6 @@ import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class BookActivity extends AppCompatActivity {
@@ -37,6 +38,7 @@ public class BookActivity extends AppCompatActivity {
     private int INTRO=0;
     private int CHAPTER=1;
     private int WHICH=CHAPTER;
+
     private LinearLayout bookinfo;
     private TextView Intro;
     private TextView Chapter;
@@ -45,11 +47,15 @@ public class BookActivity extends AppCompatActivity {
     private ScrollView introScroll;
     private ScrollView chapterScroll;
     private LinearLayout loadingView;
+    private View pullDown;//请求文字提示
+
     private int ISFAV=0;
     private boolean isRequesting = false;//判断当前是否在请求新章节
-    private View pullReq;//请求文字提示
-    private int number=0;
+    private int from=0;
+    final private int PAGESIZE=10;
     private int bookid;
+    private JSONArray chapters;
+
     private String title;
     private String author;
     private String intro;
@@ -70,29 +76,19 @@ public class BookActivity extends AppCompatActivity {
 
         chapterTable = findViewById(R.id.chaptertable);
 
-        for(int i=0;i<20;i++) {
-            View chapterRow = LayoutInflater.from(this).inflate(R.layout.chapter_table, null);
-            chapterTable.addView(chapterRow);
-        }
-        number+=20;
-
-        pullReq = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
-        chapterTable.addView(pullReq);
+        pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        chapterTable.addView(pullDown);
 
         introScroll = findViewById(R.id.introScroll);
         chapterScroll = findViewById(R.id.chapterScroll);
         chapterScroll.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                System.out.println(isRequesting);
-                if(isRequesting) return true;//如果正在请求新章节，忽略滑动请求，防止发出重复的章节请求
-
                 if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if(isRequesting) return true;
 
-                    if (chapterScroll.getChildAt(0).getHeight() <=chapterScroll.getHeight() + chapterScroll.getScrollY()) {
+                    if (!isRequesting && chapterScroll.getChildAt(0).getHeight() <= chapterScroll.getHeight() + chapterScroll.getScrollY()) {
                         isRequesting = true;
-                        //new Thread(reqMoreChapter).run();//向后端请求更多章节
+                        new Thread(reqChapter).start();//向后端请求更多章节
                     }
                 }
                 return false;
@@ -141,9 +137,14 @@ public class BookActivity extends AppCompatActivity {
         findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
         findViewById(R.id.Remind).setVisibility(View.INVISIBLE);
 
+        chapterTable.removeAllViews();
+        chapters = new JSONArray();
+        from = 0;
+
         new Thread(getBookInfo).start();
         new Thread(checkFav).start();
         new Thread(addRecord).start();
+        new Thread(reqChapter).start();
     }
 
     //刷新界面
@@ -363,6 +364,11 @@ public class BookActivity extends AppCompatActivity {
                                 author = book.getString("author");
                                 Author.setText(author);
 
+                                if(author.equals(account)){//如果本书的作者是当前账号，则提供新建章节的选项
+                                    TextView newChapter = findViewById(R.id.newChapter);
+                                    newChapter.setVisibility(View.VISIBLE);
+                                }
+
                                 TextView introduction = findViewById(R.id.introduction);
                                 intro = book.getString("intro");
                                 introduction.setText(intro);
@@ -448,40 +454,92 @@ public class BookActivity extends AppCompatActivity {
         }
     };
 
-    Runnable reqMoreChapter = new Runnable() {
+    Runnable reqChapter = new Runnable() {
         @Override
         public void run() {
-            chapterTable.removeView(pullReq);
-            for(int i=0;i<20;i++){
-                View chapterRow = LayoutInflater.from(BookActivity.this).inflate(R.layout.chapter_table, null);
-                chapterTable.addView(chapterRow);
-            }
-            number+=20;
+            chapterTable.post(new Runnable() {
+                @Override
+                public void run() {
+                    TextView text = pullDown.findViewById(R.id.requestText);
+                    text.setText(getResources().getString(R.string.isReq));
+                }
+            });
 
-            if(number==100) {
+            try{
+
+                GetServer getServer = new GetServer();
+                String url = getServer.getIPADDRESS()+"/audiobook/getChapters?bookid="
+                        + bookid + "&from=" + from + "&size=" + PAGESIZE;
+
+                HttpUtils httpUtils = new HttpUtils(url);
+                ByteArrayOutputStream outputStream = httpUtils.doHttp(null, "GET",
+                        "application/json");
+
+                if (outputStream == null) {//请求超时
+                    chapterTable.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            new MyToast(BookActivity.this, getResources().getString(R.string.HttpTimeOut));
+                            isRequesting = false;
+                        }
+                    });
+                    return;
+                }
+
+                final String result = new String(outputStream.toByteArray(),
+                        StandardCharsets.UTF_8);
+
+                final JSONArray newChapters = new JSONArray(result);
+
+
+                for (int i = 0; i < newChapters.length(); i++) {
+                    chapters.put(newChapters.getJSONObject(i));
+                }//向chapters中添加新请求过来的chapter
+
                 chapterTable.post(new Runnable() {
                     @Override
                     public void run() {
-                        chapterTable.addView(pullReq);
-                        TextView textView = pullReq.findViewById(R.id.text);
-                        textView.setText(getResources().getString(R.string.hasEnd));
-                        isRequesting = false;
-                    }
-                });
-            }
+                        chapterTable.removeView(pullDown);
 
-            else {
-                chapterTable.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        chapterTable.addView(pullReq);
-                        TextView textView = pullReq.findViewById(R.id.text);
-                        textView.setText(getResources().getString(R.string.pullDown));
-                        isRequesting = false;
+                        for(int i=0;i < newChapters.length();i++){
+                            try{
+                                View chapterRow = LayoutInflater.from(BookActivity.this).inflate(R.layout.chapter_row, null);
+                                TextView titleView = chapterRow.findViewById(R.id.chaptername);
+                                titleView.setText(newChapters.getJSONObject(i).getString("title"));
+                                TextView chapterNumber = chapterRow.findViewById(R.id.chapternumber);
+                                chapterNumber.setText(String.valueOf(from + i + 1));
+                                chapterTable.addView(chapterRow);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+
+                        chapterTable.addView(pullDown);
+                        if(newChapters.length() < PAGESIZE){
+                            TextView textView = pullDown.findViewById(R.id.requestText);
+                            textView.setText(getResources().getString(R.string.hasEnd));
+                            isRequesting = false;
+                        }//说明章节已请求完毕
+                        else {
+                            TextView textView = pullDown.findViewById(R.id.requestText);
+                            textView.setText(getResources().getString(R.string.pullDown));
+                            isRequesting = false;
+                        }
+
+                        from = from + newChapters.length();//更新请求index
                     }
                 });
+
+            }catch (Exception e){
+                e.printStackTrace();
             }
 
         }
     };
+
+    public void toNewChapter(View view){
+        Intent intent = new Intent(this,NewChapterActivity.class);
+        intent.putExtra("bookid",bookid);
+        startActivity(intent);
+    }
 }

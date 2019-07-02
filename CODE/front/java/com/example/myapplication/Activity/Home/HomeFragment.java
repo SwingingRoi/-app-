@@ -10,15 +10,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.myapplication.Activity.Work.EditBookActivity;
-import com.example.myapplication.Activity.Work.NewBookActivity;
-import com.example.myapplication.Activity.Work.PersonalWorkActivity;
 import com.example.myapplication.BookActivity;
 
 import com.example.myapplication.GetServer;
@@ -30,7 +26,6 @@ import com.example.myapplication.R;
 import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 public class HomeFragment extends Fragment {
@@ -158,7 +153,7 @@ public class HomeFragment extends Fragment {
             normal.post(new Runnable() {
                 @Override
                 public void run() {
-                    TextView text = pullDown.findViewById(R.id.text);
+                    TextView text = pullDown.findViewById(R.id.requestText);
                     text.setText(getResources().getString(R.string.isReq));
                 }
             });
@@ -236,12 +231,12 @@ public class HomeFragment extends Fragment {
                         bookTable.addView(pullDown);
 
                         if(newBooks.length() < PAGESIZE){
-                            TextView textView = pullDown.findViewById(R.id.text);
+                            TextView textView = pullDown.findViewById(R.id.requestText);
                             textView.setText(getResources().getString(R.string.hasEnd));
                             isRequesting = false;
                         }//说明书本已请求完毕
                         else {
-                            TextView textView = pullDown.findViewById(R.id.text);
+                            TextView textView = pullDown.findViewById(R.id.requestText);
                             textView.setText(getResources().getString(R.string.pullDown));
                             isRequesting = false;
                         }

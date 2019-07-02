@@ -40,13 +40,6 @@
                 android:layout_weight="0.9"
                 android:inputType="textPersonName" />
 
-            <CheckBox
-                android:id="@+id/Clear"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.1"
-                android:button="@android:drawable/presence_offline" />
-
         </LinearLayout>
 
     </LinearLayout>

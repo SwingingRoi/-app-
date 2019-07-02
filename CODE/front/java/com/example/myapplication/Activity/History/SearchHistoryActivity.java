@@ -18,8 +18,6 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.myapplication.Activity.Favorite.FavoriteActivity;
-import com.example.myapplication.Activity.Favorite.SearchFavoriteActivity;
 import com.example.myapplication.BookActivity;
 import com.example.myapplication.GetServer;
 import com.example.myapplication.HttpUtils;
@@ -80,11 +78,9 @@ public class SearchHistoryActivity extends AppCompatActivity {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(isRequesting) return true;//如果正在请求新书，忽略滑动请求，防止发出重复的书本请求
 
                 if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if(isRequesting) return true;
-                    if (scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
+                    if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
                         isRequesting = true;
                         SEARCHREQ = SCROLL;
                         new Thread(search).start();//向后端请求更多书本
@@ -215,7 +211,7 @@ public class SearchHistoryActivity extends AppCompatActivity {
                 normal.post(new Runnable() {
                     @Override
                     public void run() {
-                        TextView text = pullDown.findViewById(R.id.text);
+                        TextView text = pullDown.findViewById(R.id.requestText);
                         text.setText(getResources().getString(R.string.isReq));
                     }
                 });
@@ -292,12 +288,12 @@ public class SearchHistoryActivity extends AppCompatActivity {
 
                             bookTable.addView(pullDown);
                             if (resultArray.length() < PAGESIZE) {
-                                TextView textView = pullDown.findViewById(R.id.text);
+                                TextView textView = pullDown.findViewById(R.id.requestText);
                                 textView.setText(getResources().getString(R.string.hasEnd));
                                 isRequesting = false;
                             }//说明书本已请求完毕
                             else {
-                                TextView textView = pullDown.findViewById(R.id.text);
+                                TextView textView = pullDown.findViewById(R.id.requestText);
                                 textView.setText(getResources().getString(R.string.pullDown));
                                 isRequesting = false;
                             }
