@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManagerFactory;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,11 +23,13 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
     @Autowired
     private EntityManagerFactory factory;
 
+    @Transactional
     @Override
     public void addBook(Book book) {
         bookRepository.save(book);
     }
 
+    @Transactional
     @Override
     public List<Book> getBooks(int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -49,6 +52,7 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         return books;
     }
 
+    @Transactional
     @Override
     public List<Book> getWorks(String account, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -72,6 +76,7 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         return books;
     }
 
+    @Transactional
     @Override
     public List<Book> searchBooks(String search, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -95,6 +100,7 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         return books;
     }
 
+    @Transactional
     @Override
     public List<Book> searchWorkByTitle(String author,String title, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -119,16 +125,19 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         return books;
     }
 
+    @Transactional
     @Override
     public Book findBookById(int id) {
         return bookRepository.findBookById(id);
     }
 
+    @Transactional
     @Override
     public void updateBook(Book book) {
         bookRepository.modifyInfo(book.getName(),book.getIntro(),book.getSurface(),book.getId());
     }
 
+    @Transactional
     @Override
     public void deleteBooks(JSONArray ids) {
         try {

@@ -111,6 +111,8 @@
     <!--制作新章节界面的strings-->
     <string name="trylisten">试听</string>
     <string name="translate">转换</string>
+    <string name="input">输入文字</string>
+    <string name="draft">已成功保存草稿!</string>
 
     <!--制作新书界面的strings-->
     <string name="newbook">新书</string>
@@ -138,6 +140,7 @@
     <string name="fav">收藏成功!</string>
     <string name="cancelfav">已取消收藏</string>
     <string name="bookdeleted">该书已被删除</string>
+    <string name="newChapter">新建章节</string>
 
     <!--个人作品和搜索个人作品-->
     <string name="pullDown">向上轻拉获取更多</string>

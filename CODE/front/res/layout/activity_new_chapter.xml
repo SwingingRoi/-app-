@@ -7,6 +7,31 @@
     tools:context=".Activity.Work.NewChapterActivity">
 
     <LinearLayout
+        android:id="@+id/Loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:onClick="refresh"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/loadinggif"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/loading" />
+
+        <TextView
+            android:id="@+id/Remind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/TouchRefresh"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/normal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -34,14 +59,6 @@
                 android:text="@string/make"
                 android:textSize="20sp" />
 
-            <ImageView
-                android:id="@+id/imageView4"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_marginRight="10dp"
-                android:layout_weight="0.3"
-                app:srcCompat="@drawable/text_make" />
-
 
         </LinearLayout>
 
@@ -55,20 +72,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/Text"
+                <EditText
+                    android:id="@+id/requestText"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="20sp" />
-
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_marginTop="100dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/book_make" />
+                    android:layout_height="440dp"
+                    android:layout_marginTop="10dp"
+                    android:background="#ffffff"
+                    android:ems="10"
+                    android:gravity="start|top"
+                    android:hint="@string/input"
+                    android:inputType="textMultiLine"
+                    android:letterSpacing="0.05"
+                    android:lineSpacingExtra="11sp"
+                    android:paddingStart="10dp"
+                    android:paddingTop="10dp"
+                    android:textSize="15sp" />
             </LinearLayout>
         </ScrollView>
 
@@ -76,9 +96,9 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.5"
-            android:gravity="center"
             android:background="#ffffffff"
             android:elevation="10dp"
+            android:gravity="center"
             android:orientation="horizontal">
 
             <Button
@@ -100,6 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:onClick="storeChapter"
                 android:text="@string/Store" />
         </LinearLayout>
     </LinearLayout>

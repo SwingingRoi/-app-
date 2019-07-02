@@ -65,9 +65,19 @@
                     android:id="@+id/BackArrow"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:layout_marginStart="-290dp"
                     android:onClick="onBackPressed"
                     app:srcCompat="@drawable/arrowwhite" />
+
+                <TextView
+                    android:id="@+id/newChapter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="250dp"
+                    android:onClick="toNewChapter"
+                    android:text="@string/newChapter"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="17sp"
+                    android:visibility="invisible" />
 
             </LinearLayout>
 
