@@ -9,4 +9,11 @@ public interface ChapterService {
     void storeChapter(JSONObject chapter);
 
     JSONArray getChapters(int bookid,int from,int size);
+
+    void deleteChapters(JSONObject ids);
+
+    JSONObject getChapterByID(int id);
+
+
+    void modifyChapter(JSONObject chapter);
 }

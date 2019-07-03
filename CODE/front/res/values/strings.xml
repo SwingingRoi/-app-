@@ -68,7 +68,7 @@
     <string name="MakeHistory">我的作品</string>
     <string name="ListenHistory">收听历史</string>
     <string name="Favorites">收藏夹</string>
-    h
+
     <!-- 修改资料界面的strings-->
     <string name="EditAccount">昵称</string>
     <string name="EditPassword">密码</string>
@@ -95,6 +95,10 @@
     <string name="nowork">没有发布过作品</string>
     <string name="make">创作</string>
     <string name="SearchMyWork">输入作品名</string>
+    <string-array name="manageWork">
+        <item>管理作品</item>
+        <item>新建作品</item>
+    </string-array>
 
     <!--收听历史界面的strings-->
     <string name="nohistory">暂无收听历史</string>
@@ -113,6 +117,9 @@
     <string name="translate">转换</string>
     <string name="input">输入文字</string>
     <string name="draft">已成功保存草稿!</string>
+
+    <!--修改章节界面的strings-->
+    <string name="editchapter">修改章节</string>
 
     <!--制作新书界面的strings-->
     <string name="newbook">新书</string>
@@ -141,6 +148,10 @@
     <string name="cancelfav">已取消收藏</string>
     <string name="bookdeleted">该书已被删除</string>
     <string name="newChapter">新建章节</string>
+    <string-array name="manageChapter">
+        <item>新建章节</item>
+        <item>管理章节</item>
+    </string-array>
 
     <!--个人作品和搜索个人作品-->
     <string name="pullDown">向上轻拉获取更多</string>

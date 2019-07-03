@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.CountDownTimer;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,11 +18,15 @@ import android.view.WindowManager;
 
 
 import com.example.myapplication.Activity.Work.NewChapterActivity;
+
+import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.example.myapplication.Activity.Work.EditChapterActivity;
 import com.example.myapplication.PicUtils.GetPicture;
 
 import org.json.JSONArray;
@@ -31,7 +36,9 @@ import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class BookActivity extends AppCompatActivity {
 
@@ -47,6 +54,8 @@ public class BookActivity extends AppCompatActivity {
     private ScrollView introScroll;
     private ScrollView chapterScroll;
     private LinearLayout loadingView;
+    private MySpinner menu;
+    private LinearLayout manageBox;
     private View pullDown;//请求文字提示
 
     private int ISFAV=0;
@@ -60,6 +69,8 @@ public class BookActivity extends AppCompatActivity {
     private String author;
     private String intro;
     private String account;
+    private boolean hasClickMenu = false;//是否点击菜单
+    private boolean ismanaging = false;//是否处于管理模式
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -70,6 +81,33 @@ public class BookActivity extends AppCompatActivity {
         Chapter = findViewById(R.id.chapter);
         fav = findViewById(R.id.favicon);
         bookinfo = findViewById(R.id.bookinfo);
+
+        manageBox = findViewById(R.id.manage);
+        menu = findViewById(R.id.menu);
+        menu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(!hasClickMenu){
+                    hasClickMenu = true;
+                    return;
+                }//取消spinner的默认选择
+
+                String select = parent.getItemAtPosition(position).toString();
+                if (select.equals("新建章节")) {
+                    toNewChapter();
+                }
+                else {
+                    if(!ismanaging){
+                        toManage();
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
         account = sharedPreferences.getString("Account","");
@@ -364,9 +402,8 @@ public class BookActivity extends AppCompatActivity {
                                 author = book.getString("author");
                                 Author.setText(author);
 
-                                if(author.equals(account)){//如果本书的作者是当前账号，则提供新建章节的选项
-                                    TextView newChapter = findViewById(R.id.newChapter);
-                                    newChapter.setVisibility(View.VISIBLE);
+                                if(author.equals(account)){//如果本书的作者是当前账号，则提供管理章节的选项
+                                    menu.setVisibility(View.VISIBLE);
                                 }
 
                                 TextView introduction = findViewById(R.id.introduction);
@@ -460,7 +497,7 @@ public class BookActivity extends AppCompatActivity {
             chapterTable.post(new Runnable() {
                 @Override
                 public void run() {
-                    TextView text = pullDown.findViewById(R.id.requestText);
+                    TextView text = pullDown.findViewById(R.id.content);
                     text.setText(getResources().getString(R.string.isReq));
                 }
             });
@@ -503,12 +540,23 @@ public class BookActivity extends AppCompatActivity {
 
                         for(int i=0;i < newChapters.length();i++){
                             try{
+                                final JSONObject chapter = newChapters.getJSONObject(i);
                                 View chapterRow = LayoutInflater.from(BookActivity.this).inflate(R.layout.chapter_row, null);
                                 TextView titleView = chapterRow.findViewById(R.id.chaptername);
-                                titleView.setText(newChapters.getJSONObject(i).getString("title"));
+                                titleView.setText(chapter.getString("title"));
                                 TextView chapterNumber = chapterRow.findViewById(R.id.chapternumber);
                                 chapterNumber.setText(String.valueOf(from + i + 1));
                                 chapterTable.addView(chapterRow);
+                                chapterRow.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        try {
+                                            toChapter(chapter.getInt("id"));
+                                        }catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -516,12 +564,12 @@ public class BookActivity extends AppCompatActivity {
 
                         chapterTable.addView(pullDown);
                         if(newChapters.length() < PAGESIZE){
-                            TextView textView = pullDown.findViewById(R.id.requestText);
+                            TextView textView = pullDown.findViewById(R.id.content);
                             textView.setText(getResources().getString(R.string.hasEnd));
                             isRequesting = false;
                         }//说明章节已请求完毕
                         else {
-                            TextView textView = pullDown.findViewById(R.id.requestText);
+                            TextView textView = pullDown.findViewById(R.id.content);
                             textView.setText(getResources().getString(R.string.pullDown));
                             isRequesting = false;
                         }
@@ -537,9 +585,131 @@ public class BookActivity extends AppCompatActivity {
         }
     };
 
-    public void toNewChapter(View view){
+    private void toNewChapter(){
         Intent intent = new Intent(this,NewChapterActivity.class);
         intent.putExtra("bookid",bookid);
         startActivity(intent);
     }
+
+    //开启管理模式
+    private void toManage(){
+        if(ismanaging) return;
+
+        ismanaging = true;
+        manageBox.setVisibility(View.VISIBLE);
+        for(int i=0;i<chapters.length();i++){
+            final View chapterRow = chapterTable.getChildAt(i);
+            CheckBox checkBox = chapterRow.findViewById(R.id.checkBox);
+            checkBox.setVisibility(View.VISIBLE);
+        }
+    }
+
+    //退出管理
+    public void cancelManage(View view){
+        cancelManage();
+    }
+
+    private void cancelManage(){
+
+        ismanaging = false;
+        manageBox.setVisibility(View.INVISIBLE);
+        for(int i=0;i<chapters.length();i++){
+            final View chapterRow = chapterTable.getChildAt(i);
+            CheckBox checkBox = chapterRow.findViewById(R.id.checkBox);
+            checkBox.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    //删除章节
+    public void doDelete(View view){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setPositiveButton("确定",null);
+        builder.setNegativeButton("取消",null);
+        builder.setTitle("删除章节");
+        builder.setMessage("确认删除这些章节吗?");
+        final AlertDialog dialog = builder.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                new MyToast(BookActivity.this,"成功删除!");
+
+                final LinearLayout delete = findViewById(R.id.check);
+                delete.setClickable(false);
+                CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        delete.setClickable(true);
+                    }
+                };//防止用户高频率点击
+                countDownTimer.start();
+
+                new Thread(deleteChapter).start();
+            }
+        });
+    }
+
+    private void toChapter(int chapterID){
+        if(ismanaging) {
+            Intent intent = new Intent(this, EditChapterActivity.class);
+            intent.putExtra("id", chapterID);
+            startActivity(intent);
+        }
+    }
+
+    Runnable deleteChapter = new Runnable() {
+        @Override
+        public void run() {
+            try{
+                GetServer getServer = new GetServer();
+                String url = getServer.getIPADDRESS()+"/audiobook/deletechapters";
+
+                JSONArray ids = new JSONArray();//要删除章节的id
+                JSONObject params = new JSONObject();
+                params.put("bookid",bookid);
+
+                final List<Integer> removes = new ArrayList<>();//存储要删除的书本在chapters中的index
+                for (int i = 0; i < chapters.length(); i++) {
+                    View bookRow = chapterTable.getChildAt(i);
+                    CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
+                    if (checkBox.isChecked()) {
+                        removes.add(i);
+                        JSONObject object = new JSONObject();
+                        object.put("id", chapters.getJSONObject(i).getInt("id"));
+                        ids.put(object);
+                    }
+                }
+
+                chapterTable.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int hasRemoved=0;
+                        for (int i : removes) {
+                            try {
+                                chapterTable.removeViewAt(i - hasRemoved);
+                                chapters.remove(i - hasRemoved);//在删除的时候，i要减去前面已经删除的书本数目
+                                hasRemoved++;
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                        from = from - removes.size();//更新请求章节的index
+                    }
+                });
+
+                params.put("ids",ids);
+                byte[] param = params.toString().getBytes();
+                HttpUtils httpUtils = new HttpUtils(url);
+                httpUtils.doHttp(param, "POST", "application/json");//向后端发送删除请求
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };
 }

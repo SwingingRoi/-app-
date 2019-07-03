@@ -211,7 +211,7 @@ public class SearchHistoryActivity extends AppCompatActivity {
                 normal.post(new Runnable() {
                     @Override
                     public void run() {
-                        TextView text = pullDown.findViewById(R.id.requestText);
+                        TextView text = pullDown.findViewById(R.id.content);
                         text.setText(getResources().getString(R.string.isReq));
                     }
                 });
@@ -270,8 +270,10 @@ public class SearchHistoryActivity extends AppCompatActivity {
                             for (int i = 0; i < resultArray.length(); i++) {
                                 JSONObject record = resultArray.getJSONObject(i);
                                 View bookRow = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.history_row, null);
+
                                 TextView title = bookRow.findViewById(R.id.BookName);
                                 title.setText(record.getString("name"));
+
                                 TextView timeView = bookRow.findViewById(R.id.time);
                                 timeView.setText(record.getString("time"));
                                 bookTable.addView(bookRow);
@@ -288,12 +290,12 @@ public class SearchHistoryActivity extends AppCompatActivity {
 
                             bookTable.addView(pullDown);
                             if (resultArray.length() < PAGESIZE) {
-                                TextView textView = pullDown.findViewById(R.id.requestText);
+                                TextView textView = pullDown.findViewById(R.id.content);
                                 textView.setText(getResources().getString(R.string.hasEnd));
                                 isRequesting = false;
                             }//说明书本已请求完毕
                             else {
-                                TextView textView = pullDown.findViewById(R.id.requestText);
+                                TextView textView = pullDown.findViewById(R.id.content);
                                 textView.setText(getResources().getString(R.string.pullDown));
                                 isRequesting = false;
                             }

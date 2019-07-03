@@ -263,7 +263,7 @@ public class HistoryActivity extends AppCompatActivity {
             normal.post(new Runnable() {
                 @Override
                 public void run() {
-                    TextView text = pullDown.findViewById(R.id.requestText);
+                    TextView text = pullDown.findViewById(R.id.content);
                     text.setText(getResources().getString(R.string.isReq));
                 }
             });
@@ -328,8 +328,10 @@ public class HistoryActivity extends AppCompatActivity {
                                 JSONObject record = newRecords.getJSONObject(i);
 
                                 View bookRow = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.history_row, null);
+
                                 TextView title = bookRow.findViewById(R.id.BookName);
                                 title.setText(record.getString("name"));
+
                                 TextView timeView = bookRow.findViewById(R.id.time);
                                 timeView.setText(record.getString("time"));
                                 bookTable.addView(bookRow);
@@ -352,12 +354,12 @@ public class HistoryActivity extends AppCompatActivity {
 
                         bookTable.addView(pullDown);
                         if(newRecords.length() < PAGESIZE){
-                            TextView textView = pullDown.findViewById(R.id.requestText);
+                            TextView textView = pullDown.findViewById(R.id.content);
                             textView.setText(getResources().getString(R.string.hasEnd));
                             isRequesting = false;
                         }//说明书本已请求完毕
                         else {
-                            TextView textView = pullDown.findViewById(R.id.requestText);
+                            TextView textView = pullDown.findViewById(R.id.content);
                             textView.setText(getResources().getString(R.string.pullDown));
                             isRequesting = false;
                         }

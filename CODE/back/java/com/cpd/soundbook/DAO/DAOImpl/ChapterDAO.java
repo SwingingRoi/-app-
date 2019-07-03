@@ -1,14 +1,15 @@
 package com.cpd.soundbook.DAO.DAOImpl;
 
 import com.cpd.soundbook.Entity.Chapter;
+import com.cpd.soundbook.Repository.BookRepository;
 import com.cpd.soundbook.Repository.ChapterRepository;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManagerFactory;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,16 +19,18 @@ public class ChapterDAO implements com.cpd.soundbook.DAO.DAOInterface.ChapterDAO
     private ChapterRepository chapterRepository;
 
     @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
     private EntityManagerFactory factory;
 
-    @Transactional
     @Override
     public void storeChapter(Chapter chapter) {
         chapterRepository.save(chapter);
+        bookRepository.increaChapter(chapter.getBookid());
     }
 
 
-    @Transactional
     @Override
     public List<Chapter> getChapters(int bookid, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -48,5 +51,27 @@ public class ChapterDAO implements com.cpd.soundbook.DAO.DAOInterface.ChapterDAO
             session.close();
         }
         return chapters;
+    }
+
+    @Override
+    public void deleteChapters(int bookid,JSONArray idArray) {
+        try{
+            for(int i=0;i<idArray.length();i++){
+                chapterRepository.deleteById(idArray.getJSONObject(i).getInt("id"));
+            }
+            bookRepository.decreaChapter(idArray.length(),bookid);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Chapter getChapterByID(int id) {
+        return chapterRepository.findChapterById(id);
+    }
+
+    @Override
+    public void modifyChapter(int id, String title, String content) {
+        chapterRepository.modifyChapter(id, title, content);
     }
 }

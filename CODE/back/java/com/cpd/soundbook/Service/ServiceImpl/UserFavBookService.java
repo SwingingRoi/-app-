@@ -64,6 +64,7 @@ public class UserFavBookService implements com.cpd.soundbook.Service.ServiceInte
         JSONArray  books = new JSONArray();
 
         for(Book book : favs){
+
             books.put(book.toJSONObject());
         }
         return books;
