@@ -110,7 +110,7 @@ public class NewChapterActivity extends AppCompatActivity {
                 GetServer getServer = new GetServer();
                 String url = getServer.getIPADDRESS()+"/audiobook/storeDraft";
 
-                EditText text = findViewById(R.id.requestText);
+                EditText text = findViewById(R.id.content);
                 JSONObject info = new JSONObject();
                 info.put("bookid",bookid);
                 info.put("draft",text.getText().toString());
@@ -163,7 +163,7 @@ public class NewChapterActivity extends AppCompatActivity {
                 normal.post(new Runnable() {
                     @Override
                     public void run() {
-                        EditText text = findViewById(R.id.requestText);
+                        EditText text = findViewById(R.id.content);
                         text.setText(draft);
 
                         loadView.setVisibility(View.INVISIBLE);
@@ -209,7 +209,7 @@ public class NewChapterActivity extends AppCompatActivity {
         TextView titleView = v.findViewById(R.id.Title);
         titleView.setText("标题");
 
-        EditText text = findViewById(R.id.requestText);
+        EditText text = findViewById(R.id.content);
         content = text.getText().toString();
 
         builder.setView(v);

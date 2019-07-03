@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity.Work.NewChapterActivity">
+    tools:context=".Activity.Work.EditChapterActivity">
 
     <LinearLayout
         android:id="@+id/Loading"
@@ -53,20 +53,42 @@
                 android:id="@+id/partname"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="1.4"
                 android:paddingStart="90dp"
                 android:paddingEnd="20dp"
-                android:text="@string/make"
+                android:text="@string/editchapter"
                 android:textSize="20sp" />
 
 
         </LinearLayout>
 
+        <EditText
+            android:id="@+id/title"
+            style="null"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@android:color/white"
+            android:ems="10"
+            android:hint="@string/edittitle"
+            android:inputType="textPersonName"
+            android:paddingStart="150dp"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="16sp" />
+
+        <ImageView
+            android:id="@+id/split10"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_weight="0"
+            android:alpha="0.5"
+            android:background="@drawable/gray" />
+
         <ScrollView
             android:id="@+id/textBox"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="@android:color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -95,7 +117,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.5"
+            android:layout_weight="0.41"
             android:background="#ffffffff"
             android:elevation="10dp"
             android:gravity="center"
@@ -124,5 +146,4 @@
                 android:text="@string/Store" />
         </LinearLayout>
     </LinearLayout>
-
 </android.support.constraint.ConstraintLayout>

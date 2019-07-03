@@ -50,4 +50,38 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
         }
         return result;
     }
+
+    @Override
+    public void deleteChapters(JSONObject ids) {
+        try {
+            int bookid = ids.getInt("bookid");
+            JSONArray idArray = ids.getJSONArray("ids");
+            chapterDAO.deleteChapters(bookid,idArray);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public JSONObject getChapterByID(int id) {
+        Chapter chapter = chapterDAO.getChapterByID(id);
+        JSONObject result = new JSONObject();
+        try{
+            result.put("id",id);
+            result.put("title",chapter.getTitle());
+            result.put("content",chapter.getContent());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public void modifyChapter(JSONObject chapter) {
+        try{
+            chapterDAO.modifyChapter(chapter.getInt("id"),chapter.getString("title"),chapter.getString("content"));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }

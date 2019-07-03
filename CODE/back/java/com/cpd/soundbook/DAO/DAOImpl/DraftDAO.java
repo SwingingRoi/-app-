@@ -13,7 +13,6 @@ public class DraftDAO implements com.cpd.soundbook.DAO.DAOInterface.DraftDAO {
     @Autowired
     private DraftRepository draftRepository;
 
-    @Transactional
     @Override
     public String getDraft(int bookid) {
         Draft draft = draftRepository.findDraftByBookid(bookid);
@@ -23,14 +22,12 @@ public class DraftDAO implements com.cpd.soundbook.DAO.DAOInterface.DraftDAO {
         return draft.getDraft();
     }
 
-    @Transactional
     @Override
     public void storeDraft(Draft draft) {
         deleteDraftByBookid(draft.getBookid());
         draftRepository.save(draft);
     }
 
-    @Transactional
     @Override
     public void deleteDraftByBookid(int bookid) {
         draftRepository.deleteByBookid(bookid);

@@ -252,7 +252,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                 normal.post(new Runnable() {
                     @Override
                     public void run() {
-                        TextView text = pullDown.findViewById(R.id.requestText);
+                        TextView text = pullDown.findViewById(R.id.content);
                         text.setText(getResources().getString(R.string.isReq));
                     }
                 });
@@ -291,6 +291,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                 }
 
                 normal.post(new Runnable() {
+                    @SuppressLint("SetTextI18n")
                     @Override
                     public void run() {
                         try {
@@ -314,8 +315,16 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
                             for (int i = 0; i < resultArray.length(); i++) {
                                 View bookRow = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_row_style, null);
+
+
                                 TextView title = bookRow.findViewById(R.id.BookName);
                                 title.setText(resultArray.getJSONObject(i).getString("name"));
+
+                                TextView viewNumber = bookRow.findViewById(R.id.viewnumber);
+                                viewNumber.setText(String.valueOf(resultArray.getJSONObject(i).getInt("views")));
+
+                                TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
+                                chapterNumber.setText(resultArray.getJSONObject(i).getInt("chapters") + "章");
                                 bookTable.addView(bookRow);
 
                                 final int id = resultArray.getJSONObject(i).getInt("id");
@@ -330,12 +339,12 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
                             bookTable.addView(pullDown);
                             if (resultArray.length() < PAGESIZE) {
-                                TextView textView = pullDown.findViewById(R.id.requestText);
+                                TextView textView = pullDown.findViewById(R.id.content);
                                 textView.setText(getResources().getString(R.string.hasEnd));
                                 isRequesting = false;
                             }//说明书本已请求完毕
                             else {
-                                TextView textView = pullDown.findViewById(R.id.requestText);
+                                TextView textView = pullDown.findViewById(R.id.content);
                                 textView.setText(getResources().getString(R.string.pullDown));
                                 isRequesting = false;
                             }
