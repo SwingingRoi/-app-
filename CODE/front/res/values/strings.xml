@@ -117,6 +117,8 @@
     <string name="translate">转换</string>
     <string name="input">输入文字</string>
     <string name="draft">已成功保存草稿!</string>
+    <string name="translating">转换中，请稍候</string>
+    <string name="translateSuccess">转换成功!</string>
 
     <!--修改章节界面的strings-->
     <string name="editchapter">修改章节</string>

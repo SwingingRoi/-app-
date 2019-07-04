@@ -8,6 +8,8 @@ public class Chapter {
     private int bookid;
     private String content;
     private String title;
+    private String speechpath;
+    //private String speechtime;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,4 +49,20 @@ public class Chapter {
     public String getTitle() {
         return title;
     }
+
+    public void setSpeechPath(String speechPath) {
+        this.speechpath = speechPath;
+    }
+
+    public String getSpeechPath() {
+        return speechpath;
+    }
+
+    /*public String getSpeechtime() {
+        return speechtime;
+    }
+
+    public void setSpeechtime(String speechtime) {
+        this.speechtime = speechtime;
+    }*/
 }

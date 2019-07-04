@@ -21,23 +21,42 @@ public class HttpUtils {
         return result;
     }
 
-    public File getFileParam(HttpServletRequest request){
+    private File createFile(String path,InputStream inputStream){
+        File file = new File(path);
+        try{
+            if (!file.exists()) file.createNewFile();
+
+            OutputStream outputStream = new FileOutputStream(file);
+            int bytesRead;
+            byte[] buffer = new byte[8192];
+            while ((bytesRead = inputStream.read(buffer, 0, 8192)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            outputStream.close();
+            inputStream.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    public File getPngParam(HttpServletRequest request){
         File file = null;
         try{
             InputStream param = request.getInputStream();
             String path = System.getProperty("user.dir")+"\\"+System.currentTimeMillis()+".png";
-            file = new File(path);
-            if(!file.exists()){
-                file.createNewFile();
-            }
-            OutputStream outputStream = new FileOutputStream(file);
-            int bytesRead;
-            byte[] buffer = new byte[8192];
-            while ((bytesRead = param.read(buffer, 0, 8192)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-            outputStream.close();
-            param.close();
+            file = createFile(path,param);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    public File getMp3Param(HttpServletRequest request,String path){
+        File file = null;
+        try{
+            InputStream param = request.getInputStream();
+            file = createFile(path,param);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -51,6 +70,20 @@ public class HttpUtils {
             writer.print(data);
             writer.flush();
             writer.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void writeFileBack(HttpServletResponse response,File file){
+        try {
+            OutputStream outputStream = response.getOutputStream();
+            InputStream inputStream = new FileInputStream(file);
+            int len;
+            byte[] buffer = new byte[1024];
+            while ((len = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, len);
+            }
         }catch (Exception e){
             e.printStackTrace();
         }
