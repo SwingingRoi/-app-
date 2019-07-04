@@ -3,6 +3,7 @@ package com.cpd.soundbook.DAO.DAOImpl;
 
 import com.cpd.soundbook.Entity.Book;
 import com.cpd.soundbook.Repository.BookRepository;
+import com.cpd.soundbook.Repository.ChapterRepository;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.json.JSONArray;
@@ -21,15 +22,16 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
     private BookRepository bookRepository;
 
     @Autowired
+    private ChapterRepository chapterRepository;
+
+    @Autowired
     private EntityManagerFactory factory;
 
-    @Transactional
     @Override
     public void addBook(Book book) {
         bookRepository.save(book);
     }
 
-    @Transactional
     @Override
     public List<Book> getBooks(int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -52,7 +54,6 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         return books;
     }
 
-    @Transactional
     @Override
     public List<Book> getWorks(String account, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -76,7 +77,6 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         return books;
     }
 
-    @Transactional
     @Override
     public List<Book> searchBooks(String search, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -100,7 +100,6 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         return books;
     }
 
-    @Transactional
     @Override
     public List<Book> searchWorkByTitle(String author,String title, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -125,19 +124,16 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         return books;
     }
 
-    @Transactional
     @Override
     public Book findBookById(int id) {
         return bookRepository.findBookById(id);
     }
 
-    @Transactional
     @Override
     public void updateBook(Book book) {
         bookRepository.modifyInfo(book.getName(),book.getIntro(),book.getSurface(),book.getId());
     }
 
-    @Transactional
     @Override
     public void deleteBooks(JSONArray ids) {
         try {
@@ -147,5 +143,10 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public int getChapterNumbers(int bookid){
+        return chapterRepository.getChapterNumbers(bookid);
     }
 }

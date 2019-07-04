@@ -55,7 +55,6 @@
                     android:layout_height="0dp"
                     android:layout_weight="0.7"
                     android:gravity="center"
-                    android:text="firstbook"
                     android:textSize="16sp" />
 
                 <LinearLayout
@@ -66,27 +65,34 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:id="@+id/ListenIcon"
+                        android:id="@+id/viewIcon"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_weight="3"
                         app:srcCompat="@drawable/listenicon" />
 
+                    <TextView
+                        android:id="@+id/viewnumber"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-55dp"
+                        android:layout_weight="1"
+                        android:gravity="center" />
+
                     <ImageView
-                        android:id="@+id/PartIcon"
+                        android:id="@+id/chapterIcon"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_weight="1"
                         app:srcCompat="@drawable/waveicon" />
 
                     <TextView
-                        android:id="@+id/PartNumber"
+                        android:id="@+id/chapternumber"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="-20dp"
                         android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="0章" />
+                        android:gravity="center" />
                 </LinearLayout>
             </LinearLayout>
 

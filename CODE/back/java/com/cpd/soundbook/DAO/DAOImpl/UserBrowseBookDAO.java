@@ -1,6 +1,7 @@
 package com.cpd.soundbook.DAO.DAOImpl;
 
 import com.cpd.soundbook.Entity.UserBrowseBook;
+import com.cpd.soundbook.Repository.BookRepository;
 import com.cpd.soundbook.Repository.UserBrowseBookRepository;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManagerFactory;
-import javax.transaction.Transactional;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,15 +24,17 @@ public class UserBrowseBookDAO implements com.cpd.soundbook.DAO.DAOInterface.Use
     @Autowired
     private UserBrowseBookRepository userBrowseBookRepository;
 
-    @Transactional
+    @Autowired
+    private BookRepository bookRepository;
+
     @Override
     public void addRecord(UserBrowseBook userBrowseBook) {
+        bookRepository.increaView(userBrowseBook.getBookid());
         if(userBrowseBookRepository.findRecord(userBrowseBook.getAccount(),userBrowseBook.getBookid(),userBrowseBook.getTime()) == null) {
             userBrowseBookRepository.save(userBrowseBook);
         }
     }
 
-    @Transactional
     @Override
     public List<UserBrowseBook> getRecords(String account, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -57,7 +59,6 @@ public class UserBrowseBookDAO implements com.cpd.soundbook.DAO.DAOInterface.Use
         return records;
     }
 
-    @Transactional
     @Override
     public void deleteRecords(JSONArray ids) {
         try {
@@ -69,13 +70,11 @@ public class UserBrowseBookDAO implements com.cpd.soundbook.DAO.DAOInterface.Use
         }
     }
 
-    @Transactional
     @Override
     public void clearRecords(String account) {
         userBrowseBookRepository.clearRecords(account);
     }
 
-    @Transactional
     @Override
     public List<UserBrowseBook> searchRecords(String account, int day, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();

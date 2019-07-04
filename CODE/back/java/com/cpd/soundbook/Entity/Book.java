@@ -12,6 +12,8 @@ public class Book {
     private String intro;
     private String author;
     private String surface;
+    private int chapters;
+    private int views;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +30,8 @@ public class Book {
             result.put("author", author);
             result.put("intro", intro);
             result.put("surface", surface);
+            result.put("chapters",chapters);
+            result.put("views",views);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -72,5 +76,21 @@ public class Book {
 
     public int getId() {
         return id;
+    }
+
+    public void setChapters(int chapters) {
+        this.chapters = chapters;
+    }
+
+    public int getChapters() {
+        return chapters;
+    }
+
+    public void setViews(int views) {
+        this.views = views;
+    }
+
+    public int getViews() {
+        return views;
     }
 }

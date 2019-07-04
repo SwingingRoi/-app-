@@ -22,25 +22,21 @@ public class UserFavBookDAO implements com.cpd.soundbook.DAO.DAOInterface.UserFa
     @Autowired
     private EntityManagerFactory factory;
 
-    @Transactional
     @Override
     public void addFav(UserFavBook userFavBook) {
         userFavBookRepository.save(userFavBook);
     }
 
-    @Transactional
     @Override
     public void cancelFav(UserFavBook userFavBook) {
         userFavBookRepository.cancelFav(userFavBook.getAccount(),userFavBook.getBookid());
     }
 
-    @Transactional
     @Override
     public UserFavBook findFav(String account, int bookid) {
         return userFavBookRepository.findByAccountAndBookid(account,bookid);
     }
 
-    @Transactional
     @Override
     public List<Book> findFavs(String account, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
@@ -65,7 +61,6 @@ public class UserFavBookDAO implements com.cpd.soundbook.DAO.DAOInterface.UserFa
         return results;
     }
 
-    @Transactional
     @Override
     public List<Book> searchFavs(String search, String account, int from, int size) {
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();

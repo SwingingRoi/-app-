@@ -23,4 +23,6 @@ public interface BookDAO {
     Book findBookById(int id);
 
     void deleteBooks(JSONArray ids);
+
+    int getChapterNumbers(int bookid);
 }

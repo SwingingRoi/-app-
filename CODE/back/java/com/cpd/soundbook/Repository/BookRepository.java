@@ -18,4 +18,16 @@ public interface BookRepository extends JpaRepository<Book,Integer> {
     @Query("update com.cpd.soundbook.Entity.Book set name=:name,intro=:intro,surface=:surface where id=:id")
     void modifyInfo(@Param("name") String name,@Param("intro") String intro,@Param("surface") String surface,
                     @Param("id") int id);
+
+    @Modifying
+    @Query("update com.cpd.soundbook.Entity.Book set chapters=chapters + 1 where id=:id")
+    void increaChapter(@Param("id") int bookid);
+
+    @Modifying
+    @Query("update com.cpd.soundbook.Entity.Book set chapters=chapters - :number where id=:id")
+    void decreaChapter(@Param("number") int number,@Param("id") int bookid);
+
+    @Modifying
+    @Query("update com.cpd.soundbook.Entity.Book set views = views + 1 where id=:id")
+    void increaView(@Param("id") int bookid);
 }
