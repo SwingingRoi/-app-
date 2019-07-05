@@ -1,5 +1,6 @@
 package com.cpd.soundbook.Service.ServiceInterface;
 
+import com.mongodb.gridfs.GridFSDBFile;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
@@ -21,4 +22,8 @@ public interface ChapterService {
     File textToSpeech(String text);
 
     void storeSpeech(File speech);
+
+    GridFSDBFile getSpeech(String path);
+
+    void updateSpeech(String oldpath,File newspeech);
 }

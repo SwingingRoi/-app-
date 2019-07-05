@@ -9,7 +9,7 @@ public class Chapter {
     private String content;
     private String title;
     private String speechpath;
-    //private String speechtime;
+    private String time;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,11 +58,11 @@ public class Chapter {
         return speechpath;
     }
 
-    /*public String getSpeechtime() {
-        return speechtime;
+    public void setTime(String time) {
+        this.time = time;
     }
 
-    public void setSpeechtime(String speechtime) {
-        this.speechtime = speechtime;
-    }*/
+    public String getTime() {
+        return time;
+    }
 }

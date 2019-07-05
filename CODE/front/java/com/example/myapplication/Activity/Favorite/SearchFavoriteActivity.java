@@ -327,6 +327,11 @@ public class SearchFavoriteActivity extends AppCompatActivity {
                                 TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
                                 chapterNumber.setText(resultArray.getJSONObject(i).getInt("chapters") + "章");
 
+                                if(ismanaging){
+                                    CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
+                                    checkBox.setVisibility(View.VISIBLE);
+                                }
+
                                 bookTable.addView(bookRow);
 
                                 final int id = resultArray.getJSONObject(i).getInt("id");

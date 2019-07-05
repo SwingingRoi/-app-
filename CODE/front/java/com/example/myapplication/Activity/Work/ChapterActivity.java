@@ -1,56 +1,52 @@
 package com.example.myapplication.Activity.Work;
 
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.os.Environment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.example.myapplication.GetAudioLength;
 import com.example.myapplication.GetServer;
 import com.example.myapplication.HttpUtils;
-import com.example.myapplication.MilliToHMS;
 import com.example.myapplication.MyToast;
 import com.example.myapplication.R;
+import com.example.myapplication.MilliToHMS;
 
-import com.example.myapplication.GetAudioLength;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class EditChapterActivity extends AppCompatActivity {
+public class ChapterActivity extends AppCompatActivity {
 
     private LinearLayout loadingView;
     private LinearLayout normal;
     private SeekBar seekBar;//进度条
-    private EditText content;
-    private boolean textChanged = false;
-    private boolean speechChanged = false;//同步音频与文本
+    private TextView end;
 
     private int chapterID;
+    private int bookid;
+    private String account;
+    private String speechPath;
 
-    private String oldSpeechPath;
-    private String newSpeechPath;
     private File speechFile = null;
     private final String MP3_LOCATION = Environment.getExternalStorageDirectory().getPath()+"/temp.mp3";
 
@@ -61,22 +57,26 @@ public class EditChapterActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_chapter);
+        setContentView(R.layout.activity_chapter);
 
         Intent intent = getIntent();
-        chapterID = intent.getIntExtra("id",-1);
+        chapterID = intent.getIntExtra("chapterId",-1);
+        bookid = intent.getIntExtra("bookid",-1);
+
+
+
+        TextView content = findViewById(R.id.content);
+        content.setMovementMethod(ScrollingMovementMethod.getInstance());
 
         normal = findViewById(R.id.normal);
-
-        content = findViewById(R.id.content);
-        content.addTextChangedListener(watcher);
-
-        EditText content = findViewById(R.id.content);
-        content.setMovementMethod(ScrollingMovementMethod.getInstance());
 
         loadingView = findViewById(R.id.Loading);
         loadingView.setVisibility(View.VISIBLE);
         normal.setVisibility(View.INVISIBLE);
+        end = findViewById(R.id.end);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        account = sharedPreferences.getString("Account","");
 
         seekBar = findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -110,26 +110,13 @@ public class EditChapterActivity extends AppCompatActivity {
             }
         });
 
+        new Thread(addRecord).start();//添加浏览记录
         refresh();
     }
 
-    TextWatcher watcher = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-            textChanged = true;
-            speechChanged = false;//文本修改了，音频尚未修改
-        }
-
-        @Override
-        public void afterTextChanged(Editable s) {
-
-        }
-    };
+    public void onBackPressed(View view){
+        super.onBackPressed();
+    }
 
     //重置播放状态
     private void resetPlayer(){
@@ -139,47 +126,6 @@ public class EditChapterActivity extends AppCompatActivity {
         playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
 
         firtstPlay = true;
-    }
-
-    public void onBackPressed(View view){
-        onBackPressed();
-    }
-
-    @Override
-    public void onBackPressed(){
-        //保存草稿
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("保存");
-        builder.setMessage("是否保存修改?");
-
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try{
-                    //保存对章节的修改
-
-                    EditText title = findViewById(R.id.title);
-                    if(title.getText().toString().length() > 20){
-                        new MyToast(EditChapterActivity.this,getResources().getString(R.string.titlelong));
-                        return;
-                    }
-
-                    new Thread(updateChapter).start();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                EditChapterActivity.super.onBackPressed();
-            }
-        });
-
-        builder.show();
     }
 
     public void refresh(){
@@ -209,20 +155,6 @@ public class EditChapterActivity extends AppCompatActivity {
     //刷新界面
     public void refresh(View view){
         refresh();
-    }
-
-    public void storeChapter(View view){
-        EditText title = findViewById(R.id.title);
-        if(title.getText().toString().length() > 20){
-            new MyToast(EditChapterActivity.this,getResources().getString(R.string.titlelong));
-            return;
-        }
-
-        new Thread(updateChapter).start();
-    }
-
-    public void textToSpeech(View view){
-        new Thread(textToSpeech).start();
     }
 
     //试听音频
@@ -298,87 +230,30 @@ public class EditChapterActivity extends AppCompatActivity {
         }
     }
 
-    Runnable textToSpeech = new Runnable() {
+    Runnable addRecord = new Runnable() {
         @Override
         public void run() {
             try{
 
-                //重置播放状态
-                normal.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        speechFile = null;
-                        resetPlayer();
-
-                        LinearLayout translating = findViewById(R.id.translating);
-                        translating.setVisibility(View.VISIBLE);
-                    }
-                });
-
                 GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS()+"/audiobook/textToSpeech";
+                String url = getServer.getIPADDRESS()+"/audiobook/addrecord";
 
-                EditText content = findViewById(R.id.content);
                 JSONObject params = new JSONObject();
-                params.put("text",content.getText());
+                params.put("account",account);
+                params.put("id",bookid);
+                Date date = new Date();
+                DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
+                params.put("time",format.format(date));
 
                 byte[] param = params.toString().getBytes();
 
                 HttpUtils httpUtils = new HttpUtils(url);
-                final ByteArrayOutputStream resultStream = httpUtils.doHttp(param, "POST", "application/json");//向后端发送请求
-
-                if (resultStream == null) {//请求超时
-                    normal.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            new MyToast(EditChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
-
-                            LinearLayout translating = findViewById(R.id.translating);
-                            translating.setVisibility(View.INVISIBLE);
-                        }
-                    });
-                    return;
-                }
-
-                normal.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            new MyToast(EditChapterActivity.this, getResources().getString(R.string.translateSuccess));
-
-                            LinearLayout translating = findViewById(R.id.translating);
-                            translating.setVisibility(View.INVISIBLE);
-
-                            firtstPlay = true;
-
-                            speechFile = new File(MP3_LOCATION);//speechFile保存后端语音
-                            if (!speechFile.exists()) speechFile.createNewFile();
-                            OutputStream outputStream = new FileOutputStream(speechFile);
-
-                            resultStream.writeTo(outputStream);
-                            speechChanged = true;//音频修改了
-
-                            GetAudioLength getAudioLength = new GetAudioLength();
-                            TextView end = findViewById(R.id.end);
-                            end.setText(getAudioLength.getLength(speechFile));
-
-                            seekBar.setProgress(0);
-
-                            TextView begin = findViewById(R.id.begin);
-                            begin.setText(getResources().getString(R.string.initial));
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
-
+                httpUtils.doHttp(param, "POST", "application/json");
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
     };
-
 
     Runnable getChapter = new Runnable() {
         @Override
@@ -396,7 +271,7 @@ public class EditChapterActivity extends AppCompatActivity {
                     normal.post(new Runnable() {
                         @Override
                         public void run() {
-                            new MyToast(EditChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
+                            new MyToast(ChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
 
                             findViewById(R.id.loadinggif).setVisibility(View.INVISIBLE);
                             findViewById(R.id.Remind).setVisibility(View.VISIBLE);
@@ -414,13 +289,16 @@ public class EditChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            EditText title = findViewById(R.id.title);
+                            TextView title = findViewById(R.id.title);
                             title.setText(chapter.getString("title"));
 
-                            EditText content = findViewById(R.id.content);
+                            TextView content = findViewById(R.id.content);
                             content.setText(chapter.getString("content"));
 
-                            oldSpeechPath = chapter.getString("speechPath");
+                            speechPath = chapter.getString("speechPath");
+
+                            TextView end = findViewById(R.id.end);
+                            end.setText(chapter.getString("length"));
 
                             new Thread(getSpeech).start();
                         }catch (Exception e){
@@ -434,63 +312,12 @@ public class EditChapterActivity extends AppCompatActivity {
         }
     };
 
-    Runnable updateChapter = new Runnable() {
-        @Override
-        public void run() {
-            try{
-
-                if(textChanged && !speechChanged){//文本修改了，但语音尚未修改，提醒用户按下转换按钮
-                    normal.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            new MyToast(EditChapterActivity.this,getResources().getString(R.string.askpush));
-                        }
-                    });
-                    return;
-                }
-
-                GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS()+"/audiobook/modifychapter";
-
-                JSONObject object = new JSONObject();
-                object.put("id",chapterID);
-
-                EditText title = findViewById(R.id.title);
-                object.put("title",title.getText());
-
-                EditText content = findViewById(R.id.content);
-                object.put("content",content.getText());
-
-                newSpeechPath = System.currentTimeMillis() + ".mp3";
-                object.put("speechPath",newSpeechPath);
-
-                GetAudioLength getAudioLength = new GetAudioLength();
-                object.put("length",getAudioLength.getLength(speechFile));
-
-                byte[] param = object.toString().getBytes();
-
-                HttpUtils httpUtils = new HttpUtils(url);
-                httpUtils.doHttp(param, "GET", "application/json");
-
-                normal.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        new Thread(updateSpeech).start();
-                    }
-                });
-
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-    };
-
     Runnable getSpeech = new Runnable() {
         @Override
         public void run() {
             try{
                 GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS()+"/audiobook/getSpeech?path=" + oldSpeechPath;
+                String url = getServer.getIPADDRESS()+"/audiobook/getSpeech?path=" + speechPath;
 
                 HttpUtils httpUtils = new HttpUtils(url);
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
@@ -499,7 +326,7 @@ public class EditChapterActivity extends AppCompatActivity {
                     normal.post(new Runnable() {
                         @Override
                         public void run() {
-                            new MyToast(EditChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
+                            new MyToast(ChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
 
                             findViewById(R.id.loadinggif).setVisibility(View.INVISIBLE);
                             findViewById(R.id.Remind).setVisibility(View.VISIBLE);
@@ -533,42 +360,6 @@ public class EditChapterActivity extends AppCompatActivity {
                         }catch (Exception e){
                             e.printStackTrace();
                         }
-                    }
-                });
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-    };
-
-    Runnable updateSpeech = new Runnable() {
-        @Override
-        public void run() {
-            try{
-                GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS()+"/audiobook/updateSpeech?oldpath=" + oldSpeechPath + "&newpath=" + newSpeechPath;
-
-                FileInputStream inputStream = new FileInputStream(speechFile);
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                int n;
-                byte[] b = new byte[1024];
-                while ((n = inputStream.read(b)) != -1){
-                    byteArrayOutputStream.write(b,0,n);
-                }
-                inputStream.close();
-                byteArrayOutputStream.close();
-                byte[] param = byteArrayOutputStream.toByteArray();
-
-                HttpUtils httpUtils = new HttpUtils(url);
-                httpUtils.doHttp(param, "POST",
-                        "application/json");
-
-                normal.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        new MyToast(EditChapterActivity.this,"修改成功!");
-                        speechFile.delete();
-                        EditChapterActivity.super.onBackPressed();
                     }
                 });
             }catch (Exception e){

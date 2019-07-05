@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.Work.EditChapterActivity"></activity>
+        <activity android:name=".Activity.Work.ChapterActivity"></activity>
+        <activity android:name=".Activity.Work.EditChapterActivity" />
         <activity android:name=".Activity.Work.EditBookActivity" />
         <activity android:name=".BookActivity" />
         <activity android:name=".Activity.Favorite.SearchFavoriteActivity" />

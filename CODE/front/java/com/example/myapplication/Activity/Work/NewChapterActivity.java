@@ -4,13 +4,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
-import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -21,10 +23,12 @@ import android.widget.TextView;
 
 import com.example.myapplication.GetServer;
 import com.example.myapplication.HttpUtils;
+import com.example.myapplication.MilliToHMS;
 import com.example.myapplication.MyToast;
 
 import com.example.myapplication.R;
 
+import com.example.myapplication.GetAudioLength;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -41,6 +45,8 @@ public class NewChapterActivity extends AppCompatActivity {
     private LinearLayout normal;
     private LinearLayout loadView;
     private SeekBar seekBar;//进度条
+    private boolean textChanged = false;
+    private boolean speechChanged = false;//同步音频与文本
 
     private int bookid;
     private String chapterTitle;
@@ -62,6 +68,10 @@ public class NewChapterActivity extends AppCompatActivity {
         normal = findViewById(R.id.normal);
         loadView = findViewById(R.id.Loading);
 
+        EditText content = findViewById(R.id.content);
+        content.addTextChangedListener(watcher);
+        content.setMovementMethod(ScrollingMovementMethod.getInstance());
+
         seekBar = findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -78,6 +88,10 @@ public class NewChapterActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if(speechFile != null){
                     player.seekTo(seekBar.getProgress());
+
+                    TextView begin = findViewById(R.id.begin);
+                    MilliToHMS milliToHMS = new MilliToHMS();
+                    begin.setText(milliToHMS.milliToHMS(seekBar.getProgress()));
                 }
             }
         });//实现拖动进度条，调整播放进度
@@ -97,6 +111,24 @@ public class NewChapterActivity extends AppCompatActivity {
 
         refresh();
     }
+
+    TextWatcher watcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            textChanged = true;
+            speechChanged = false;//文本修改了，音频尚未修改
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
 
     @Override
     public void onBackPressed(){
@@ -179,9 +211,12 @@ public class NewChapterActivity extends AppCompatActivity {
                 EditText title = v.findViewById(R.id.Edit);
                 chapterTitle = title.getText().toString();
 
+                if(chapterTitle.length() > 20){//标题不能超过20个字
+                    new MyToast(NewChapterActivity.this,getResources().getString(R.string.titlelong));
+                    return;
+                }
+
                 speechPath = System.currentTimeMillis() + ".mp3";
-                File nFile = new File(speechPath);
-                speechFile.renameTo(nFile);
 
                 StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,content,speechPath);
                 new Thread(storeChapter).start();
@@ -239,7 +274,18 @@ public class NewChapterActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     if(!player.isPlaying()) return;
+
                                     seekBar.setProgress(player.getCurrentPosition());
+
+                                    normal.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            TextView begin = findViewById(R.id.begin);
+                                            MilliToHMS milliToHMS = new MilliToHMS();
+                                            begin.setText(milliToHMS.milliToHMS(player.getCurrentPosition()));
+                                        }
+                                    });
+
                                 }
                             };
                             timer.schedule(task,0,10);
@@ -328,7 +374,18 @@ public class NewChapterActivity extends AppCompatActivity {
                             if (!speechFile.exists()) speechFile.createNewFile();
                             OutputStream outputStream = new FileOutputStream(speechFile);
 
+
                             resultStream.writeTo(outputStream);
+                            speechChanged = true;
+
+                            GetAudioLength getAudioLength = new GetAudioLength();
+                            TextView end = findViewById(R.id.end);
+                            end.setText(getAudioLength.getLength(speechFile));
+
+                            seekBar.setProgress(0);
+
+                            TextView begin = findViewById(R.id.begin);
+                            begin.setText(getResources().getString(R.string.initial));
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -459,6 +516,16 @@ public class NewChapterActivity extends AppCompatActivity {
         public void run() {
             try{
 
+                if(textChanged && !speechChanged){
+                    normal.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            new MyToast(NewChapterActivity.this,getResources().getString(R.string.askpush));
+                        }
+                    });
+                    return;
+                }
+
                 GetServer getServer = new GetServer();
                 String url = getServer.getIPADDRESS()+"/audiobook/storeChapter";
 
@@ -468,7 +535,8 @@ public class NewChapterActivity extends AppCompatActivity {
                 info.put("content",content);
                 info.put("speechPath",speechPath);
 
-                info.put("time","");
+               GetAudioLength getAudioLength = new GetAudioLength();
+               info.put("length",getAudioLength.getLength(speechFile));
 
                 byte[]param = info.toString().getBytes();
 
@@ -513,6 +581,7 @@ public class NewChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         new MyToast(NewChapterActivity.this,"创建成功!");
+                        speechFile.delete();
                         NewChapterActivity.super.onBackPressed();
                     }
                 });

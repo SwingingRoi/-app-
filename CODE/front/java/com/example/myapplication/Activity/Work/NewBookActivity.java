@@ -193,6 +193,16 @@ public class NewBookActivity extends AppCompatActivity {
             return;
         }
 
+        if(Title.getText().toString().length() > 20){
+            new MyToast(this,getResources().getString(R.string.namelong));
+            return;
+        }
+
+        if(Intro.getText().toString().length() >200){
+            new MyToast(this,getResources().getString(R.string.introlong));
+            return;
+        }
+
         final Button store = findViewById(R.id.Store);
         store.setClickable(false);
         CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {

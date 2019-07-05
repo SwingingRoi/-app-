@@ -2,7 +2,6 @@ package com.cpd.soundbook;
 
 import com.baidu.aip.speech.AipSpeech;
 import com.baidu.aip.speech.TtsResponse;
-import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -10,6 +9,8 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 
+
+//合成文本长度必须小于1024字节，如果本文长度较长，可以采用多次请求的方式。切忌文本长度超过限制。
 @Component(value = "tts")
 public class TextToSpeech {
 
@@ -33,23 +34,32 @@ public class TextToSpeech {
             client.setSocketTimeoutInMillis(60000);
 
             HashMap<String,Object> options = new HashMap<String,Object>();
-            options.put("spd",4);//语速
-            options.put("per",3);//发音人
-            TtsResponse res = client.synthesis(text, "zh", 1, options);
-            byte[] data = res.getData();
-            JSONObject res1 = res.getResult();
-            if (data != null) {
-                try {
-                    OutputStream outputStream = new FileOutputStream(result);
-                    outputStream.write(data, 0, data.length);
-                    outputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+            options.put("spd","4");//语速
+            options.put("per","3");//发音人
+            options.put("pit","3");//语调
+            OutputStream outputStream = new FileOutputStream(result);
+
+            int preIndex=0;
+            for(int i=0;i<text.length();i++) {
+
+                String textNow="";
+
+                if(text.charAt(i) == '。' || i==text.length() - 1){
+                    textNow = text.substring(preIndex,i+1);
+                    preIndex = preIndex + textNow.length();
+                    TtsResponse res = client.synthesis(textNow, "zh", 1, options);//中文
+                    byte[] data = res.getData();
+                    if (data != null) {
+                        try {
+                            outputStream.write(data, 0, data.length);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
+            //System.out.println(textNow);
             }
-            if (res1 != null) {
-                System.out.println(res1.toString(2));
-            }
+            outputStream.close();
 
             return result;
         }catch (Exception e){

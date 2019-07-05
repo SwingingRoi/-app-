@@ -2,6 +2,7 @@ package com.cpd.soundbook.DAO.DAOInterface;
 
 import com.cpd.soundbook.Entity.Chapter;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,5 +17,5 @@ public interface ChapterDAO {
 
     Chapter getChapterByID(int id);
 
-    void modifyChapter(int id,String title,String content);
+    void modifyChapter(JSONObject chapter);
 }
