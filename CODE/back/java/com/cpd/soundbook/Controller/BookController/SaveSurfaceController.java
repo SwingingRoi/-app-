@@ -22,7 +22,7 @@ public class SaveSurfaceController {
 
     @RequestMapping("/audiobook/saveSurface")
     public void saveAvatar(HttpServletRequest request, HttpServletResponse response){
-        File surface = httpUtils.getFileParam(request);
+        File surface = httpUtils.getPngParam(request);
         System.out.println(surface.getName());
         httpUtils.writeStringBack(response,bookService.saveSurface(surface));
     }

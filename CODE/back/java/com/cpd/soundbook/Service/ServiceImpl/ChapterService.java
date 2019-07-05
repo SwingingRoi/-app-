@@ -3,11 +3,14 @@ package com.cpd.soundbook.Service.ServiceImpl;
 import com.cpd.soundbook.DAO.DAOInterface.ChapterDAO;
 import com.cpd.soundbook.DAO.DAOInterface.DraftDAO;
 import com.cpd.soundbook.Entity.Chapter;
+import com.cpd.soundbook.MongoDB.MongoDBInter;
+import com.cpd.soundbook.TextToSpeech;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.List;
 
 @Service
@@ -18,6 +21,12 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
     @Autowired
     private DraftDAO draftDAO;
 
+    @Autowired
+    private TextToSpeech tts;
+
+    @Autowired
+    private MongoDBInter mongoDAO;
+
     @Override
     public void storeChapter(JSONObject chapter) {
         try{
@@ -25,6 +34,8 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
             c.setBookid(chapter.getInt("bookid"));
             c.setTitle(chapter.getString("title"));
             c.setContent(chapter.getString("content"));
+            c.setSpeechPath(chapter.getString("speechPath"));
+            //c.setSpeechtime(chapter.getString("time"));
             chapterDAO.storeChapter(c);
             draftDAO.deleteDraftByBookid(chapter.getInt("bookid"));//删除上次的草稿
         }catch (Exception e){
@@ -80,6 +91,20 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
     public void modifyChapter(JSONObject chapter) {
         try{
             chapterDAO.modifyChapter(chapter.getInt("id"),chapter.getString("title"),chapter.getString("content"));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public File textToSpeech(String text) {
+        return tts.translate(text);
+    }
+
+    @Override
+    public void storeSpeech(File speech) {
+        try{
+            mongoDAO.saveFile(speech);
         }catch (Exception e){
             e.printStackTrace();
         }

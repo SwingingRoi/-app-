@@ -250,6 +250,83 @@ public class BookActivity extends AppCompatActivity {
         }
     }
 
+    private void toNewChapter(){
+        Intent intent = new Intent(this,NewChapterActivity.class);
+        intent.putExtra("bookid",bookid);
+        startActivity(intent);
+    }
+
+    //开启管理模式
+    private void toManage(){
+        if(ismanaging) return;
+
+        ismanaging = true;
+        manageBox.setVisibility(View.VISIBLE);
+        for(int i=0;i<chapters.length();i++){
+            final View chapterRow = chapterTable.getChildAt(i);
+            CheckBox checkBox = chapterRow.findViewById(R.id.checkBox);
+            checkBox.setVisibility(View.VISIBLE);
+        }
+    }
+
+    //退出管理
+    public void cancelManage(View view){
+        cancelManage();
+    }
+
+    private void cancelManage(){
+
+        ismanaging = false;
+        manageBox.setVisibility(View.INVISIBLE);
+        for(int i=0;i<chapters.length();i++){
+            final View chapterRow = chapterTable.getChildAt(i);
+            CheckBox checkBox = chapterRow.findViewById(R.id.checkBox);
+            checkBox.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    //删除章节
+    public void doDelete(View view){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setPositiveButton("确定",null);
+        builder.setNegativeButton("取消",null);
+        builder.setTitle("删除章节");
+        builder.setMessage("确认删除这些章节吗?");
+        final AlertDialog dialog = builder.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                new MyToast(BookActivity.this,"成功删除!");
+
+                final LinearLayout delete = findViewById(R.id.check);
+                delete.setClickable(false);
+                CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        delete.setClickable(true);
+                    }
+                };//防止用户高频率点击
+                countDownTimer.start();
+
+                new Thread(deleteChapter).start();
+            }
+        });
+    }
+
+    private void toChapter(int chapterID){
+        if(ismanaging) {
+            Intent intent = new Intent(this, EditChapterActivity.class);
+            intent.putExtra("id", chapterID);
+            startActivity(intent);
+        }
+    }
+
     Runnable addFav = new Runnable() {
         @Override
         public void run() {
@@ -584,83 +661,6 @@ public class BookActivity extends AppCompatActivity {
 
         }
     };
-
-    private void toNewChapter(){
-        Intent intent = new Intent(this,NewChapterActivity.class);
-        intent.putExtra("bookid",bookid);
-        startActivity(intent);
-    }
-
-    //开启管理模式
-    private void toManage(){
-        if(ismanaging) return;
-
-        ismanaging = true;
-        manageBox.setVisibility(View.VISIBLE);
-        for(int i=0;i<chapters.length();i++){
-            final View chapterRow = chapterTable.getChildAt(i);
-            CheckBox checkBox = chapterRow.findViewById(R.id.checkBox);
-            checkBox.setVisibility(View.VISIBLE);
-        }
-    }
-
-    //退出管理
-    public void cancelManage(View view){
-        cancelManage();
-    }
-
-    private void cancelManage(){
-
-        ismanaging = false;
-        manageBox.setVisibility(View.INVISIBLE);
-        for(int i=0;i<chapters.length();i++){
-            final View chapterRow = chapterTable.getChildAt(i);
-            CheckBox checkBox = chapterRow.findViewById(R.id.checkBox);
-            checkBox.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    //删除章节
-    public void doDelete(View view){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setPositiveButton("确定",null);
-        builder.setNegativeButton("取消",null);
-        builder.setTitle("删除章节");
-        builder.setMessage("确认删除这些章节吗?");
-        final AlertDialog dialog = builder.show();
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-                new MyToast(BookActivity.this,"成功删除!");
-
-                final LinearLayout delete = findViewById(R.id.check);
-                delete.setClickable(false);
-                CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
-                    @Override
-                    public void onTick(long millisUntilFinished) {
-
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        delete.setClickable(true);
-                    }
-                };//防止用户高频率点击
-                countDownTimer.start();
-
-                new Thread(deleteChapter).start();
-            }
-        });
-    }
-
-    private void toChapter(int chapterID){
-        if(ismanaging) {
-            Intent intent = new Intent(this, EditChapterActivity.class);
-            intent.putExtra("id", chapterID);
-            startActivity(intent);
-        }
-    }
 
     Runnable deleteChapter = new Runnable() {
         @Override

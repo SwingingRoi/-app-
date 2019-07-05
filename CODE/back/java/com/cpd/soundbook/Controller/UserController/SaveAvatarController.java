@@ -20,7 +20,7 @@ public class SaveAvatarController {
 
     @RequestMapping("/audiobook/saveAvatar")
     public void saveAvatar(HttpServletRequest request, HttpServletResponse response){
-        File avatar = httpUtils.getFileParam(request);
+        File avatar = httpUtils.getPngParam(request);
         httpUtils.writeStringBack(response,userService.saveAvatar(avatar));
     }
 }
