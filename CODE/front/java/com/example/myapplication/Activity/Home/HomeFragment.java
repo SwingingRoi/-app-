@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -88,6 +90,12 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int height = displayMetrics.heightPixels;
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)scrollView.getLayoutParams();
+        params.height = (int) (height/1.28);
+        scrollView.setLayoutParams(params);
+
         loadView = view.findViewById(R.id.Loading);
         loadView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,7 +104,6 @@ public class HomeFragment extends Fragment {
             }
         });
         normal.setVisibility(View.INVISIBLE);
-
         refresh();
         return view;
     }
@@ -164,6 +171,7 @@ public class HomeFragment extends Fragment {
                 HttpUtils httpUtils = new HttpUtils(url);
                 ByteArrayOutputStream outputStream = httpUtils.doHttp(null, "GET",
                         "application/json");
+
 
                 if (outputStream == null) {//请求超时
                     normal.post(new Runnable() {

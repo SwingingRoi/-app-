@@ -10,6 +10,7 @@ import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -577,6 +578,8 @@ public class BookActivity extends AppCompatActivity {
                         public void run() {
                             new MyToast(BookActivity.this, getResources().getString(R.string.HttpTimeOut));
                             isRequesting = false;
+                            TextView text = pullDown.findViewById(R.id.content);
+                            text.setText(getResources().getString(R.string.pullDown));
                         }
                     });
                     return;
@@ -602,7 +605,6 @@ public class BookActivity extends AppCompatActivity {
                                 final JSONObject chapter = newChapters.getJSONObject(i);
 
                                 View chapterRow = LayoutInflater.from(BookActivity.this).inflate(R.layout.chapter_row, null);
-
                                 TextView titleView = chapterRow.findViewById(R.id.chaptername);
                                 titleView.setText(chapter.getString("title"));
 
