@@ -48,12 +48,13 @@
             <EditText
                 android:id="@+id/SignAccount"
                 android:layout_width="269dp"
-                android:layout_height="45dp"
+                android:layout_height="match_parent"
                 android:layout_marginStart="30dp"
                 android:ems="10"
                 android:hint="@string/SignAccount"
                 android:inputType="textPersonName"
-                android:paddingBottom="15dp" />
+                android:paddingBottom="15dp"
+                android:textSize="15dp" />
 
             <ImageView
                 android:id="@+id/clearaccount"
@@ -76,12 +77,13 @@
             <EditText
                 android:id="@+id/SignPassword"
                 android:layout_width="269dp"
-                android:layout_height="45dp"
+                android:layout_height="match_parent"
                 android:layout_marginStart="30dp"
                 android:ems="10"
                 android:hint="@string/SignPassword"
                 android:inputType="textPassword"
-                android:paddingBottom="15dp" />
+                android:paddingBottom="15dp"
+                android:textSize="15dp" />
 
             <CheckBox
                 android:id="@+id/passwordshowsign"
@@ -105,11 +107,12 @@
             <EditText
                 android:id="@+id/ConfirmPassword"
                 android:layout_width="269dp"
-                android:layout_height="47dp"
+                android:layout_height="match_parent"
                 android:layout_marginStart="30dp"
                 android:ems="10"
                 android:hint="@string/ConfirmPassword"
-                android:inputType="textPassword" />
+                android:inputType="textPassword"
+                android:textSize="15dp" />
 
             <ImageView
                 android:id="@+id/clearcomfirmpassword"
@@ -132,13 +135,14 @@
             <EditText
                 android:id="@+id/SignName"
                 android:layout_width="269dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginStart="30dp"
                 android:height="45dp"
                 android:ems="10"
                 android:hint="@string/EnterName"
                 android:inputType="textPersonName"
-                android:paddingBottom="15dp" />
+                android:paddingBottom="15dp"
+                android:textSize="15dp" />
 
             <ImageView
                 android:id="@+id/clearname"
@@ -161,10 +165,11 @@
             <TextView
                 android:id="@+id/Gender"
                 android:layout_width="57dp"
-                android:layout_height="45dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="-70dp"
                 android:gravity="center"
                 android:text="@string/Gender"
-                android:textSize="18sp" />
+                android:textSize="15dp" />
 
             <RadioGroup
                 android:id="@+id/GenderGroup"
@@ -176,7 +181,7 @@
                     android:id="@+id/Male"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="100dp"
+                    android:layout_marginStart="30dp"
                     android:layout_marginLeft="180dp"
                     android:layout_weight="1"
                     android:button="@drawable/male_choice"
@@ -204,13 +209,14 @@
             <EditText
                 android:id="@+id/SignEmail"
                 android:layout_width="269dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginStart="30dp"
                 android:height="45dp"
                 android:ems="10"
                 android:hint="@string/EnterEmail"
                 android:inputType="textEmailAddress"
-                android:paddingBottom="15dp" />
+                android:paddingBottom="15dp"
+                android:textSize="15dp" />
 
             <ImageView
                 android:id="@+id/clearemail"
@@ -238,7 +244,8 @@
                 android:ems="10"
                 android:hint="@string/PhoneNumber"
                 android:inputType="phone"
-                android:paddingBottom="15dp" />
+                android:paddingBottom="15dp"
+                android:textSize="15dp" />
 
             <ImageView
                 android:id="@+id/clearphone"
@@ -261,19 +268,23 @@
             <TextView
                 android:id="@+id/VerifyCode1"
                 style="@style/verify_code"
-                android:layout_marginStart="30dp" />
+                android:layout_marginStart="30dp"
+                android:textSize="25dp" />
 
             <TextView
                 android:id="@+id/VerifyCode2"
-                style="@style/verify_code" />
+                style="@style/verify_code"
+                android:textSize="25dp" />
 
             <TextView
                 android:id="@+id/VerifyCode3"
-                style="@style/verify_code" />
+                style="@style/verify_code"
+                android:textSize="25dp" />
 
             <TextView
                 android:id="@+id/VerifyCode4"
-                style="@style/verify_code" />
+                style="@style/verify_code"
+                android:textSize="25dp" />
 
             <Button
                 android:id="@+id/GetVerify"
@@ -283,22 +294,25 @@
                 android:background="@drawable/log_sign_btn_style"
                 android:onClick="getVerifyCode"
                 android:text="@string/getVerify"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"
+                android:textSize="14dp" />
         </LinearLayout>
 
         <Button
             android:id="@+id/SignUpload"
             android:layout_width="213dp"
-            android:layout_height="30dp"
+            android:layout_height="0dp"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="20dp"
-            android:layout_weight="0.11"
+            android:layout_weight="0.15"
             android:background="@drawable/log_sign_btn_style"
             android:gravity="center"
+            android:minHeight="0dp"
             android:onClick="signCheck"
             android:text="@string/SignButton"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:textSize="18dp" />
 
     </LinearLayout>
 
