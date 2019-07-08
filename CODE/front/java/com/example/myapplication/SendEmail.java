@@ -20,7 +20,7 @@ public class SendEmail {
     private final String CONTENT="<h1>激活邮件<h1><br/><span>"+ getServer.getIPADDRESS()+"/audiobook/activate?account=";
     private final String TYPE="text/html;charset=UTF-8";
     private final String FROM="492556292@qq.com";
-    private final String PASSWORD="victpvnjkmfabgeh";
+    private final String PASSWORD="gzvbqnsdnohdcbde";
 
 
     public void sendEmail(String to,String account){

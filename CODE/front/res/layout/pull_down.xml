@@ -19,6 +19,6 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="@string/pullDown"
-            android:textSize="14sp" />
+            android:textSize="14dp" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
