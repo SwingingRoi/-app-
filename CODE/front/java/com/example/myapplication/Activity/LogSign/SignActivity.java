@@ -3,6 +3,9 @@ package com.example.myapplication.Activity.LogSign;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -27,6 +30,10 @@ import java.nio.charset.StandardCharsets;
 import com.example.myapplication.HttpUtils;
 
 import com.example.myapplication.GetServer;
+import com.mob.MobSDK;
+
+import cn.smssdk.EventHandler;
+import cn.smssdk.SMSSDK;
 
 public class SignActivity extends AppCompatActivity{
 
@@ -90,6 +97,15 @@ public class SignActivity extends AppCompatActivity{
         clearPhone = findViewById(R.id.clearphone);
         Male = findViewById(R.id.Male);
         setButtonState();
+
+        MobSDK.init(this);//初始化短信接口
+        SMSSDK.registerEventHandler(eventHandler);
+    }
+
+    @Override
+    public void onBackPressed(){
+        unRegisterHandler();
+        super.onBackPressed();
     }
 
     private TextWatcher codeWatcher = new TextWatcher() {
@@ -247,8 +263,96 @@ public class SignActivity extends AppCompatActivity{
         };//防止用户高频率点击
         countDownTimer.start();
 
-        new Thread(sign).start();
+
+        //验证码验证
+        SMSSDK.submitVerificationCode("86",phone.getText().toString(),VerifyCode.getText().toString());
     }
+
+    //注销eventHandler,防止内存泄漏
+    private void unRegisterHandler(){
+        SMSSDK.unregisterEventHandler(eventHandler);
+    }
+
+    //发送邮件后跳转
+    private void jumpAfterEmailSent(){
+        Intent intent = new Intent(this, MsgAfterEmailActivity.class);
+        intent.putExtra("email",email.getText().toString());
+        startActivity(intent);
+    }
+
+    //弹出提示信息
+    public void msg(String msg){
+        new MyToast(this,msg);
+    }
+
+    public void onBackPressed(View view){
+        super.onBackPressed();
+    }
+
+    public void getVerifyCode(View view) {
+        CheckInternet checkInternet = new CheckInternet();
+        if(checkInternet.getIP()==null){
+            msg("网络连接不可用!");
+            return;
+        }
+
+        //验证码获取
+        SMSSDK.getVerificationCode("86",phone.getText().toString());
+
+        VerifyCode.setEnabled(true);
+
+        CountDownTimer countDownTimer = new CountDownTimer(60000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                getVerify.setEnabled(false);
+                getVerify.setText(millisUntilFinished / 1000 + getResources().getString(R.string.second));//还剩millisUntilFinished / 1000秒可重新获取
+            }
+
+            @Override
+            public void onFinish() {
+                getVerify.setEnabled(true);
+                getVerify.setText(R.string.getVerify);
+            }
+        };
+        countDownTimer.start();
+    }
+
+    //信息处理函数
+    EventHandler eventHandler = new EventHandler(){
+        @Override
+        public void afterEvent(int event, int result, Object data) {
+            Message message = new Message();
+            message.arg1 = event;
+            message.arg2 = result;
+            message.obj = data;
+
+            new Handler(Looper.getMainLooper(), new Handler.Callback() {
+                @Override
+                public boolean handleMessage(Message msg) {
+                    int event = msg.arg1;
+                    int result = msg.arg2;
+                    Object data = msg.obj;
+
+                    if(event == SMSSDK.EVENT_GET_VERIFICATION_CODE){
+                        if(result == SMSSDK.RESULT_COMPLETE){
+                            String message = getResources().getString(R.string.VerifyMsg) + phone.getText().toString();
+                            msg(message);//验证码发送提醒
+                        }else {
+                            ((Throwable) data).printStackTrace();
+                        }
+                    }else if(event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE){
+                        if(result == SMSSDK.RESULT_COMPLETE){//验证成功
+                                new Thread(sign).start();
+                        }else {//验证失败
+                            msg(getResources().getString(R.string.verifyWrong));//验证码错误提醒
+                        }
+                    }
+
+                    return false;
+                }
+            }).sendMessage(message);
+        }
+    };
 
     Runnable sign = new Runnable() {
         @Override
@@ -283,6 +387,7 @@ public class SignActivity extends AppCompatActivity{
                                 break;
                             case "success":
                                 new Thread(sendEmail).start();
+                                unRegisterHandler();
                                 jumpAfterEmailSent();
                                 break;
                             case "accountDul":
@@ -306,34 +411,6 @@ public class SignActivity extends AppCompatActivity{
         }
     };
 
-    public void getVerifyCode(View view) {
-        CheckInternet checkInternet = new CheckInternet();
-        if(checkInternet.getIP()==null){
-            msg("网络连接不可用!");
-            return;
-        }
-
-        String msg = getResources().getString(R.string.VerifyMsg) + phone.getText().toString();
-        msg(msg);//验证码发送提醒
-
-        VerifyCode.setEnabled(true);
-
-        CountDownTimer countDownTimer = new CountDownTimer(60000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                getVerify.setEnabled(false);
-                getVerify.setText(millisUntilFinished / 1000 + getResources().getString(R.string.second));//还剩millisUntilFinished / 1000秒可重新获取
-            }
-
-            @Override
-            public void onFinish() {
-                getVerify.setEnabled(true);
-                getVerify.setText(R.string.getVerify);
-            }
-        };
-        countDownTimer.start();
-    }//获取手机验证码
-
     Runnable sendEmail = new Runnable() {
         @Override
         public void run() {
@@ -341,21 +418,4 @@ public class SignActivity extends AppCompatActivity{
             send.sendEmail(email.getText().toString(),account.getText().toString());
         }
     };
-
-    //发送邮件后跳转
-    private void jumpAfterEmailSent(){
-        Intent intent = new Intent(this, MsgAfterEmailActivity.class);
-        intent.putExtra("email",email.getText().toString());
-        startActivity(intent);
-    }
-
-    //弹出提示信息
-    public void msg(String msg){
-        new MyToast(this,msg);
-    }
-
-    public void onBackPressed(View view){
-        super.onBackPressed();
-    }
-
 }

@@ -27,6 +27,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.myapplication.Activity.Work.EditChapterActivity;
+import com.example.myapplication.Activity.Work.ChapterActivity;
 import com.example.myapplication.PicUtils.GetPicture;
 
 import org.json.JSONArray;
@@ -35,9 +36,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class BookActivity extends AppCompatActivity {
@@ -180,8 +179,10 @@ public class BookActivity extends AppCompatActivity {
         from = 0;
 
         new Thread(getBookInfo).start();
-        new Thread(checkFav).start();
-        new Thread(addRecord).start();
+
+        if(account.length() != 0) {//length为0说明没有登陆，无需检验当前用户是否收藏了该书
+            new Thread(checkFav).start();
+        }
         new Thread(reqChapter).start();
     }
 
@@ -323,6 +324,12 @@ public class BookActivity extends AppCompatActivity {
         if(ismanaging) {
             Intent intent = new Intent(this, EditChapterActivity.class);
             intent.putExtra("id", chapterID);
+            startActivity(intent);
+        }
+        else {
+            Intent intent = new Intent(this, ChapterActivity.class);
+            intent.putExtra("chapterId", chapterID);
+            intent.putExtra("bookid",bookid);
             startActivity(intent);
         }
     }
@@ -543,31 +550,6 @@ public class BookActivity extends AppCompatActivity {
         }
     };
 
-    Runnable addRecord = new Runnable() {
-        @Override
-        public void run() {
-                  try{
-
-                      GetServer getServer = new GetServer();
-                      String url = getServer.getIPADDRESS()+"/audiobook/addrecord";
-
-                      JSONObject params = new JSONObject();
-                      params.put("account",account);
-                      params.put("id",bookid);
-                      Date date = new Date();
-                      DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-                      params.put("time",format.format(date));
-
-                      byte[] param = params.toString().getBytes();
-
-                      HttpUtils httpUtils = new HttpUtils(url);
-                      httpUtils.doHttp(param, "POST", "application/json");
-                  }catch (Exception e){
-                      e.printStackTrace();
-                  }
-        }
-    };
-
     Runnable reqChapter = new Runnable() {
         @Override
         public void run() {
@@ -618,11 +600,22 @@ public class BookActivity extends AppCompatActivity {
                         for(int i=0;i < newChapters.length();i++){
                             try{
                                 final JSONObject chapter = newChapters.getJSONObject(i);
+
                                 View chapterRow = LayoutInflater.from(BookActivity.this).inflate(R.layout.chapter_row, null);
+
                                 TextView titleView = chapterRow.findViewById(R.id.chaptername);
                                 titleView.setText(chapter.getString("title"));
+
                                 TextView chapterNumber = chapterRow.findViewById(R.id.chapternumber);
                                 chapterNumber.setText(String.valueOf(from + i + 1));
+
+                                TextView timeView = chapterRow.findViewById(R.id.time);
+                                timeView.setText(chapter.getString("length"));
+
+                                if(ismanaging){
+                                    CheckBox checkBox = chapterRow.findViewById(R.id.checkBox);
+                                    checkBox.setVisibility(View.VISIBLE);
+                                }
                                 chapterTable.addView(chapterRow);
                                 chapterRow.setOnClickListener(new View.OnClickListener() {
                                     @Override

@@ -6,6 +6,7 @@ import com.cpd.soundbook.Repository.ChapterRepository;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -70,8 +71,13 @@ public class ChapterDAO implements com.cpd.soundbook.DAO.DAOInterface.ChapterDAO
         return chapterRepository.findChapterById(id);
     }
 
+
     @Override
-    public void modifyChapter(int id, String title, String content) {
-        chapterRepository.modifyChapter(id, title, content);
+    public void modifyChapter(JSONObject chapter) {
+        chapterRepository.modifyChapter(chapter.getInt("id"),
+                chapter.getString("title"),
+                chapter.getString("content"),
+                chapter.getString("speechPath"),
+                chapter.getString("length"));
     }
 }

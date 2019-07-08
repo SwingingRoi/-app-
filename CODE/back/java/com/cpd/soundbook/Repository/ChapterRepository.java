@@ -15,8 +15,10 @@ public interface ChapterRepository extends JpaRepository<Chapter,Integer> {
     Chapter findChapterById(@Param("id") int id);
 
     @Modifying
-    @Query("update com.cpd.soundbook.Entity.Chapter set title=:title,content=:content where id=:id")
-    void modifyChapter(@Param("id") int id,@Param("title") String title,@Param("content") String content);
+    @Query("update com.cpd.soundbook.Entity.Chapter set title=:title,content=:content," +
+            " speechpath=:speechpath,time=:time  where id=:id")
+    void modifyChapter(@Param("id") int id,@Param("title") String title,@Param("content") String content,
+                       @Param("speechpath") String speechpath,@Param("time") String length);
 
     @Query("select count(id) from com.cpd.soundbook.Entity.Chapter where bookid=:bookid")
     int getChapterNumbers(@Param("bookid") int bookid);

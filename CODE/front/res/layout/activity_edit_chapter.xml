@@ -83,58 +83,39 @@
             android:alpha="0.5"
             android:background="@drawable/gray" />
 
-        <ScrollView
-            android:id="@+id/textBox"
+        <EditText
+            android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="@android:color/white">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <EditText
-                    android:id="@+id/content"
-                    android:layout_width="match_parent"
-                    android:layout_height="440dp"
-                    android:layout_marginTop="10dp"
-                    android:background="#ffffff"
-                    android:ems="10"
-                    android:gravity="start|top"
-                    android:hint="@string/input"
-                    android:inputType="textMultiLine"
-                    android:letterSpacing="0.05"
-                    android:lineSpacingExtra="11sp"
-                    android:paddingStart="10dp"
-                    android:paddingTop="10dp"
-                    android:textSize="15sp" />
-            </LinearLayout>
-        </ScrollView>
+            android:layout_marginTop="10dp"
+            android:layout_weight="1.1"
+            android:background="#ffffff"
+            android:ems="10"
+            android:gravity="start|top"
+            android:hint="@string/input"
+            android:inputType="textMultiLine"
+            android:letterSpacing="0.05"
+            android:lineSpacingExtra="11sp"
+            android:maxLines="10000000"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:textSize="15sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.41"
+            android:layout_weight="0.3"
             android:background="#ffffffff"
             android:elevation="10dp"
             android:gravity="center"
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/Try"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/trylisten" />
-
-            <Button
                 android:id="@+id/Translate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:onClick="textToSpeech"
                 android:text="@string/translate" />
 
             <Button
@@ -145,5 +126,96 @@
                 android:onClick="storeChapter"
                 android:text="@string/Store" />
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.2"
+            android:background="#ffffff"
+            android:elevation="10dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/split11"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.01"
+                android:alpha="0.5"
+                android:background="@drawable/gray" />
+
+            <ImageView
+                android:id="@+id/PlayButton"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="0.2"
+                android:onClick="playSpeech"
+                app:srcCompat="@drawable/play" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.3"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/begin"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.05"
+                    android:gravity="center"
+                    android:text="@string/initial"
+                    android:textColor="@android:color/background_dark"
+                    android:textSize="12sp" />
+
+                <SeekBar
+                    android:id="@+id/seekBar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_weight="0.2"
+                    android:thumb="@drawable/thumb" />
+
+                <TextView
+                    android:id="@+id/end"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.05"
+                    android:gravity="center"
+                    android:text="@string/initial"
+                    android:textColor="@android:color/background_dark"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/translating"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.5"
+        android:background="@drawable/gray"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/loadinggif2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/loading" />
+
+        <TextView
+            android:id="@+id/remind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/translating"
+            android:textSize="16sp" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

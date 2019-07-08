@@ -26,6 +26,7 @@
     <string name="Verify">请输入验证码</string>
     <string name="getVerify">获取验证码</string>
     <string name="VerifyMsg">验证码已发送到</string>
+    <string name="verifyWrong">验证码错误!</string>
     <string name="second">s</string>
     <string name="Gender">性别</string>
     <string name="accountPatternError">用户名需为4-20位中文/字母/数字!</string>
@@ -112,6 +113,7 @@
     <string name="nofavorite">暂无收藏作品</string>
     <string name="SearchFav">搜索收藏夹</string>
 
+    <string name="initial">00:00</string>
     <!--制作新章节界面的strings-->
     <string name="trylisten">试听</string>
     <string name="translate">转换</string>
@@ -119,9 +121,14 @@
     <string name="draft">已成功保存草稿!</string>
     <string name="translating">转换中，请稍候</string>
     <string name="translateSuccess">转换成功!</string>
+    <string name="titlelong">标题不能超过20个字!</string>
+
+    <!--章节收听界面的strings-->
+    <string name="listen">章节收听</string>
 
     <!--修改章节界面的strings-->
     <string name="editchapter">修改章节</string>
+    <string name="askpush">请转换修改后的文本</string>
 
     <!--制作新书界面的strings-->
     <string name="newbook">新书</string>
@@ -133,7 +140,7 @@
     <string name="edittitle">编辑标题</string>
     <string name="editintro">编辑简介</string>
     <string name="titlenull">书名不能为空！</string>
-    <string name="titlelong">书名不能超过20个字符！</string>
+    <string name="namelong">书名不能超过20个字！</string>
     <string name="introlong">简介不能超过200个字！</string>
     <string name="makesuccess">新书创建成功！</string>
     <string name="makefail">新书创建失败！</string>
