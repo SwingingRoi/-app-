@@ -11,7 +11,8 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
         <activity android:name=".Activity.Work.ChapterActivity"></activity>
         <activity android:name=".Activity.Work.EditChapterActivity" />
         <activity android:name=".Activity.Work.EditBookActivity" />
