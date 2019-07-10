@@ -17,4 +17,8 @@ public interface MongoDBInter {
     void saveBackgroundMusic(File file,int level);
 
     List<GridFSDBFile> getBackgroundMusic(int level);
+
+    void saveSoundEffectFile(File file);
+
+    GridFSDBFile getSoundEffectFile(String filename);
 }
