@@ -30,7 +30,6 @@ public class User {
                 result.put("name",name);
                 result.put("gender",gender);
                 result.put("email",email);
-                //String password = this.password.replaceAll(".","*");
                 result.put("password",password);
                 result.put("id",id);
         }catch (Exception e){

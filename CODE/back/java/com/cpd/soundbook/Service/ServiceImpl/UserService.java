@@ -2,7 +2,6 @@ package com.cpd.soundbook.Service.ServiceImpl;
 
 import com.cpd.soundbook.DAO.DAOInterface.UserDAO;
 import com.cpd.soundbook.Entity.User;
-import com.cpd.soundbook.Entity.UserFavBook;
 import com.cpd.soundbook.MongoDB.MongoDBInter;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.json.JSONObject;
@@ -80,10 +79,13 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
 
     @Override
     public String activate(String account) {
-        if(userDAO.activateUser(account)){
-            return "success";
+        String result = "";
+        if(userDAO.findUserByAccount(account) == null) result = "fail";
+        else {
+            if(userDAO.activateUser(account)) result = "success";
         }
-        else return "fail";
+
+        return result;
     }
 
     @Override
@@ -105,11 +107,16 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
         String result="success";
         try{
             User oldUser = userDAO.findUserByAccount(param.getString("oldAccount"));
+            if(oldUser == null){
+                result = "none";
+                return result;
+            }
             User ifAccountDul = new User();
             if(!param.getString("oldAccount").equals(param.getString("account"))) {
                 ifAccountDul = userDAO.findUserByAccount(param.getString("account"));
             }
             User ifEmailDul = userDAO.findUserByEmail(param.getString("email"));
+
             if(ifAccountDul!=null && ifAccountDul.getAccount()!=null && ifAccountDul.getId()!=oldUser.getId()){
                 result="accountDul";
             }
@@ -136,8 +143,13 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
     public String saveAvatar(File file) {
         String result;
         try {
-            mongoDAO.saveFile(file);
-            result = file.getName();
+            if(file == null) {
+                result = "fail";
+            }
+            else {
+                mongoDAO.saveFile(file);
+                result = file.getName();
+            }
         }catch (Exception e){
             e.printStackTrace();
             result = "fail";
@@ -162,6 +174,7 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
         User user = userDAO.findUserByAccount(account);
         if(user==null) return null;
         if(user.getAvatar()==null) return null;
+        GridFSDBFile file = mongoDAO.getFile(user.getAvatar());
         return mongoDAO.getFile(user.getAvatar());
     }
 }
