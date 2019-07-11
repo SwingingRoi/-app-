@@ -27,7 +27,7 @@ public class TextToSpeechController {
             File result = chapterService.textToSpeech(text.getString("text"));
 
             httpUtils.writeFileBack(response,result);
-            //result.delete();//删除临时文件
+            if(result.exists()) result.delete();//删除临时文件
         }catch (Exception e){
             e.printStackTrace();
         }

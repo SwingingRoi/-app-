@@ -1,18 +1,17 @@
 package com.example.myapplication;
 
-import org.jaudiotagger.audio.mp3.MP3AudioHeader;
-import org.jaudiotagger.audio.mp3.MP3File;
+import android.media.MediaMetadataRetriever;
 
-import java.io.File;
 
 public class GetAudioLength {
-    public String getLength(File MP3file){
-        String result = "";
+    public int getLength(String fileName){
+        int result = 0;
 
         try{
-            MP3File file = new MP3File(MP3file.getAbsolutePath());
-            MP3AudioHeader audioHeader = (MP3AudioHeader) file.getAudioHeader();
-            result = audioHeader.getTrackLengthAsString();
+            MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+            mediaMetadataRetriever.setDataSource(fileName);
+            result = Integer.parseInt(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+            mediaMetadataRetriever.release();
         }catch (Exception e){
             e.printStackTrace();
         }

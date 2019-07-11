@@ -23,7 +23,6 @@ public class HttpUtils {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try{
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            System.out.println("url:" + url);
             connection.setConnectTimeout(TIMEOUT);
             connection.setRequestMethod(method);
             connection.setDoOutput(true);

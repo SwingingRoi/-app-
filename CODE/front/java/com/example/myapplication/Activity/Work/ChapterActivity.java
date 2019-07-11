@@ -16,7 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.example.myapplication.GetAudioLength;
 import com.example.myapplication.GetServer;
 import com.example.myapplication.HttpUtils;
 import com.example.myapplication.MyToast;
@@ -48,9 +47,12 @@ public class ChapterActivity extends AppCompatActivity {
     private String speechPath;
 
     private File speechFile = null;
+    private File bgm = null;
     private final String MP3_LOCATION = Environment.getExternalStorageDirectory().getPath()+"/temp.mp3";
+    private final String BGM_LOCATION = Environment.getExternalStorageDirectory().getPath()+"/bgm.mp3";
 
     private MediaPlayer player;//音频播放
+    //private MediaPlayer player1;
 
     private boolean firtstPlay = true;//是否首次播放当前音频
 
@@ -109,6 +111,8 @@ public class ChapterActivity extends AppCompatActivity {
                 resetPlayer();
             }
         });
+
+        //player1 = new MediaPlayer();
 
         new Thread(addRecord).start();//添加浏览记录
         refresh();
@@ -173,42 +177,53 @@ public class ChapterActivity extends AppCompatActivity {
                 if(firtstPlay) {
                     seekBar.setProgress(0);
                     player.setDataSource(MP3_LOCATION);
+                    //player1.setDataSource(BGM_LOCATION);
+
                     AudioAttributes audioAttributes = new AudioAttributes.Builder()
                             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();//数据源类型
                     player.setAudioAttributes(audioAttributes);
+                    //player1.setAudioAttributes(audioAttributes);
 
-                    player.prepareAsync();//异步准备音源
-                    player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                        @Override
-                        public void onPrepared(MediaPlayer mp) {
-                            seekBar.setMax(player.getDuration());
 
-                            //让进度条与播放进度同步
-                            Timer timer = new Timer();
-                            TimerTask task = new TimerTask() {
+                            player.prepareAsync();//异步准备音源
+                            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                                 @Override
-                                public void run() {
-                                    if(!player.isPlaying()) return;
-                                    seekBar.setProgress(player.getCurrentPosition());
+                                public void onPrepared(MediaPlayer mp) {
+                                    seekBar.setMax(player.getDuration());
 
-                                    normal.post(new Runnable() {
+                                    //让进度条与播放进度同步
+                                    Timer timer = new Timer();
+                                    TimerTask task = new TimerTask() {
                                         @Override
                                         public void run() {
-                                            TextView begin = findViewById(R.id.begin);
-                                            MilliToHMS milliToHMS = new MilliToHMS();
-                                            begin.setText(milliToHMS.milliToHMS(player.getCurrentPosition()));
-                                        }
-                                    });
-                                }
-                            };
-                            timer.schedule(task,0,10);
+                                            if(!player.isPlaying()) return;
+                                            seekBar.setProgress(player.getCurrentPosition());
 
-                            player.start();
-                            firtstPlay = false;
-                            ImageView playButton = findViewById(R.id.PlayButton);
-                            playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
-                        }
-                    });
+                                            normal.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    TextView begin = findViewById(R.id.begin);
+                                                    MilliToHMS milliToHMS = new MilliToHMS();
+                                                    begin.setText(milliToHMS.milliToHMS(player.getCurrentPosition()));
+                                                }
+                                            });
+                                        }
+                                    };
+                                    timer.schedule(task,0,10);
+
+                                    player.start();
+
+
+                                    firtstPlay = false;
+                                    ImageView playButton = findViewById(R.id.PlayButton);
+                                    playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
+                                }
+                            });
+
+
+
+
+
                 }
 
                 //非首次播放从暂停状态恢复
@@ -346,10 +361,6 @@ public class ChapterActivity extends AppCompatActivity {
 
                             resultStream.writeTo(outputStream);
 
-                            GetAudioLength getAudioLength = new GetAudioLength();
-                            TextView end = findViewById(R.id.end);
-                            end.setText(getAudioLength.getLength(speechFile));
-
                             seekBar.setProgress(0);
 
                             TextView begin = findViewById(R.id.begin);
@@ -357,6 +368,7 @@ public class ChapterActivity extends AppCompatActivity {
 
                             loadingView.setVisibility(View.INVISIBLE);
                             normal.setVisibility(View.VISIBLE);
+                            //new Thread(getBgm).start();
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -367,4 +379,38 @@ public class ChapterActivity extends AppCompatActivity {
             }
         }
     };
+
+    /*Runnable getBgm = new Runnable() {
+        @Override
+        public void run() {
+            try{
+                GetServer getServer = new GetServer();
+                String url = getServer.getIPADDRESS()+"/audiobook/getBGM";
+
+                HttpUtils httpUtils = new HttpUtils(url);
+                final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
+
+                normal.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            bgm = new File(BGM_LOCATION);//speechFile保存后端语音
+                            if (!bgm.exists()) bgm.createNewFile();
+                            OutputStream outputStream = new FileOutputStream(bgm);
+
+                            resultStream.writeTo(outputStream);
+
+                            loadingView.setVisibility(View.INVISIBLE);
+                            normal.setVisibility(View.VISIBLE);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };*/
 }

@@ -359,8 +359,9 @@ public class EditChapterActivity extends AppCompatActivity {
                             speechChanged = true;//音频修改了
 
                             GetAudioLength getAudioLength = new GetAudioLength();
+                            MilliToHMS milliToHMS = new MilliToHMS();
                             TextView end = findViewById(R.id.end);
-                            end.setText(getAudioLength.getLength(speechFile));
+                            end.setText(milliToHMS.milliToHMS(getAudioLength.getLength(MP3_LOCATION)));
 
                             seekBar.setProgress(0);
 
@@ -422,6 +423,9 @@ public class EditChapterActivity extends AppCompatActivity {
 
                             oldSpeechPath = chapter.getString("speechPath");
 
+                            TextView end = findViewById(R.id.end);
+                            end.setText(chapter.getString("length"));
+
                             new Thread(getSpeech).start();
                         }catch (Exception e){
                             e.printStackTrace();
@@ -465,7 +469,8 @@ public class EditChapterActivity extends AppCompatActivity {
                 object.put("speechPath",newSpeechPath);
 
                 GetAudioLength getAudioLength = new GetAudioLength();
-                object.put("length",getAudioLength.getLength(speechFile));
+                MilliToHMS milliToHMS = new MilliToHMS();
+                object.put("length",milliToHMS.milliToHMS(getAudioLength.getLength(MP3_LOCATION)));
 
                 byte[] param = object.toString().getBytes();
 
@@ -518,11 +523,6 @@ public class EditChapterActivity extends AppCompatActivity {
                             OutputStream outputStream = new FileOutputStream(speechFile);
 
                             resultStream.writeTo(outputStream);
-
-                            GetAudioLength getAudioLength = new GetAudioLength();
-                            TextView end = findViewById(R.id.end);
-                            end.setText(getAudioLength.getLength(speechFile));
-
                             seekBar.setProgress(0);
 
                             TextView begin = findViewById(R.id.begin);

@@ -1,4 +1,4 @@
-package com.cpd.soundbook;
+package com.cpd.soundbook.AudioUtils;
 import java.util.HashMap;
 
 import org.json.JSONArray;
@@ -57,6 +57,7 @@ public class Sentiment {
         HashMap<String, Object> options = new HashMap<String, Object>();
         // 情感倾向分析
         JSONObject res = client.sentimentClassify(text, options);
+
         JSONArray sentimentarray=res.getJSONArray("items");
         JSONObject sentimenttable=sentimentarray.getJSONObject(0);
 

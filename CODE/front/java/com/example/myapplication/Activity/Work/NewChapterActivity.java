@@ -4,9 +4,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
+import com.example.myapplication.GetAudioLength;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,7 +28,8 @@ import com.example.myapplication.MyToast;
 
 import com.example.myapplication.R;
 
-import com.example.myapplication.GetAudioLength;
+
+import org.jaudiotagger.audio.mp3.MP3File;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -52,9 +53,11 @@ public class NewChapterActivity extends AppCompatActivity {
     private String chapterTitle;
     private String content;
     private String speechPath;
+    //private final int WRITE_EXTERNAL_CODE = 1;
+
 
     private File speechFile = null;
-    private final String MP3_LOCATION = Environment.getExternalStorageDirectory().getPath()+"/temp.mp3";
+    private String MP3_LOCATION;
 
     private MediaPlayer player;//音频播放
 
@@ -64,6 +67,7 @@ public class NewChapterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_chapter);
+        MP3_LOCATION = this.getCacheDir().getAbsolutePath()+"/temp.mp3";
 
         normal = findViewById(R.id.normal);
         loadView = findViewById(R.id.Loading);
@@ -229,7 +233,7 @@ public class NewChapterActivity extends AppCompatActivity {
     }
 
     public void textToSpeech(View view){
-      new Thread(textToSpeech).start();
+        new Thread(textToSpeech).start();
     }
 
     //重置播放状态
@@ -266,6 +270,7 @@ public class NewChapterActivity extends AppCompatActivity {
                     player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
                         public void onPrepared(MediaPlayer mp) {
+
                             seekBar.setMax(player.getDuration());
 
                             //让进度条与播放进度同步
@@ -316,6 +321,26 @@ public class NewChapterActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    /*
+    private void requestPermission(){
+        if (ContextCompat.checkSelfPermission(NewChapterActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            //申请WRITE_EXTERNAL_STORAGE权限
+            ActivityCompat.requestPermissions(NewChapterActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    WRITE_EXTERNAL_CODE);
+        }
+        new Thread(textToSpeech).start();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String []permissions, int[] grantResults){
+        if (requestCode == WRITE_EXTERNAL_CODE){
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    new Thread(textToSpeech).start();
+                }
+        }
+    }*/
 
     Runnable textToSpeech = new Runnable() {
         @Override
@@ -370,20 +395,19 @@ public class NewChapterActivity extends AppCompatActivity {
 
                             firtstPlay = true;
 
+
                             speechFile = new File(MP3_LOCATION);//speechFile保存后端语音
                             if (!speechFile.exists()) speechFile.createNewFile();
                             OutputStream outputStream = new FileOutputStream(speechFile);
-
-
                             resultStream.writeTo(outputStream);
                             speechChanged = true;
 
                             GetAudioLength getAudioLength = new GetAudioLength();
+                            MilliToHMS milliToHMS = new MilliToHMS();
                             TextView end = findViewById(R.id.end);
-                            end.setText(getAudioLength.getLength(speechFile));
+                            end.setText(milliToHMS.milliToHMS(getAudioLength.getLength(MP3_LOCATION)));
 
                             seekBar.setProgress(0);
-
                             TextView begin = findViewById(R.id.begin);
                             begin.setText(getResources().getString(R.string.initial));
                         }catch (Exception e){
@@ -536,7 +560,8 @@ public class NewChapterActivity extends AppCompatActivity {
                 info.put("speechPath",speechPath);
 
                GetAudioLength getAudioLength = new GetAudioLength();
-               info.put("length",getAudioLength.getLength(speechFile));
+               MilliToHMS milliToHMS = new MilliToHMS();
+               info.put("length",milliToHMS.milliToHMS(getAudioLength.getLength(MP3_LOCATION)));
 
                 byte[]param = info.toString().getBytes();
 
@@ -581,7 +606,7 @@ public class NewChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         new MyToast(NewChapterActivity.this,"创建成功!");
-                        speechFile.delete();
+                        if(speechFile.exists()) speechFile.delete();
                         NewChapterActivity.super.onBackPressed();
                     }
                 });
