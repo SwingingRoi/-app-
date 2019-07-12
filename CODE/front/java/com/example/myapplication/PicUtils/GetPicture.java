@@ -7,6 +7,7 @@ import com.example.myapplication.GetServer;
 import com.example.myapplication.HttpUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URLEncoder;
 
 
 public class GetPicture {
@@ -15,7 +16,7 @@ public class GetPicture {
         Bitmap result = null;
         try {
             GetServer getServer = new GetServer();
-            String url = getServer.getIPADDRESS() + "/audiobook/getAvatar?account=" + account;
+            String url = getServer.getIPADDRESS() + "/audiobook/getAvatar?account=" + URLEncoder.encode(account,"UTF-8");
 
             HttpUtils httpUtils = new HttpUtils(url);
             ByteArrayOutputStream stream = httpUtils.doHttp(null, "GET", "image/*");

@@ -72,7 +72,7 @@ public class AddEffect {
             split("00:00:00", String.valueOf(rate), speech.getAbsolutePath(),
                         tempPath1);
 
-            split(String.valueOf(rate),String.valueOf(plainSpeechLength),speech.getAbsolutePath(),
+            split(String.valueOf(rate),String.valueOf(plainSpeechLength + 100),speech.getAbsolutePath(),
                     tempPath2);
 
             volumeDown(System.getProperty("user.dir")+"\\"+"mp3\\effectSpeech\\rain.mp3",

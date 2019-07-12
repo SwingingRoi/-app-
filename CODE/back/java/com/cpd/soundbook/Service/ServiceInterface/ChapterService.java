@@ -19,6 +19,10 @@ public interface ChapterService {
 
     void modifyChapter(JSONObject chapter);
 
+    String matchBGM(String text);
+
+    GridFSDBFile getBGM(String filename);
+
     File textToSpeech(String text);
 
     void storeSpeech(File speech);

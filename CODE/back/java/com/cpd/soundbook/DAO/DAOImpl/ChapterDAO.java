@@ -78,6 +78,7 @@ public class ChapterDAO implements com.cpd.soundbook.DAO.DAOInterface.ChapterDAO
                 chapter.getString("title"),
                 chapter.getString("content"),
                 chapter.getString("speechPath"),
-                chapter.getString("length"));
+                chapter.getString("length"),
+                chapter.getString("bgmPath"));
     }
 }

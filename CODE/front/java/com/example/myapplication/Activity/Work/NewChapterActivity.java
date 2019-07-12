@@ -4,7 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
-import com.example.myapplication.GetAudioLength;
+import com.example.myapplication.AudioUtils;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
@@ -28,8 +28,6 @@ import com.example.myapplication.MyToast;
 
 import com.example.myapplication.R;
 
-
-import org.jaudiotagger.audio.mp3.MP3File;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -37,6 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -53,13 +52,17 @@ public class NewChapterActivity extends AppCompatActivity {
     private String chapterTitle;
     private String content;
     private String speechPath;
+    private String bgmPath;
     //private final int WRITE_EXTERNAL_CODE = 1;
 
 
     private File speechFile = null;
+    private File bgm = null;
     private String MP3_LOCATION;
+    private String BGM_LOCATION;
 
-    private MediaPlayer player;//音频播放
+    private MediaPlayer speech_player;//音频播放
+    private MediaPlayer bgm_player;//bgm播放
 
     private boolean firtstPlay = true;//是否首次播放当前音频
 
@@ -68,6 +71,7 @@ public class NewChapterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_chapter);
         MP3_LOCATION = this.getCacheDir().getAbsolutePath()+"/temp.mp3";
+        BGM_LOCATION = this.getCacheDir().getAbsolutePath()+"/bgm.mp3";
 
         normal = findViewById(R.id.normal);
         loadView = findViewById(R.id.Loading);
@@ -91,7 +95,9 @@ public class NewChapterActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if(speechFile != null){
-                    player.seekTo(seekBar.getProgress());
+                    speech_player.seekTo(seekBar.getProgress());
+                    bgm_player.seekTo(seekBar.getProgress());
+
 
                     TextView begin = findViewById(R.id.begin);
                     MilliToHMS milliToHMS = new MilliToHMS();
@@ -105,13 +111,15 @@ public class NewChapterActivity extends AppCompatActivity {
         Intent intent = getIntent();
         bookid = intent.getIntExtra("bookid",-1);
 
-        player = new MediaPlayer();
-        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        speech_player = new MediaPlayer();
+        speech_player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 resetPlayer();
             }
         });
+
+        bgm_player = new MediaPlayer();
 
         refresh();
     }
@@ -137,6 +145,13 @@ public class NewChapterActivity extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         //保存草稿
+        if(speech_player.isPlaying()) {
+            speech_player.pause();
+        }
+        if(bgm_player.isPlaying()) {
+            bgm_player.pause();
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("保存草稿");
         builder.setMessage("是否保存为草稿?");
@@ -209,6 +224,7 @@ public class NewChapterActivity extends AppCompatActivity {
 
         builder.setView(v);
 
+
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -222,7 +238,7 @@ public class NewChapterActivity extends AppCompatActivity {
 
                 speechPath = System.currentTimeMillis() + ".mp3";
 
-                StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,content,speechPath);
+                StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,content,speechPath,bgmPath);
                 new Thread(storeChapter).start();
             }
         });
@@ -238,7 +254,8 @@ public class NewChapterActivity extends AppCompatActivity {
 
     //重置播放状态
     private void resetPlayer(){
-        player.reset();
+        speech_player.reset();
+        bgm_player.reset();
 
         ImageView playButton = findViewById(R.id.PlayButton);
         playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
@@ -256,38 +273,45 @@ public class NewChapterActivity extends AppCompatActivity {
             }
 
             //播放
-            if(!player.isPlaying()) {
+            if(!speech_player.isPlaying()) {
 
                 //首次播放设置数据源
                 if(firtstPlay) {
                     seekBar.setProgress(0);
-                    player.setDataSource(MP3_LOCATION);
+
                     AudioAttributes audioAttributes = new AudioAttributes.Builder()
                             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();//数据源类型
-                    player.setAudioAttributes(audioAttributes);
 
-                    player.prepareAsync();//异步准备音源
-                    player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    speech_player.setDataSource(MP3_LOCATION);
+                    speech_player.setAudioAttributes(audioAttributes);
+
+                    bgm_player.setDataSource(BGM_LOCATION);
+                    bgm_player.setAudioAttributes(audioAttributes);
+
+
+                    bgm_player.prepare();
+                    speech_player.prepareAsync();//异步准备音源
+                    speech_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
                         public void onPrepared(MediaPlayer mp) {
 
-                            seekBar.setMax(player.getDuration());
+                            seekBar.setMax(speech_player.getDuration());
 
                             //让进度条与播放进度同步
                             Timer timer = new Timer();
                             TimerTask task = new TimerTask() {
                                 @Override
                                 public void run() {
-                                    if(!player.isPlaying()) return;
+                                    if(!speech_player.isPlaying()) return;
 
-                                    seekBar.setProgress(player.getCurrentPosition());
+                                    seekBar.setProgress(speech_player.getCurrentPosition());
 
                                     normal.post(new Runnable() {
                                         @Override
                                         public void run() {
                                             TextView begin = findViewById(R.id.begin);
                                             MilliToHMS milliToHMS = new MilliToHMS();
-                                            begin.setText(milliToHMS.milliToHMS(player.getCurrentPosition()));
+                                            begin.setText(milliToHMS.milliToHMS(speech_player.getCurrentPosition()));
                                         }
                                     });
 
@@ -295,7 +319,11 @@ public class NewChapterActivity extends AppCompatActivity {
                             };
                             timer.schedule(task,0,10);
 
-                            player.start();
+                            speech_player.start();
+                            bgm_player.start();
+                            bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
+                            bgm_player.setLooping(true);//背景音乐循环播放
+
                             firtstPlay = false;
                             ImageView playButton = findViewById(R.id.PlayButton);
                             playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
@@ -307,13 +335,15 @@ public class NewChapterActivity extends AppCompatActivity {
                 else {
                     ImageView playButton = findViewById(R.id.PlayButton);
                     playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
-                    player.start();
+                    speech_player.start();
+                    bgm_player.start();
                 }
             }
 
             //暂停
             else {
-                player.pause();
+                speech_player.pause();
+                bgm_player.pause();
                 ImageView playButton = findViewById(R.id.PlayButton);
                 playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
             }
@@ -388,34 +418,120 @@ public class NewChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            new MyToast(NewChapterActivity.this, getResources().getString(R.string.translateSuccess));
-
-                            LinearLayout translating = findViewById(R.id.translating);
-                            translating.setVisibility(View.INVISIBLE);
-
                             firtstPlay = true;
-
 
                             speechFile = new File(MP3_LOCATION);//speechFile保存后端语音
                             if (!speechFile.exists()) speechFile.createNewFile();
                             OutputStream outputStream = new FileOutputStream(speechFile);
                             resultStream.writeTo(outputStream);
                             speechChanged = true;
+                            outputStream.close();
 
-                            GetAudioLength getAudioLength = new GetAudioLength();
+                            AudioUtils audioUtils = new AudioUtils();
                             MilliToHMS milliToHMS = new MilliToHMS();
                             TextView end = findViewById(R.id.end);
-                            end.setText(milliToHMS.milliToHMS(getAudioLength.getLength(MP3_LOCATION)));
+                            end.setText(milliToHMS.milliToHMS(audioUtils.getLength(MP3_LOCATION)));
 
                             seekBar.setProgress(0);
                             TextView begin = findViewById(R.id.begin);
                             begin.setText(getResources().getString(R.string.initial));
+
+                            new Thread(matchBGM).start();
                         }catch (Exception e){
                             e.printStackTrace();
                         }
                     }
                 });
 
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };
+
+    Runnable matchBGM = new Runnable() {
+        @Override
+        public void run() {
+            try{
+
+                GetServer getServer = new GetServer();
+                String url = getServer.getIPADDRESS()+"/audiobook/matchBGM";
+
+                EditText content = findViewById(R.id.content);
+                JSONObject params = new JSONObject();
+                params.put("text",content.getText());
+
+                HttpUtils httpUtils = new HttpUtils(url);
+                final ByteArrayOutputStream resultStream = httpUtils.doHttp(params.toString().getBytes(), "POST", "application/json");//向后端发送请求
+
+                if (resultStream == null) {//请求超时
+                    normal.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            new MyToast(NewChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
+
+                            LinearLayout translating = findViewById(R.id.translating);
+                            translating.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                    return;
+                }
+
+                final String result = new String(resultStream.toByteArray(),
+                        StandardCharsets.UTF_8);
+
+                final JSONObject path = new JSONObject(result);
+
+                System.out.println(path.toString());
+
+                normal.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+
+                            bgmPath = path.getString("bgmPath");
+                            new Thread(getBgm).start();
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };
+
+    Runnable getBgm = new Runnable() {
+        @Override
+        public void run() {
+            try{
+                GetServer getServer = new GetServer();
+                String url = getServer.getIPADDRESS()+"/audiobook/getBGM?filename=" + URLEncoder.encode(bgmPath,"UTF-8");
+
+                HttpUtils httpUtils = new HttpUtils(url);
+                final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
+
+                normal.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            bgm = new File(BGM_LOCATION);
+                            if (!bgm.exists()) bgm.createNewFile();
+                            OutputStream outputStream = new FileOutputStream(bgm);
+                            resultStream.writeTo(outputStream);
+                            outputStream.close();
+
+                            new MyToast(NewChapterActivity.this, getResources().getString(R.string.translateSuccess));
+                            LinearLayout translating = findViewById(R.id.translating);
+                            translating.setVisibility(View.INVISIBLE);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                });
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -436,6 +552,8 @@ public class NewChapterActivity extends AppCompatActivity {
                 normal.post(new Runnable() {
                     @Override
                     public void run() {
+                        if(speech_player != null) speech_player.release();
+                        if(bgm_player != null) bgm_player.release();
                         NewChapterActivity.super.onBackPressed();
                     }
                 });
@@ -465,6 +583,8 @@ public class NewChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         new MyToast(NewChapterActivity.this,getResources().getString(R.string.draft));
+                        if(speech_player != null) speech_player.release();
+                        if(bgm_player != null) bgm_player.release();
                         NewChapterActivity.super.onBackPressed();
                     }
                 });
@@ -528,12 +648,14 @@ public class NewChapterActivity extends AppCompatActivity {
         private int bookid;
         private String content;
         private String speechPath;
+        private String bgmPath;
 
-        public StoreChapter(String title,int bookid,String content,String speechPath){
+        public StoreChapter(String title,int bookid,String content,String speechPath,String bgmPath){
             this.title = title;
             this.bookid = bookid;
             this.content = content;
             this.speechPath = speechPath;
+            this.bgmPath = bgmPath;
         }
 
         @Override
@@ -558,10 +680,11 @@ public class NewChapterActivity extends AppCompatActivity {
                 info.put("bookid",bookid);
                 info.put("content",content);
                 info.put("speechPath",speechPath);
+                info.put("bgmPath",bgmPath);
 
-               GetAudioLength getAudioLength = new GetAudioLength();
+               AudioUtils audioUtils = new AudioUtils();
                MilliToHMS milliToHMS = new MilliToHMS();
-               info.put("length",milliToHMS.milliToHMS(getAudioLength.getLength(MP3_LOCATION)));
+               info.put("length",milliToHMS.milliToHMS(audioUtils.getLength(MP3_LOCATION)));
 
                 byte[]param = info.toString().getBytes();
 
@@ -607,6 +730,10 @@ public class NewChapterActivity extends AppCompatActivity {
                     public void run() {
                         new MyToast(NewChapterActivity.this,"创建成功!");
                         if(speechFile.exists()) speechFile.delete();
+
+                        if(speech_player != null) speech_player.release();
+                        if(bgm_player != null) bgm_player.release();
+
                         NewChapterActivity.super.onBackPressed();
                     }
                 });

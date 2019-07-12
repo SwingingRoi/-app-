@@ -10,6 +10,7 @@ public class Chapter {
     private String title;
     private String speechpath;
     private String time;
+    private String bgmpath;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,5 +65,13 @@ public class Chapter {
 
     public String getTime() {
         return time;
+    }
+
+    public void setBgmpath(String bgmpath) {
+        this.bgmpath = bgmpath;
+    }
+
+    public String getBgmpath() {
+        return bgmpath;
     }
 }

@@ -3,7 +3,7 @@ package com.example.myapplication;
 import android.media.MediaMetadataRetriever;
 
 
-public class GetAudioLength {
+public class AudioUtils {
     public int getLength(String fileName){
         int result = 0;
 

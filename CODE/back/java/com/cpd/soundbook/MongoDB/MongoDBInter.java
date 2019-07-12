@@ -12,4 +12,8 @@ public interface MongoDBInter {
     GridFSDBFile getFile(String filename);
 
     void deleteFile(String filename);
+
+    GridFSDBFile getBGMByLevel(int level);
+
+    GridFSDBFile getBGMByName(String name);
 }

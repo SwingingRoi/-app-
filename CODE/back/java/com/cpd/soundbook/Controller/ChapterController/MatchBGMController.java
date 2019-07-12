@@ -2,6 +2,7 @@ package com.cpd.soundbook.Controller.ChapterController;
 
 import com.cpd.soundbook.HttpUtils;
 import com.cpd.soundbook.Service.ServiceInterface.ChapterService;
+import com.mongodb.gridfs.GridFSDBFile;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,10 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
+import java.io.OutputStream;
 
 @RestController
-public class TextToSpeechController {
+public class MatchBGMController {
 
     @Autowired
     private ChapterService chapterService;
@@ -20,16 +21,14 @@ public class TextToSpeechController {
     @Autowired
     private HttpUtils httpUtils;
 
-    @RequestMapping("/audiobook/textToSpeech")
-    public void textToSpeech(HttpServletRequest request, HttpServletResponse response){
+    @RequestMapping("/audiobook/matchBGM")
+    public void matchBGM(HttpServletRequest request, HttpServletResponse response){
         try{
-            JSONObject text = new JSONObject(httpUtils.getStringParam(request));
-            File result = chapterService.textToSpeech(text.getString("text"));
-
-            httpUtils.writeFileBack(response,result);
-            if(result.exists()) {
-                //System.out.println(result.delete());//删除临时文件
-            }
+            JSONObject param = new JSONObject(httpUtils.getStringParam(request));
+            String bgm = chapterService.matchBGM(param.getString("text"));
+            JSONObject path = new JSONObject();
+            path.put("bgmPath",bgm);
+            httpUtils.writeStringBack(response,path.toString());
         }catch (Exception e){
             e.printStackTrace();
         }

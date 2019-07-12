@@ -26,6 +26,7 @@ import com.example.myapplication.HttpUtils;
 import com.example.myapplication.PicUtils.GetPicture;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import com.example.myapplication.PicUtils.CropPic;
 
@@ -105,7 +106,7 @@ public class EditInfoActivity extends AppCompatActivity {
         public void run() {
             try {
                 GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS()+"/audiobook/info?account="+accountNow;
+                String url = getServer.getIPADDRESS()+"/audiobook/info?account="+ URLEncoder.encode(accountNow,"UTF-8");
 
                 HttpUtils httpUtils = new HttpUtils(url);
                 ByteArrayOutputStream outputStream = httpUtils.doHttp(null,"GET",

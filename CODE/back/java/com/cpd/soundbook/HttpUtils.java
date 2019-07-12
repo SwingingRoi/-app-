@@ -15,6 +15,7 @@ public class HttpUtils {
             request.setCharacterEncoding("UTF-8");
             InputStream param = request.getInputStream();
             result = IOUtils.toString(param,"UTF-8");
+            param.close();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -46,6 +47,7 @@ public class HttpUtils {
             InputStream param = request.getInputStream();
             String path = System.getProperty("user.dir")+"\\"+System.currentTimeMillis()+".png";
             file = createFile(path,param);
+            param.close();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -57,6 +59,7 @@ public class HttpUtils {
         try{
             InputStream param = request.getInputStream();
             file = createFile(path,param);
+            param.close();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -84,6 +87,8 @@ public class HttpUtils {
             while ((len = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, len);
             }
+            inputStream.close();
+            outputStream.close();
         }catch (Exception e){
             e.printStackTrace();
         }

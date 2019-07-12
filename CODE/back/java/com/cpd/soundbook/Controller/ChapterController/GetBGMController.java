@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 
 @RestController
-public class GetSpeechController {
+public class GetBGMController {
 
     @Autowired
     private ChapterService chapterService;
@@ -20,16 +22,17 @@ public class GetSpeechController {
     @Autowired
     private HttpUtils httpUtils;
 
-    @RequestMapping("/audiobook/getSpeech")
-    public void getSpeech(@RequestParam("path") String path, HttpServletResponse response){
+    @RequestMapping("/audiobook/getBGM")
+    public void getBGM(@RequestParam("filename") String filename, HttpServletResponse response){
         try{
-            GridFSDBFile speech = chapterService.getSpeech(path);
-            if(speech==null){
+            String fileName = URLDecoder.decode(filename,"UTF-8");
+            GridFSDBFile bgm = chapterService.getBGM(fileName);
+            if(bgm==null){
                 httpUtils.writeStringBack(response,null);
             }
             else {
                 OutputStream outputStream = response.getOutputStream();
-                speech.writeTo(outputStream);
+                bgm.writeTo(outputStream);
                 outputStream.close();
             }
         }catch (Exception e){
