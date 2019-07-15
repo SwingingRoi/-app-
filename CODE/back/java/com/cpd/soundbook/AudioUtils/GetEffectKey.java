@@ -4,10 +4,20 @@
 <artifactId>hanlp</artifactId>
 <version>portable-1.6.1</version>
 </dependency>
+
+Usage:
+getKeyList return a list of terms
+example:
+termList = getKeyList("下雨，打雷, 狗");
+
+Term1:{word:下雨, nature:v, offset:0}
+Term2:{word:打雷, nature:v, offset:3}
+Term3:{word:狗, nature:n, offset:6}
 */
 
 import com.hankcs.hanlp.seg.common.Term;
 import com.hankcs.hanlp.tokenizer.IndexTokenizer;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.gridfs.GridFS;
@@ -24,6 +34,10 @@ public class GetEffectKey {
     private DB db = mongoClient.getDB("soundbook");
     private GridFS gridFS = new GridFS(db, "sound");
 
+    public List<Term> getAllWordList(String text){
+        return IndexTokenizer.segment(text);
+    }
+
     public List<Term> getAllNounList(String text){
         List<Term> nounList = new ArrayList<Term>();
         List<Term> termList = IndexTokenizer.segment(text);
@@ -39,8 +53,8 @@ public class GetEffectKey {
         return nounList;
     }
 
-    public List<String> getAllVerbList(String text){
-        List<String> verbList = new ArrayList<String>();
+    public List<Term> getAllVerbList(String text){
+        List<Term> verbList = new ArrayList<Term>();
         List<Term> termList = IndexTokenizer.segment(text);
 
         //System.out.println(termList);
@@ -48,44 +62,117 @@ public class GetEffectKey {
         for(Term term : termList){
             key = term.nature.toString();
             if(key.substring(0,1).equals("v")){
-                verbList.add(term.word);
+                verbList.add(term);
             }
         }
         return verbList;
     }
 
-    public List<Term> getNounList(String text){
+    public List<Term> getKeyList(String text){
 
         List<Term> nounList = getAllNounList(text);
         //System.out.println(nounList);
-        List<String> verbList = getAllVerbList(text);
+        List<Term> verbList = getAllVerbList(text);
         //System.out.println(verbList);
         List<Term> targetList = new ArrayList<Term>();
+
+        List<GridFSDBFile> gridFSDBFiles = gridFS.find(new BasicDBObject("contentType", null));
+        List<String> verbStringList = new ArrayList<String>();
+
+        for(Term verb:verbList){
+            verbStringList.add(verb.word);
+        }
+
+        boolean isAdd;
 
         //for each noun in the text
         for(Term term:nounList){
 
+            isAdd = false;
+
             //noun match in the database
-            GridFSDBFile gridFSDBFile = gridFS.findOne(term.word);
-            if(gridFSDBFile != null){
-                String jsonStr = gridFSDBFile.toString();
-                //System.out.println(gridFSDBFile);
-                JSONObject jsonObject = new JSONObject(jsonStr);
-                JSONArray verbs = jsonObject.getJSONArray("verb");
-                //System.out.println(verbs);
-                for(int i = 0; i < verbs.length(); ++i){
-                    String verb = (String)verbs.get(i);
-                    //System.out.println(verb);
-                    if(verbList.contains(verb)){
-                        //System.out.println("exist:" + verb);
-                        targetList.add(term);
-                        System.out.println(targetList);
+            for(GridFSDBFile gridFSDBFile:gridFSDBFiles){
+
+                if(gridFSDBFile != null){
+
+                    String jsonStr = gridFSDBFile.toString();
+                    //System.out.println(gridFSDBFile);
+                    JSONObject jsonObject = new JSONObject(jsonStr);
+
+                    String noun = jsonObject.getString("noun");
+
+                    if(term.word.contains(noun)){
+                        System.out.println(gridFSDBFile);
+
+                        JSONArray verbs = jsonObject.getJSONArray("verb");
+                        //System.out.println(verbs);
+
+                        for(int i = 0; i < verbs.length(); ++i){
+                            String verb = (String)verbs.get(i);
+                            //System.out.println(verb);
+                            if(verbStringList.contains(verb) || term.word.contains(verb)){
+                                //System.out.println("exist:" + verb);
+                                targetList.add(term);
+                                isAdd = true;
+                                //System.out.println(targetList);
+                                break;
+                            }
+                        }
                     }
+
+                    //System.out.println(verbs.get(0));
+                    //System.out.println(jsonObject.getString("filename"));
                 }
-                //System.out.println(verbs.get(0));
-                //System.out.println(jsonObject.getString("filename"));
+
+                if(isAdd){
+                    break;
+                }
             }
         }
+
+        for(Term term:verbList){
+            isAdd = false;
+
+            //noun match in the database
+            for(GridFSDBFile gridFSDBFile:gridFSDBFiles){
+
+                if(gridFSDBFile != null){
+
+                    String jsonStr = gridFSDBFile.toString();
+                    //System.out.println(gridFSDBFile);
+                    JSONObject jsonObject = new JSONObject(jsonStr);
+
+                    String noun = jsonObject.getString("noun");
+
+                    if(term.word.contains(noun)){
+                        System.out.println(gridFSDBFile);
+
+                        JSONArray verbs = jsonObject.getJSONArray("verb");
+                        //System.out.println(verbs);
+
+                        for(int i = 0; i < verbs.length(); ++i){
+                            String verb = (String)verbs.get(i);
+                            //System.out.println(verb);
+                            if(term.word.contains(verb)){
+                                //System.out.println("exist:" + verb);
+                                targetList.add(term);
+                                isAdd = true;
+                                //System.out.println(targetList);
+                                break;
+                            }
+                        }
+                    }
+
+                    //System.out.println(verbs.get(0));
+                    //System.out.println(jsonObject.getString("filename"));
+                }
+
+                if(isAdd){
+                    break;
+                }
+            }
+        }
+
         return targetList;
     }
 
