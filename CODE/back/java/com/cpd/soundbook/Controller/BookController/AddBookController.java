@@ -23,6 +23,7 @@ public class AddBookController {
     public void addBook(HttpServletRequest request, HttpServletResponse response){
         try{
             JSONObject newBook = new JSONObject(httpUtils.getStringParam(request));
+            System.out.println(newBook.toString());
             String result = bookService.addBook(newBook);
             httpUtils.writeStringBack(response,result);
         }catch (Exception e){

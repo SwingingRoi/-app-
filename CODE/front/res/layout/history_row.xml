@@ -52,11 +52,18 @@
                     android:id="@+id/BookName"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_marginBottom="30dp"
                     android:layout_weight="0.7"
                     android:gravity="center"
                     android:text="firstbook"
                     android:textSize="16sp" />
+
+                <LinearLayout
+                    android:id="@+id/tags"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.7"
+                    android:gravity="center"
+                    android:orientation="horizontal"></LinearLayout>
 
                 <TextView
                     android:id="@+id/time"

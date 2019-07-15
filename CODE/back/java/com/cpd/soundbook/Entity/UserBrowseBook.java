@@ -5,6 +5,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.persistence.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -23,7 +25,14 @@ public class UserBrowseBook {
         JSONObject result = new JSONObject();
         try{
             result.put("id",id);
-            result.put("time",time);
+
+            //时间戳转化为日期
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            long timStamp = Long.parseLong(time);
+            Date date = new Date(timStamp);
+            String t = simpleDateFormat.format(date);
+
+            result.put("time",t);
         }catch (Exception e){
             e.printStackTrace();
         }

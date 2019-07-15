@@ -326,6 +326,15 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                                 TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
                                 chapterNumber.setText(resultArray.getJSONObject(i).getInt("chapters") + "章");
 
+                                LinearLayout tagsView = bookRow.findViewById(R.id.tags);
+                                String tagStr = resultArray.getJSONObject(i).getString("tags");
+                                String[] tags = tagStr.split(" ");
+                                for(String tag : tags){
+                                    TextView tagView = new TextView(SearchMyWorkActivity.this);
+                                    tagView.setText(tag);
+                                    tagsView.addView(tagView);
+                                }
+
                                 if(ismanaging){
                                     CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
                                     checkBox.setVisibility(View.VISIBLE);

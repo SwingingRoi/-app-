@@ -227,7 +227,7 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
 
     @Override
     public GridFSDBFile getSpeech(String path) {
-        return mongoDAO.getFile(path);
+        return mongoDAO.getFileByName(path);
     }
 
     @Override

@@ -280,9 +280,7 @@ public class ChapterActivity extends AppCompatActivity {
                 JSONObject params = new JSONObject();
                 params.put("account",account);
                 params.put("id",bookid);
-                Date date = new Date();
-                DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-                params.put("time",format.format(date));
+                params.put("time",String.valueOf(System.currentTimeMillis()));
 
                 byte[] param = params.toString().getBytes();
 

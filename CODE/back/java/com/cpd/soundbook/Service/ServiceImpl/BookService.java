@@ -30,6 +30,7 @@ public class BookService implements com.cpd.soundbook.Service.ServiceInterface.B
             book.setIntro(newBook.getString("intro"));
             book.setName(newBook.getString("name"));
             book.setSurface(newBook.getString("surface"));
+            book.setTags(newBook.getString("tags"));
             bookDAO.addBook(book);
         }catch (Exception e){
             e.printStackTrace();
@@ -143,7 +144,7 @@ public class BookService implements com.cpd.soundbook.Service.ServiceInterface.B
         Book book = bookDAO.findBookById(id);
         if(book==null) return null;
         if(book.getSurface()==null) return null;
-        return mongoDAO.getFile(book.getSurface());
+        return mongoDAO.getFileByName(book.getSurface());
     }
 
     @Override

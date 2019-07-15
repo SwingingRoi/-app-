@@ -98,7 +98,6 @@ public class NewChapterActivity extends AppCompatActivity {
                     speech_player.seekTo(seekBar.getProgress());
                     bgm_player.seekTo(seekBar.getProgress());
 
-
                     TextView begin = findViewById(R.id.begin);
                     MilliToHMS milliToHMS = new MilliToHMS();
                     begin.setText(milliToHMS.milliToHMS(seekBar.getProgress()));
@@ -119,7 +118,7 @@ public class NewChapterActivity extends AppCompatActivity {
             }
         });
 
-        bgm_player = new MediaPlayer();
+        //bgm_player = new MediaPlayer();
 
         refresh();
     }
@@ -144,14 +143,14 @@ public class NewChapterActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed(){
-        //保存草稿
-        if(speech_player.isPlaying()) {
+        if(speech_player != null && speech_player.isPlaying()) {
             speech_player.pause();
         }
-        if(bgm_player.isPlaying()) {
+        if(bgm_player != null && bgm_player.isPlaying()) {
             bgm_player.pause();
         }
 
+        //保存草稿
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("保存草稿");
         builder.setMessage("是否保存为草稿?");
@@ -254,8 +253,25 @@ public class NewChapterActivity extends AppCompatActivity {
 
     //重置播放状态
     private void resetPlayer(){
-        speech_player.reset();
-        bgm_player.reset();
+        if(bgm_player.isPlaying()) {
+            System.out.println(21);
+            bgm_player.pause();
+        }
+        if(speech_player != null) {
+            speech_player.release();
+        }
+
+        if(bgm_player != null) {
+            if(bgm_player.isPlaying()) {
+                bgm_player.stop();
+                bgm_player.release();
+            }
+            else bgm_player.release();
+        }
+
+
+        speech_player = new MediaPlayer();
+        bgm_player = new MediaPlayer();
 
         ImageView playButton = findViewById(R.id.PlayButton);
         playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
@@ -288,9 +304,9 @@ public class NewChapterActivity extends AppCompatActivity {
                     bgm_player.setDataSource(BGM_LOCATION);
                     bgm_player.setAudioAttributes(audioAttributes);
 
-
                     bgm_player.prepare();
                     speech_player.prepareAsync();//异步准备音源
+
                     speech_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
                         public void onPrepared(MediaPlayer mp) {
@@ -317,11 +333,12 @@ public class NewChapterActivity extends AppCompatActivity {
 
                                 }
                             };
-                            timer.schedule(task,0,10);
+                            timer.schedule(task,0,5);
 
                             speech_player.start();
                             bgm_player.start();
-                            bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
+
+                            bgm_player.setVolume(0.4f,0.4f);//设置背景音乐音量
                             bgm_player.setLooping(true);//背景音乐循环播放
 
                             firtstPlay = false;
@@ -382,7 +399,7 @@ public class NewChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         speechFile = null;
-                        resetPlayer();
+                       // resetPlayer();
 
                         LinearLayout translating = findViewById(R.id.translating);
                         translating.setVisibility(View.VISIBLE);
@@ -483,7 +500,6 @@ public class NewChapterActivity extends AppCompatActivity {
 
                 final JSONObject path = new JSONObject(result);
 
-                System.out.println(path.toString());
 
                 normal.post(new Runnable() {
                     @Override

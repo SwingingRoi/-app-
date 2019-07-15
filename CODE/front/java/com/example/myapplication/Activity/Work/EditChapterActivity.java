@@ -433,7 +433,7 @@ public class EditChapterActivity extends AppCompatActivity {
                         StandardCharsets.UTF_8);
 
                 final JSONObject path = new JSONObject(result);
-                
+
 
                 normal.post(new Runnable() {
                     @Override

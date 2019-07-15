@@ -228,6 +228,17 @@ public class HomeFragment extends Fragment {
 
                                 TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
                                 chapterNumber.setText(newBooks.getJSONObject(i).getInt("chapters") + "章");
+
+                                LinearLayout tagsView = bookRow.findViewById(R.id.tags);
+                                String tagStr = newBooks.getJSONObject(i).getString("tags");
+                                String[] tags = tagStr.split(" ");
+                                for(String tag : tags){
+                                    TextView tagView = new TextView(getActivity());
+                                    tagView.setText(tag);
+                                    tagsView.addView(tagView);
+                                }
+
+
                                 bookTable.addView(bookRow);
 
                                 final int id = newBooks.getJSONObject(i).getInt("id");

@@ -174,7 +174,6 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
         User user = userDAO.findUserByAccount(account);
         if(user==null) return null;
         if(user.getAvatar()==null) return null;
-        GridFSDBFile file = mongoDAO.getFile(user.getAvatar());
-        return mongoDAO.getFile(user.getAvatar());
+        return mongoDAO.getFileByName(user.getAvatar());
     }
 }
