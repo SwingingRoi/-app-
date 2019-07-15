@@ -54,4 +54,10 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:gravity">center</item>
     </style>
+
+    <style name="booktag">
+        <item name="android:textSize">15dp</item>
+        <item name="android:textColor">#ff888888</item>
+        <item name="android:alpha">0.7</item>
+    </style>
 </resources>

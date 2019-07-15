@@ -1,4 +1,4 @@
-/*
+package com.cpd.soundbook;/*
 <dependency>
 <groupId>com.hankcs</groupId>
 <artifactId>hanlp</artifactId>
@@ -8,11 +8,10 @@
 Usage:
 getKeyList return a list of terms
 example:
-termList = getKeyList("ÏÂÓê£¬´òÀ×, ¹·");
-
-Term1:{word:ÏÂÓê, nature:v, offset:0}
-Term2:{word:´òÀ×, nature:v, offset:3}
-Term3:{word:¹·, nature:n, offset:6}
+termList = getKeyList("ï¿½ï¿½ï¿½ê£¬ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½");
+Term1:{word:ï¿½ï¿½ï¿½ï¿½, nature:v, offset:0}
+Term2:{word:ï¿½ï¿½ï¿½ï¿½, nature:v, offset:3}
+Term3:{word:ï¿½ï¿½, nature:n, offset:6}
 */
 
 import com.hankcs.hanlp.seg.common.Term;
@@ -24,15 +23,18 @@ import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+@Component(value = "getEffectKey")
 public class GetEffectKey {
 
     private MongoClient mongoClient = new MongoClient("localhost", 27017);
-    private DB db = mongoClient.getDB("soundbook");
-    private GridFS gridFS = new GridFS(db, "sound");
+    private DB db = mongoClient.getDB("effects");
+    private GridFS gridFS = new GridFS(db, "fs");
 
     public List<Term> getAllWordList(String text){
         return IndexTokenizer.segment(text);
@@ -57,6 +59,7 @@ public class GetEffectKey {
         List<Term> verbList = new ArrayList<Term>();
         List<Term> termList = IndexTokenizer.segment(text);
 
+        //System.out.println(termList.toString());
         //System.out.println(termList);
         String key;
         for(Term term : termList){
@@ -68,13 +71,14 @@ public class GetEffectKey {
         return verbList;
     }
 
-    public List<Term> getKeyList(String text){
+    public HashMap<Integer,String> getKeyList(String text){
+        HashMap<Integer,String> result = new HashMap<>();
 
         List<Term> nounList = getAllNounList(text);
         //System.out.println(nounList);
         List<Term> verbList = getAllVerbList(text);
         //System.out.println(verbList);
-        List<Term> targetList = new ArrayList<Term>();
+        //List<Term> targetList = new ArrayList<Term>();
 
         List<GridFSDBFile> gridFSDBFiles = gridFS.find(new BasicDBObject("contentType", null));
         List<String> verbStringList = new ArrayList<String>();
@@ -102,7 +106,7 @@ public class GetEffectKey {
                     String noun = jsonObject.getString("noun");
 
                     if(term.word.contains(noun)){
-                        System.out.println(gridFSDBFile);
+                        //System.out.println(gridFSDBFile);
 
                         JSONArray verbs = jsonObject.getJSONArray("verb");
                         //System.out.println(verbs);
@@ -112,7 +116,7 @@ public class GetEffectKey {
                             //System.out.println(verb);
                             if(verbStringList.contains(verb) || term.word.contains(verb)){
                                 //System.out.println("exist:" + verb);
-                                targetList.add(term);
+                                result.put(term.offset,jsonObject.getString("filename"));
                                 isAdd = true;
                                 //System.out.println(targetList);
                                 break;
@@ -135,6 +139,7 @@ public class GetEffectKey {
 
             //noun match in the database
             for(GridFSDBFile gridFSDBFile:gridFSDBFiles){
+                //System.out.println(gridFSDBFile);
 
                 if(gridFSDBFile != null){
 
@@ -145,7 +150,7 @@ public class GetEffectKey {
                     String noun = jsonObject.getString("noun");
 
                     if(term.word.contains(noun)){
-                        System.out.println(gridFSDBFile);
+                        //System.out.println(gridFSDBFile);
 
                         JSONArray verbs = jsonObject.getJSONArray("verb");
                         //System.out.println(verbs);
@@ -155,7 +160,8 @@ public class GetEffectKey {
                             //System.out.println(verb);
                             if(term.word.contains(verb)){
                                 //System.out.println("exist:" + verb);
-                                targetList.add(term);
+                                result.put(term.offset,jsonObject.getString("filename"));
+                                //targetList.add(term);
                                 isAdd = true;
                                 //System.out.println(targetList);
                                 break;
@@ -173,7 +179,7 @@ public class GetEffectKey {
             }
         }
 
-        return targetList;
+        return result;
     }
 
 }

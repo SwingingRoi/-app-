@@ -277,6 +277,15 @@ public class SearchHistoryActivity extends AppCompatActivity {
                                 TextView timeView = bookRow.findViewById(R.id.time);
                                 timeView.setText(record.getString("time"));
 
+                                LinearLayout tagsView = bookRow.findViewById(R.id.tags);
+                                String tagStr = resultArray.getJSONObject(i).getString("tags");
+                                String[] tags = tagStr.split(" ");
+                                for(String tag : tags){
+                                    TextView tagView = new TextView(SearchHistoryActivity.this);
+                                    tagView.setText(tag);
+                                    tagsView.addView(tagView);
+                                }
+
                                 if(ismanaging){
                                     CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
                                     checkBox.setVisibility(View.VISIBLE);

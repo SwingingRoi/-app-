@@ -1,5 +1,9 @@
 package com.cpd.soundbook.AudioUtils;
 
+import com.cpd.soundbook.GetEffectKey;
+import com.cpd.soundbook.MongoDB.MongoDBInter;
+import com.hankcs.hanlp.seg.common.Term;
+import com.mongodb.gridfs.GridFSDBFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
 import org.jaudiotagger.audio.mp3.MP3File;
@@ -8,9 +12,10 @@ import org.springframework.stereotype.Component;
 
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Component(value = "addEffect")
 public class AddEffect {
@@ -21,9 +26,19 @@ public class AddEffect {
     @Autowired
     private RandomName randomName;
 
+    @Autowired
+    private GetEffectKey getEffectKey;
+
+    @Autowired
+    private MongoDBInter mongoDAO;
+
     public File addEffect(String text){
 
         List<String> paths = new ArrayList<>();
+        //存储音效的临时文件
+        String effectPath = System.getProperty("user.dir") + "\\mp3\\effectSpeech\\" + randomName.randomName() + ".mp3";
+        paths.add(effectPath);
+
         //将text从关键词处分割为两部分
         //tempPath1:存储前半部分
         String tempPath1 = System.getProperty("user.dir") + "\\mp3\\effectSpeech\\" + randomName.randomName() + ".mp3";
@@ -66,48 +81,57 @@ public class AddEffect {
             MP3AudioHeader plainSpeechAudioHeader = (MP3AudioHeader) plainSpeech.getAudioHeader();
             int plainSpeechLength = plainSpeechAudioHeader.getTrackLength();
 
-            int index = text.indexOf('雨');//关键词
-            int rate = plainSpeechLength * index / text.length();//确定在何处分割音频
+            HashMap<Integer,String> divideResult = getEffectKey.getKeyList(text);
+            Iterator<Map.Entry<Integer,String>> entryIterator = divideResult.entrySet().iterator();
 
-            split("00:00:00", String.valueOf(rate), speech.getAbsolutePath(),
+            if(divideResult.size() != 0) {
+                Map.Entry<Integer,String> entry = entryIterator.next();
+                int rate = plainSpeechLength * entry.getKey() / text.length();//确定在何处分割音频
+
+                //确定选取什么音效
+                GridFSDBFile gridFSDBFile = mongoDAO.getEffectByName(entry.getValue());
+                OutputStream outputStream = new FileOutputStream(effectPath);
+                gridFSDBFile.writeTo(outputStream);
+
+                split("00:00:00", String.valueOf(rate), speech.getAbsolutePath(),
                         tempPath1);
 
-            split(String.valueOf(rate),String.valueOf(plainSpeechLength + 100),speech.getAbsolutePath(),
-                    tempPath2);
+                split(String.valueOf(rate), String.valueOf(plainSpeechLength + 100), speech.getAbsolutePath(),
+                        tempPath2);
 
-            volumeDown(System.getProperty("user.dir")+"\\"+"mp3\\effectSpeech\\rain.mp3",
-                    downEffectPath);
+                volumeDown(effectPath, downEffectPath);
 
-            compose(tempPath2, downEffectPath, tempEffectPath);//合成后半部分和音效
+                compose(tempPath2, downEffectPath, tempEffectPath);//合成后半部分和音效
 
-            String path1 = "file " + "\'" + tempPath1 + "\'" + System.getProperty("line.separator");
-            String path2 = "file " + "\'" + tempEffectPath + "\'" + System.getProperty("line.separator");
-            PrintWriter writer = new PrintWriter(txtPath);
+                String path1 = "file " + "\'" + tempPath1 + "\'" + System.getProperty("line.separator");
+                String path2 = "file " + "\'" + tempEffectPath + "\'" + System.getProperty("line.separator");
+                PrintWriter writer = new PrintWriter(txtPath);
 
-            if(rate > 0 && rate < plainSpeechLength){
-                writer.write(path1);
-                writer.write(path2);
-                writer.flush();
-                writer.close();
+                if (rate > 0 && rate < plainSpeechLength) {
+                    writer.write(path1);
+                    writer.write(path2);
+                    writer.flush();
+                    writer.close();
 
-                file = concat(txtPath, resultPath);
+                    file = concat(txtPath, resultPath);
+                } else if (rate == 0) {
+                    writer.write(path2);
+                    writer.flush();
+                    writer.close();
+
+                    file = concat(txtPath, resultPath);
+                } else if (rate == plainSpeechLength) {
+                    writer.write(path1);
+                    writer.flush();
+                    writer.close();
+
+                    file = concat(txtPath, resultPath);
+                }
+
+                deleteTempFile(paths);
+            }else {
+                file = speech;
             }
-            else if(rate == 0){
-                writer.write(path2);
-                writer.flush();
-                writer.close();
-
-                file = concat(txtPath, resultPath);
-            }
-            else if(rate == plainSpeechLength){
-                writer.write(path1);
-                writer.flush();
-                writer.close();
-
-                file = concat(txtPath, resultPath);
-            }
-
-            deleteTempFile(paths);
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -33,18 +33,29 @@ public class UserBrowseBookService implements com.cpd.soundbook.Service.ServiceI
         }
     }
 
-    @Override
-    public JSONArray getRecords(String account, int from, int size) {
+    private JSONArray recordListToJSONArray(List<UserBrowseBook> recordsList){
         JSONArray result = new JSONArray();
         try{
-            List<UserBrowseBook> recordsList = userBrowseBookDAO.getRecords(account,from,size);
             for(UserBrowseBook record : recordsList){
                 Book book = bookDAO.findBookById(record.getBookid());
                 JSONObject object = record.toJSONObject();
                 object.put("name",book.getName());
                 object.put("bookid",book.getId());
+                object.put("tags",book.getTags());
                 result.put(object);
             }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public JSONArray getRecords(String account, int from, int size) {
+        JSONArray result = new JSONArray();
+        try{
+            List<UserBrowseBook> recordsList = userBrowseBookDAO.getRecords(account,from,size);
+            result = recordListToJSONArray(recordsList);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -67,13 +78,7 @@ public class UserBrowseBookService implements com.cpd.soundbook.Service.ServiceI
         JSONArray result = new JSONArray();
         try{
             List<UserBrowseBook> recordList = userBrowseBookDAO.searchRecords(account, day, from, size);
-            for(UserBrowseBook u : recordList){
-                Book book = bookDAO.findBookById(u.getBookid());
-                JSONObject object = u.toJSONObject();
-                object.put("name",book.getName());
-                object.put("bookid",book.getId());
-                result.put(object);
-            }
+            result = recordListToJSONArray(recordList);
         }catch (Exception e){
             e.printStackTrace();
         }
