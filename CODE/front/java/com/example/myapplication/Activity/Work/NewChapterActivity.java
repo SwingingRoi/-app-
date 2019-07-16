@@ -37,8 +37,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class NewChapterActivity extends AppCompatActivity {
 
@@ -98,9 +96,14 @@ public class NewChapterActivity extends AppCompatActivity {
                     speech_player.seekTo(seekBar.getProgress());
                     bgm_player.seekTo(seekBar.getProgress());
 
-                    TextView begin = findViewById(R.id.begin);
-                    MilliToHMS milliToHMS = new MilliToHMS();
-                    begin.setText(milliToHMS.milliToHMS(seekBar.getProgress()));
+                    normal.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            TextView begin = findViewById(R.id.begin);
+                            MilliToHMS milliToHMS = new MilliToHMS();
+                            begin.setText(milliToHMS.milliToHMS(speech_player.getCurrentPosition()));
+                        }
+                    });
                 }
             }
         });//实现拖动进度条，调整播放进度
@@ -111,14 +114,22 @@ public class NewChapterActivity extends AppCompatActivity {
         bookid = intent.getIntExtra("bookid",-1);
 
         speech_player = new MediaPlayer();
+        bgm_player = new MediaPlayer();
+
         speech_player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 resetPlayer();
+
+                normal.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView playButton = findViewById(R.id.PlayButton);
+                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+                    }
+                });
             }
         });
-
-        //bgm_player = new MediaPlayer();
 
         refresh();
     }
@@ -251,48 +262,68 @@ public class NewChapterActivity extends AppCompatActivity {
         new Thread(textToSpeech).start();
     }
 
-    //重置播放状态
     private void resetPlayer(){
-        if(bgm_player.isPlaying()) {
-            System.out.println(21);
-            bgm_player.pause();
-        }
-        if(speech_player != null) {
-            speech_player.release();
+        if(speech_player != null){
+            speech_player.reset();
         }
 
-        if(bgm_player != null) {
-            if(bgm_player.isPlaying()) {
-                bgm_player.stop();
-                bgm_player.release();
-            }
-            else bgm_player.release();
+        if(bgm_player != null){
+            bgm_player.reset();
         }
-
-
-        speech_player = new MediaPlayer();
-        bgm_player = new MediaPlayer();
-
-        ImageView playButton = findViewById(R.id.PlayButton);
-        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
 
         firtstPlay = true;
     }
 
-    //试听音频
     public void playSpeech(View view){
-        try {
-            //没有音频或音频尚未转换成功
-            if(speechFile == null){
-                new MyToast(this,"语音文件不存在!");
-                return;
+        if(firtstPlay)  {
+            new Thread(prepareSpeech).start();
+        }
+
+        else {
+            new Thread(controlSpeech).start();
+        }
+    }
+
+
+    Runnable controlSpeech = new Runnable() {
+        @Override
+        public void run() {
+            if(speech_player.isPlaying()) {
+                speech_player.pause();
+                bgm_player.pause();
+                normal.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView playButton = findViewById(R.id.PlayButton);
+                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+                    }
+                });
             }
+            else {
+                speech_player.start();
+                bgm_player.start();
+                normal.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView playButton = findViewById(R.id.PlayButton);
+                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
+                    }
+                });
+            }
+        }
+    };
 
-            //播放
-            if(!speech_player.isPlaying()) {
-
+    //试听音频
+    Runnable prepareSpeech = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                //没有音频或音频尚未转换成功
+                if(speechFile == null){
+                    new MyToast(NewChapterActivity.this,"语音文件不存在!");
+                    return;
+                }
                 //首次播放设置数据源
-                if(firtstPlay) {
                     seekBar.setProgress(0);
 
                     AudioAttributes audioAttributes = new AudioAttributes.Builder()
@@ -313,27 +344,6 @@ public class NewChapterActivity extends AppCompatActivity {
 
                             seekBar.setMax(speech_player.getDuration());
 
-                            //让进度条与播放进度同步
-                            Timer timer = new Timer();
-                            TimerTask task = new TimerTask() {
-                                @Override
-                                public void run() {
-                                    if(!speech_player.isPlaying()) return;
-
-                                    seekBar.setProgress(speech_player.getCurrentPosition());
-
-                                    normal.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            TextView begin = findViewById(R.id.begin);
-                                            MilliToHMS milliToHMS = new MilliToHMS();
-                                            begin.setText(milliToHMS.milliToHMS(speech_player.getCurrentPosition()));
-                                        }
-                                    });
-
-                                }
-                            };
-                            timer.schedule(task,0,5);
 
                             speech_player.start();
                             bgm_player.start();
@@ -341,33 +351,45 @@ public class NewChapterActivity extends AppCompatActivity {
                             bgm_player.setVolume(0.4f,0.4f);//设置背景音乐音量
                             bgm_player.setLooping(true);//背景音乐循环播放
 
-                            firtstPlay = false;
-                            ImageView playButton = findViewById(R.id.PlayButton);
-                            playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
+                            //进度条更新
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    while (!Thread.currentThread().isInterrupted()){
+                                        try {
+                                            if(speech_player == null) break;
+                                            seekBar.setProgress(speech_player.getCurrentPosition());
+                                            normal.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                         TextView begin = findViewById(R.id.begin);
+                                                         MilliToHMS milliToHMS = new MilliToHMS();
+                                                         begin.setText(milliToHMS.milliToHMS(speech_player.getCurrentPosition()));
+                                                }
+                                            });
+                                            Thread.sleep(200);
+                                        }catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            }).start();
+
+                            normal.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    firtstPlay = false;
+                                    ImageView playButton = findViewById(R.id.PlayButton);
+                                    playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
+                                }
+                            });
                         }
                     });
-                }
-
-                //非首次播放从暂停状态恢复
-                else {
-                    ImageView playButton = findViewById(R.id.PlayButton);
-                    playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
-                    speech_player.start();
-                    bgm_player.start();
-                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
-
-            //暂停
-            else {
-                speech_player.pause();
-                bgm_player.pause();
-                ImageView playButton = findViewById(R.id.PlayButton);
-                playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
-            }
-        }catch (Exception e){
-            e.printStackTrace();
         }
-    }
+    };
 
     /*
     private void requestPermission(){
@@ -399,7 +421,7 @@ public class NewChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         speechFile = null;
-                       // resetPlayer();
+                        resetPlayer();
 
                         LinearLayout translating = findViewById(R.id.translating);
                         translating.setVisibility(View.VISIBLE);
@@ -505,7 +527,6 @@ public class NewChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-
                             bgmPath = path.getString("bgmPath");
                             new Thread(getBgm).start();
                         }catch (Exception e){
@@ -568,8 +589,14 @@ public class NewChapterActivity extends AppCompatActivity {
                 normal.post(new Runnable() {
                     @Override
                     public void run() {
-                        if(speech_player != null) speech_player.release();
-                        if(bgm_player != null) bgm_player.release();
+                        if(speech_player != null) {
+                            speech_player.release();
+                            speech_player = null;
+                        }
+                        if(bgm_player != null) {
+                            bgm_player.release();
+                            bgm_player = null;
+                        }
                         NewChapterActivity.super.onBackPressed();
                     }
                 });
@@ -599,8 +626,14 @@ public class NewChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         new MyToast(NewChapterActivity.this,getResources().getString(R.string.draft));
-                        if(speech_player != null) speech_player.release();
-                        if(bgm_player != null) bgm_player.release();
+                        if(speech_player != null) {
+                            speech_player.release();
+                            speech_player = null;
+                        }
+                        if(bgm_player != null) {
+                            bgm_player.release();
+                            bgm_player = null;
+                        }
                         NewChapterActivity.super.onBackPressed();
                     }
                 });
@@ -707,6 +740,13 @@ public class NewChapterActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "POST", "application/json");
 
+                if(speech_player != null && speech_player.isPlaying()) {
+                    speech_player.pause();
+                }
+                if(bgm_player != null && bgm_player.isPlaying()) {
+                    bgm_player.pause();
+                }
+
                 normal.post(new Runnable() {
                     @Override
                     public void run() {
@@ -747,8 +787,14 @@ public class NewChapterActivity extends AppCompatActivity {
                         new MyToast(NewChapterActivity.this,"创建成功!");
                         if(speechFile.exists()) speechFile.delete();
 
-                        if(speech_player != null) speech_player.release();
-                        if(bgm_player != null) bgm_player.release();
+                        if(speech_player != null) {
+                            speech_player.release();
+                            speech_player = null;
+                        }
+                        if(bgm_player != null) {
+                            bgm_player.release();
+                            bgm_player = null;
+                        }
 
                         NewChapterActivity.super.onBackPressed();
                     }

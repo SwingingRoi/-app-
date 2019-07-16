@@ -28,7 +28,7 @@ public class TextToSpeechController {
 
             httpUtils.writeFileBack(response,result);
             if(result.exists()) {
-                //System.out.println(result.delete());//删除临时文件
+                System.out.println(result.delete());//删除临时文件
             }
         }catch (Exception e){
             e.printStackTrace();
