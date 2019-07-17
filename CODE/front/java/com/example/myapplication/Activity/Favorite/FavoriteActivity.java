@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -17,16 +18,15 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.myapplication.BookActivity;
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.Activity.Book.BookActivity;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.PicUtils.GetPicture;
 import com.example.myapplication.R;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
@@ -46,6 +46,7 @@ public class FavoriteActivity extends AppCompatActivity {
     private boolean firstIn = true;//是否是第一次进入该页面
     private boolean ismanaging = false;//是否处于管理模式
     private boolean isRequesting = false;//当前是否在向后端请求书本信息
+    private List<Drawable> tag_border_styles;//标签边框样式
 
     private JSONArray books;
 
@@ -65,6 +66,11 @@ public class FavoriteActivity extends AppCompatActivity {
         account = sharedPreferences.getString("Account", "");
 
         books = new JSONArray();
+
+        tag_border_styles = new ArrayList<>();
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
 
         refresh = findViewById(R.id.refresh);
         bookTable = findViewById(R.id.BookTable);
@@ -136,6 +142,7 @@ public class FavoriteActivity extends AppCompatActivity {
         loadView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
         findViewById(R.id.Remind).setVisibility(View.INVISIBLE);
+        normal.setVisibility(View.INVISIBLE);
 
         new Thread(getBooks).start();
     }
@@ -243,7 +250,7 @@ public class FavoriteActivity extends AppCompatActivity {
                 }
 
 
-                normal.post(new Runnable() {
+                FavoriteActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         int hasRemoved=0;
@@ -287,7 +294,7 @@ public class FavoriteActivity extends AppCompatActivity {
     Runnable getBooks = new Runnable() {
         @Override
         public void run() {
-            normal.post(new Runnable() {
+            FavoriteActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     TextView text = pullDown.findViewById(R.id.content);
@@ -306,7 +313,7 @@ public class FavoriteActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    FavoriteActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(FavoriteActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -331,7 +338,7 @@ public class FavoriteActivity extends AppCompatActivity {
                     books.put(newBooks.getJSONObject(i));
                 }//向works中添加新请求过来的work
 
-                normal.post(new Runnable() {
+                FavoriteActivity.this.runOnUiThread(new Runnable() {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void run() {
@@ -365,9 +372,17 @@ public class FavoriteActivity extends AppCompatActivity {
                                 LinearLayout tagsView = bookRow.findViewById(R.id.tags);
                                 String tagStr = newBooks.getJSONObject(i).getString("tags");
                                 String[] tags = tagStr.split(" ");
-                                for(String tag : tags){
-                                    TextView tagView = new TextView(FavoriteActivity.this);
-                                    tagView.setText(tag);
+
+                                for(int j=0;j<tags.length;j++){
+                                    String tag = tags[j];
+                                    View tagView = LayoutInflater.from(FavoriteActivity.this).inflate(R.layout.book_tag,null);
+                                    TextView t = tagView.findViewById(R.id.tag);
+                                    t.setText(tag);
+                                    t.setBackground(tag_border_styles.get(j));
+                                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                    layoutParams.setMargins(15,0,0,0);
+                                    tagView.setLayoutParams(layoutParams);
                                     tagsView.addView(tagView);
                                 }
 
@@ -415,7 +430,7 @@ public class FavoriteActivity extends AppCompatActivity {
 
                 from = from + newBooks.length();//更新请求index
 
-                normal.post(new Runnable() {
+                FavoriteActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         loadView.setVisibility(View.INVISIBLE);
@@ -442,7 +457,7 @@ public class FavoriteActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(books.getJSONObject(index).getInt("id"));
 
-                normal.post(new Runnable() {
+                FavoriteActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(surface!=null) {

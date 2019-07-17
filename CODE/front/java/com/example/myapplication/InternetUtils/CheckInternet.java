@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.InternetUtils;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;

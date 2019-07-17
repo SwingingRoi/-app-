@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -19,12 +20,12 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
 import com.example.myapplication.R;
-import com.example.myapplication.MyToast;
-import com.example.myapplication.MySpinner;
-import com.example.myapplication.BookActivity;
+import com.example.myapplication.MyComponent.MyToast;
+import com.example.myapplication.MyComponent.MySpinner;
+import com.example.myapplication.Activity.Book.BookActivity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -52,6 +53,7 @@ public class PersonalWorkActivity extends AppCompatActivity {
     private boolean ismanaging = false;//是否处于管理模式
     private boolean isRequesting = false;//当前是否在向后端请求书本信息
     final private int NEWBOOK=1;
+    private List<Drawable> tag_border_styles;//标签边框样式
 
     private JSONArray works;
 
@@ -72,6 +74,10 @@ public class PersonalWorkActivity extends AppCompatActivity {
 
             works = new JSONArray();
 
+            tag_border_styles = new ArrayList<>();
+            tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
+            tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
+            tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
 
             refresh = findViewById(R.id.refresh);
             bookTable = findViewById(R.id.BookTable);
@@ -252,7 +258,7 @@ public class PersonalWorkActivity extends AppCompatActivity {
                 }
 
 
-                normal.post(new Runnable() {
+                PersonalWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         int hasRemoved=0;
@@ -323,6 +329,7 @@ public class PersonalWorkActivity extends AppCompatActivity {
         loadView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
         findViewById(R.id.Remind).setVisibility(View.INVISIBLE);
+        normal.setVisibility(View.INVISIBLE);
 
         new Thread(getWorks).start();
     }
@@ -350,7 +357,7 @@ public class PersonalWorkActivity extends AppCompatActivity {
     Runnable getWorks = new Runnable() {
         @Override
         public void run() {
-            normal.post(new Runnable() {
+            PersonalWorkActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     TextView text = pullDown.findViewById(R.id.content);
@@ -369,7 +376,7 @@ public class PersonalWorkActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    PersonalWorkActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(PersonalWorkActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -394,7 +401,7 @@ public class PersonalWorkActivity extends AppCompatActivity {
                     works.put(newWorks.getJSONObject(i));
                 }//向works中添加新请求过来的work
 
-                normal.post(new Runnable() {
+                PersonalWorkActivity.this.runOnUiThread(new Runnable() {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void run() {
@@ -437,9 +444,17 @@ public class PersonalWorkActivity extends AppCompatActivity {
                                 LinearLayout tagsView = bookRow.findViewById(R.id.tags);
                                 String tagStr = newWorks.getJSONObject(i).getString("tags");
                                 String[] tags = tagStr.split(" ");
-                                for(String tag : tags){
-                                    TextView tagView = new TextView(PersonalWorkActivity.this);
-                                    tagView.setText(tag);
+
+                                for(int j=0;j<tags.length;j++){
+                                    String tag = tags[j];
+                                    View tagView = LayoutInflater.from(PersonalWorkActivity.this).inflate(R.layout.book_tag,null);
+                                    TextView t = tagView.findViewById(R.id.tag);
+                                    t.setText(tag);
+                                    t.setBackground(tag_border_styles.get(j));
+                                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                    layoutParams.setMargins(15,0,0,0);
+                                    tagView.setLayoutParams(layoutParams);
                                     tagsView.addView(tagView);
                                 }
 
@@ -487,7 +502,7 @@ public class PersonalWorkActivity extends AppCompatActivity {
 
                 from = from + newWorks.length();//更新请求index
 
-                normal.post(new Runnable() {
+                PersonalWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         loadView.setVisibility(View.INVISIBLE);
@@ -514,7 +529,7 @@ public class PersonalWorkActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(works.getJSONObject(index).getInt("id"));
 
-                normal.post(new Runnable() {
+                PersonalWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(surface!=null) {

@@ -1,8 +1,6 @@
 package com.cpd.soundbook.AudioUtils;
 
-import com.cpd.soundbook.GetEffectKey;
 import com.cpd.soundbook.MongoDB.MongoDBInter;
-import com.hankcs.hanlp.seg.common.Term;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
@@ -128,6 +126,7 @@ public class AddEffect {
                     file = concat(txtPath, resultPath);
                 }
 
+                outputStream.close();
                 deleteTempFile(paths);
             }else {
                 file = speech;

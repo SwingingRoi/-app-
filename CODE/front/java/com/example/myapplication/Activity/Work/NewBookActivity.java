@@ -22,20 +22,18 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
 import com.example.myapplication.PicUtils.BlurPic;
 import com.example.myapplication.R;
 import com.example.myapplication.PicUtils.CropPic;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.MyComponent.MyToast;
 
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class NewBookActivity extends AppCompatActivity {
 
@@ -347,15 +345,12 @@ public class NewBookActivity extends AppCompatActivity {
                 result=null;
             }//用户未选择封面
 
-            normal.post(new Runnable() {
-                @Override
-                public void run() {
-                    if(result==null) surfaceName="";
-                    else {
-                        surfaceName = result;
-                    }//返回封面文件名
-                }
-            });
+
+            if(result==null) surfaceName="";
+            else {
+                surfaceName = result;
+            }//返回封面文件名
+
         }
     };
 
@@ -408,7 +403,7 @@ public class NewBookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
-                    normal.post(new Runnable() {
+                    NewBookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(NewBookActivity.this,getResources().getString(R.string.HttpTimeOut));
@@ -420,7 +415,7 @@ public class NewBookActivity extends AppCompatActivity {
                 final String result = new String(outputStream.toByteArray(),
                         StandardCharsets.UTF_8);
 
-                normal.post(new Runnable() {
+                NewBookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Button store = findViewById(R.id.Store);
@@ -461,7 +456,7 @@ public class NewBookActivity extends AppCompatActivity {
                 }
             }
 
-            normal.post(new Runnable() {
+            NewBookActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     NewBookActivity.this.finish();

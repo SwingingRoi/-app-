@@ -1,4 +1,6 @@
-package com.example.myapplication;
+package com.example.myapplication.EmailUtils;
+
+import com.example.myapplication.InternetUtils.GetServer;
 
 import java.net.URLEncoder;
 import java.util.Properties;

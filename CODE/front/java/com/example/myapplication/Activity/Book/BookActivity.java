@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.Activity.Book;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -6,11 +6,11 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,7 +29,12 @@ import android.widget.TextView;
 
 import com.example.myapplication.Activity.Work.EditChapterActivity;
 import com.example.myapplication.Activity.Work.ChapterActivity;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.MyComponent.MySpinner;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.PicUtils.GetPicture;
+import com.example.myapplication.R;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -57,6 +62,7 @@ public class BookActivity extends AppCompatActivity {
     private MySpinner menu;
     private LinearLayout manageBox;
     private View pullDown;//请求文字提示
+    private List<Drawable> tag_border_styles;//标签边框样式
 
     private int ISFAV=0;
     private boolean isRequesting = false;//判断当前是否在请求新章节
@@ -81,6 +87,11 @@ public class BookActivity extends AppCompatActivity {
         Chapter = findViewById(R.id.chapter);
         fav = findViewById(R.id.favicon);
         bookinfo = findViewById(R.id.bookinfo);
+
+        tag_border_styles = new ArrayList<>();
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
 
         manageBox = findViewById(R.id.manage);
         menu = findViewById(R.id.menu);
@@ -349,7 +360,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
-                    bookinfo.post(new Runnable() {
+                    BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(BookActivity.this,getResources().getString(R.string.HttpTimeOut));
@@ -381,7 +392,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
-                    bookinfo.post(new Runnable() {
+                    BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(BookActivity.this,getResources().getString(R.string.HttpTimeOut));
@@ -407,7 +418,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
-                    bookinfo.post(new Runnable() {
+                    BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(BookActivity.this,getResources().getString(R.string.HttpTimeOut));
@@ -419,7 +430,7 @@ public class BookActivity extends AppCompatActivity {
                     final String result = new String(outputStream.toByteArray(),
                             StandardCharsets.UTF_8);
 
-                    bookinfo.post(new Runnable() {
+                    BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             if(result.equals("yes")){
@@ -451,7 +462,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    bookinfo.post(new Runnable() {
+                    BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(BookActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -468,7 +479,7 @@ public class BookActivity extends AppCompatActivity {
 
                 final JSONObject book = new JSONObject(result);
 
-                bookinfo.post(new Runnable() {
+                BookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -495,6 +506,24 @@ public class BookActivity extends AppCompatActivity {
                                 intro = book.getString("intro");
                                 introduction.setText(intro);
 
+                                LinearLayout tagsView = findViewById(R.id.tags);
+                                String tagStr = book.getString("tags");
+                                String[] tags = tagStr.split(" ");
+
+                                for(int j=0;j<tags.length;j++){
+                                    String tag = tags[j];
+                                    View tagView = LayoutInflater.from(BookActivity.this).inflate(R.layout.book_tag,null);
+                                    TextView t = tagView.findViewById(R.id.tag);
+                                    t.setText(tag);
+                                    t.setBackground(tag_border_styles.get(j));
+                                    t.setTextColor(Color.WHITE);
+                                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                    layoutParams.setMargins(0,15,0,0);
+                                    tagView.setLayoutParams(layoutParams);
+                                    tagsView.addView(tagView);
+                                }
+
                                 new Thread(getSurface).start();
                                 new Thread(getAvatar).start();
                             }
@@ -516,7 +545,7 @@ public class BookActivity extends AppCompatActivity {
             GetPicture getPicture = new GetPicture();
             final Bitmap surface = getPicture.getSurface(bookid);
 
-            bookinfo.post(new Runnable() {
+            BookActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if(surface != null){
@@ -539,7 +568,7 @@ public class BookActivity extends AppCompatActivity {
             GetPicture getPicture = new GetPicture();
             final Bitmap avatar = getPicture.getAvatar(author);
 
-            bookinfo.post(new Runnable() {
+            BookActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if(avatar !=null) {
@@ -554,7 +583,7 @@ public class BookActivity extends AppCompatActivity {
     Runnable reqChapter = new Runnable() {
         @Override
         public void run() {
-            chapterTable.post(new Runnable() {
+            BookActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     TextView text = pullDown.findViewById(R.id.content);
@@ -573,7 +602,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    chapterTable.post(new Runnable() {
+                    BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(BookActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -595,7 +624,7 @@ public class BookActivity extends AppCompatActivity {
                     chapters.put(newChapters.getJSONObject(i));
                 }//向chapters中添加新请求过来的chapter
 
-                chapterTable.post(new Runnable() {
+                BookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         chapterTable.removeView(pullDown);
@@ -680,7 +709,7 @@ public class BookActivity extends AppCompatActivity {
                     }
                 }
 
-                chapterTable.post(new Runnable() {
+                BookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         int hasRemoved=0;

@@ -44,7 +44,7 @@
                 style="@style/booktag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/book_tag_border"
+                android:background="@drawable/book_tag_border_gray"
                 android:gravity="center"
                 android:text="@string/booktag1" />
 
@@ -54,7 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:background="@drawable/book_tag_border"
+                android:background="@drawable/book_tag_border_gray"
                 android:gravity="center"
                 android:text="@string/booktag2" />
         </LinearLayout>
@@ -74,7 +74,7 @@
                 style="@style/booktag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/book_tag_border"
+                android:background="@drawable/book_tag_border_gray"
                 android:gravity="center"
                 android:text="@string/booktag3" />
 
@@ -84,7 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:background="@drawable/book_tag_border"
+                android:background="@drawable/book_tag_border_gray"
                 android:gravity="center"
                 android:text="@string/booktag4" />
         </LinearLayout>
@@ -101,7 +101,7 @@
                 style="@style/booktag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/book_tag_border"
+                android:background="@drawable/book_tag_border_gray"
                 android:gravity="center"
                 android:text="@string/booktag5" />
 
@@ -111,7 +111,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:background="@drawable/book_tag_border"
+                android:background="@drawable/book_tag_border_gray"
                 android:gravity="center"
                 android:text="@string/booktag6" />
         </LinearLayout>
@@ -128,7 +128,7 @@
                 style="@style/booktag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/book_tag_border"
+                android:background="@drawable/book_tag_border_gray"
                 android:gravity="center"
                 android:text="@string/booktag7" />
 
@@ -138,7 +138,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:background="@drawable/book_tag_border"
+                android:background="@drawable/book_tag_border_gray"
                 android:gravity="center"
                 android:text="@string/booktag8" />
         </LinearLayout>

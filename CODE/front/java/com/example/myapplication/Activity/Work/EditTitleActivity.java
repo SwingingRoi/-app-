@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.example.myapplication.R;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.MyComponent.MyToast;
 
 public class EditTitleActivity extends AppCompatActivity {
 

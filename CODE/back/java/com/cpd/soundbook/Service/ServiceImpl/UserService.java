@@ -1,14 +1,18 @@
 package com.cpd.soundbook.Service.ServiceImpl;
 
+import com.cpd.soundbook.DAO.DAOImpl.UserFavBookDAO;
 import com.cpd.soundbook.DAO.DAOInterface.UserDAO;
+import com.cpd.soundbook.Entity.Book;
 import com.cpd.soundbook.Entity.User;
 import com.cpd.soundbook.MongoDB.MongoDBInter;
 import com.mongodb.gridfs.GridFSDBFile;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.List;
 
 @Service
 public class UserService implements com.cpd.soundbook.Service.ServiceInterface.UserService {
@@ -17,6 +21,17 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
 
     @Autowired
     private MongoDBInter mongoDAO;
+
+    @Autowired
+    private UserFavBookDAO userFavBookDAO;
+
+    @Autowired
+    private UserBrowseBookService userBrowseBookService;
+
+    final private int INFINITE = 999999999;
+
+    final private int FAV_WEIGHT = 8;//收藏在推荐中的比重
+    final private int HISTORY_WEIGHT = 2;//浏览历史在推荐中的比重
 
     @Override
     public String sign(JSONObject newUser) {
@@ -176,4 +191,27 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
         if(user.getAvatar()==null) return null;
         return mongoDAO.getFileByName(user.getAvatar());
     }
+
+    @Override
+    public JSONArray getRecommend(String account, int from, int size) {
+        List<Book> favBooks = userFavBookDAO.findFavs(account,from,INFINITE);//找到用户收藏的所有书本
+
+        /*
+        browse:{'name':bookname,'bookid':bookid,'tags':tags,'account':account,'id':id,'time':time}
+         */
+        JSONArray browses = userBrowseBookService.getRecords(account,from,20);//找最近20条浏览记录
+
+
+        for(Book book : favBooks){
+            System.out.println(book.getTags());
+        }
+        for(int i=0;i<browses.length();i++){
+            System.out.println(browses.getJSONObject(i).getString("tags"));
+        }
+
+        
+        return null;
+    }
+
+
 }

@@ -19,13 +19,13 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
-import com.example.myapplication.MilliToHMS;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.AudioUtils.MilliToHMS;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.R;
 
-import com.example.myapplication.AudioUtils;
+import com.example.myapplication.AudioUtils.AudioUtils;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -102,7 +102,7 @@ public class EditChapterActivity extends AppCompatActivity {
                     speech_player.seekTo(seekBar.getProgress());
                     bgm_player.seekTo(seekBar.getProgress());
 
-                    normal.post(new Runnable() {
+                    EditChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             TextView begin = findViewById(R.id.begin);
@@ -122,7 +122,7 @@ public class EditChapterActivity extends AppCompatActivity {
             public void onCompletion(MediaPlayer mp) {
                 resetPlayer();
 
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
@@ -281,7 +281,7 @@ public class EditChapterActivity extends AppCompatActivity {
             if(speech_player.isPlaying()) {
                 speech_player.pause();
                 bgm_player.pause();
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
@@ -292,7 +292,7 @@ public class EditChapterActivity extends AppCompatActivity {
             else {
                 speech_player.start();
                 bgm_player.start();
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
@@ -349,7 +349,7 @@ public class EditChapterActivity extends AppCompatActivity {
                                     try {
                                         if(speech_player == null) break;
                                         seekBar.setProgress(speech_player.getCurrentPosition());
-                                        normal.post(new Runnable() {
+                                        EditChapterActivity.this.runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
                                                 TextView begin = findViewById(R.id.begin);
@@ -365,7 +365,7 @@ public class EditChapterActivity extends AppCompatActivity {
                             }
                         }).start();
 
-                        normal.post(new Runnable() {
+                        EditChapterActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 firtstPlay = false;
@@ -387,7 +387,7 @@ public class EditChapterActivity extends AppCompatActivity {
             try{
 
                 //重置播放状态
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         speechFile = null;
@@ -411,7 +411,7 @@ public class EditChapterActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(param, "POST", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    EditChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(EditChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -423,7 +423,7 @@ public class EditChapterActivity extends AppCompatActivity {
                     return;
                 }
 
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -475,7 +475,7 @@ public class EditChapterActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(params.toString().getBytes(), "POST", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    EditChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(EditChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -493,7 +493,7 @@ public class EditChapterActivity extends AppCompatActivity {
                 final JSONObject path = new JSONObject(result);
 
 
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -521,7 +521,7 @@ public class EditChapterActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
 
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -560,7 +560,7 @@ public class EditChapterActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    EditChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(EditChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -577,7 +577,7 @@ public class EditChapterActivity extends AppCompatActivity {
 
                 final JSONObject chapter = new JSONObject(result);
 
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -612,7 +612,7 @@ public class EditChapterActivity extends AppCompatActivity {
             try{
 
                 if(textChanged && !speechChanged){//文本修改了，但语音尚未修改，提醒用户按下转换按钮
-                    normal.post(new Runnable() {
+                    EditChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(EditChapterActivity.this,getResources().getString(R.string.askpush));
@@ -647,12 +647,7 @@ public class EditChapterActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "GET", "application/json");
 
-                normal.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        new Thread(updateSpeech).start();
-                    }
-                });
+                new Thread(updateSpeech).start();
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -671,7 +666,7 @@ public class EditChapterActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    EditChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(EditChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -683,7 +678,7 @@ public class EditChapterActivity extends AppCompatActivity {
                     return;
                 }
 
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -733,7 +728,7 @@ public class EditChapterActivity extends AppCompatActivity {
                 httpUtils.doHttp(param, "POST",
                         "application/json");
 
-                normal.post(new Runnable() {
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         new MyToast(EditChapterActivity.this,"修改成功!");

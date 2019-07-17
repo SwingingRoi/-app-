@@ -25,16 +25,20 @@ public class GetBGMController {
     @RequestMapping("/audiobook/getBGM")
     public void getBGM(@RequestParam("filename") String filename, HttpServletResponse response){
         try{
+            System.out.println("begin get bgm");
             String fileName = URLDecoder.decode(filename,"UTF-8");
             GridFSDBFile bgm = chapterService.getBGM(fileName);
+            System.out.println("begin transfer bgm");
             if(bgm==null){
                 httpUtils.writeStringBack(response,null);
             }
             else {
                 OutputStream outputStream = response.getOutputStream();
                 bgm.writeTo(outputStream);
+                outputStream.flush();
                 outputStream.close();
             }
+            System.out.println("done");
         }catch (Exception e){
             e.printStackTrace();
         }

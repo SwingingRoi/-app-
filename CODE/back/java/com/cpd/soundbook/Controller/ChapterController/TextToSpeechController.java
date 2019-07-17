@@ -23,6 +23,7 @@ public class TextToSpeechController {
     @RequestMapping("/audiobook/textToSpeech")
     public void textToSpeech(HttpServletRequest request, HttpServletResponse response){
         try{
+            //System.out.println("test to speech begin");
             JSONObject text = new JSONObject(httpUtils.getStringParam(request));
             File result = chapterService.textToSpeech(text.getString("text"));
 
@@ -30,6 +31,7 @@ public class TextToSpeechController {
             if(result.exists()) {
                 System.out.println(result.delete());//删除临时文件
             }
+            //System.out.println("text to speech done");
         }catch (Exception e){
             e.printStackTrace();
         }
