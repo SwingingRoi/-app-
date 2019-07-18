@@ -46,6 +46,7 @@
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_weight="0.25"
+                android:onClick="re"
                 app:srcCompat="@drawable/refresh" />
 
             <TextView

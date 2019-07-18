@@ -67,7 +67,7 @@
                 android:text="@string/MakeHistory"
                 android:textSize="18sp" />
 
-            <com.example.myapplication.MySpinner
+            <com.example.myapplication.MyComponent.MySpinner
                 android:id="@+id/menu"
                 android:layout_width="25dp"
                 android:layout_height="wrap_content"

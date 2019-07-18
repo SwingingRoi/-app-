@@ -45,8 +45,8 @@
 
     <!-- MainActivity界面的strings-->
     <string name="Home">首页</string>
-    <string name="Make">制作</string>
-    <string name="Share">分享</string>
+    <string name="recommend">推荐</string>
+    <string name="choosepreference">选择偏好</string>
     <string name="Personal">账号</string>
     <string name="unLogged">未登录</string>
     <string name="avatarDescription">头像</string>
@@ -64,7 +64,10 @@
     <string name="Logout">退出登录</string>
 
 
+    <!-- 图鉴界面的strings-->
+
     <!-- 个人中心界面的strings-->
+    <string name="personal">个人中心</string>
     <string name="InfoEdit">编辑资料</string>
     <string name="MakeHistory">我的作品</string>
     <string name="ListenHistory">收听历史</string>
@@ -117,7 +120,7 @@
     <!--制作新章节界面的strings-->
     <string name="trylisten">试听</string>
     <string name="translate">转换</string>
-    <string name="input">输入文字</string>
+    <string name="input">输入文字(不超过3000字)</string>
     <string name="draft">已成功保存草稿!</string>
     <string name="translating">转换中，请稍候</string>
     <string name="translateSuccess">转换成功!</string>
@@ -144,6 +147,16 @@
     <string name="introlong">简介不能超过200个字！</string>
     <string name="makesuccess">新书创建成功！</string>
     <string name="makefail">新书创建失败！</string>
+    <string name="choosetag">选择标签</string>
+    <string name="remind">最多选择三个标签</string>
+    <string name="booktag1">玄幻修仙</string>
+    <string name="booktag2">武侠古典</string>
+    <string name="booktag3">历史文化</string>
+    <string name="booktag4">都市言情</string>
+    <string name="booktag5">科学幻想</string>
+    <string name="booktag6">重生穿越</string>
+    <string name="booktag7">末日文学</string>
+    <string name="booktag8">灵异探险</string>
 
     <!--HTTP请求失败-->
     <string name="HttpTimeOut">请求超时,请检查网络设置</string>

@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -16,12 +15,11 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.example.myapplication.GetAudioLength;
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.R;
-import com.example.myapplication.MilliToHMS;
+import com.example.myapplication.AudioUtils.MilliToHMS;
 
 import org.json.JSONObject;
 
@@ -29,11 +27,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class ChapterActivity extends AppCompatActivity {
 
@@ -46,18 +41,27 @@ public class ChapterActivity extends AppCompatActivity {
     private int bookid;
     private String account;
     private String speechPath;
+    private String bgmPath;
 
     private File speechFile = null;
-    private final String MP3_LOCATION = Environment.getExternalStorageDirectory().getPath()+"/temp.mp3";
+    private File bgm = null;
+    private String MP3_LOCATION;
+    private String BGM_LOCATION;
 
-    private MediaPlayer player;//音频播放
+    private MediaPlayer speech_player;//音频播放
+    private MediaPlayer bgm_player;//bgm播放
 
     private boolean firtstPlay = true;//是否首次播放当前音频
+    private boolean getSpeechDone = false;//是否已获取音频
+    private boolean getBGMDone = false;//是否已获取BGM
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chapter);
+
+        MP3_LOCATION = this.getCacheDir().getAbsolutePath()+"/temp.mp3";
+        BGM_LOCATION = this.getCacheDir().getAbsolutePath()+"/bgm.mp3";
 
         Intent intent = getIntent();
         chapterID = intent.getIntExtra("chapterId",-1);
@@ -93,22 +97,39 @@ public class ChapterActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if(speechFile != null){
-                    player.seekTo(seekBar.getProgress());
+                    speech_player.seekTo(seekBar.getProgress());
+                    bgm_player.seekTo(seekBar.getProgress());
 
-                    TextView begin = findViewById(R.id.begin);
-                    MilliToHMS milliToHMS = new MilliToHMS();
-                    begin.setText(milliToHMS.milliToHMS(seekBar.getProgress()));
+                    ChapterActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            TextView begin = findViewById(R.id.begin);
+                            MilliToHMS milliToHMS = new MilliToHMS();
+                            begin.setText(milliToHMS.milliToHMS(speech_player.getCurrentPosition()));
+                        }
+                    });
                 }
             }
         });//实现拖动进度条，调整播放进度
 
-        player = new MediaPlayer();
-        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        speech_player = new MediaPlayer();
+        bgm_player = new MediaPlayer();
+
+        speech_player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 resetPlayer();
+
+                ChapterActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView playButton = findViewById(R.id.PlayButton);
+                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+                    }
+                });
             }
         });
+
 
         new Thread(addRecord).start();//添加浏览记录
         refresh();
@@ -118,12 +139,30 @@ public class ChapterActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+    @Override
+    public void onBackPressed(){
+        if(speech_player != null) {
+            if(speech_player.isPlaying()) speech_player.pause();
+            speech_player.release();
+            speech_player = null;
+        }
+        if(bgm_player != null) {
+            if(bgm_player.isPlaying()) bgm_player.pause();
+            bgm_player.release();
+            bgm_player = null;
+        }
+        super.onBackPressed();
+    }
+
     //重置播放状态
     private void resetPlayer(){
-        player.reset();
+        if(speech_player != null){
+            speech_player.reset();
+        }
 
-        ImageView playButton = findViewById(R.id.PlayButton);
-        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+        if(bgm_player != null){
+            bgm_player.reset();
+        }
 
         firtstPlay = true;
     }
@@ -157,78 +196,124 @@ public class ChapterActivity extends AppCompatActivity {
         refresh();
     }
 
-    //试听音频
     public void playSpeech(View view){
-        try {
-            //没有音频或音频尚未转换成功
-            if(speechFile == null){
-                new MyToast(this,"语音文件不存在!");
-                return;
-            }
+        getSpeechDone = false;
+        getBGMDone = false;
 
-            //播放
-            if(!player.isPlaying()) {
+        if(firtstPlay)  {
+            new Thread(prepareSpeech).start();
+        }
 
-                //首次播放设置数据源
-                if(firtstPlay) {
-                    seekBar.setProgress(0);
-                    player.setDataSource(MP3_LOCATION);
-                    AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();//数据源类型
-                    player.setAudioAttributes(audioAttributes);
-
-                    player.prepareAsync();//异步准备音源
-                    player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                        @Override
-                        public void onPrepared(MediaPlayer mp) {
-                            seekBar.setMax(player.getDuration());
-
-                            //让进度条与播放进度同步
-                            Timer timer = new Timer();
-                            TimerTask task = new TimerTask() {
-                                @Override
-                                public void run() {
-                                    if(!player.isPlaying()) return;
-                                    seekBar.setProgress(player.getCurrentPosition());
-
-                                    normal.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            TextView begin = findViewById(R.id.begin);
-                                            MilliToHMS milliToHMS = new MilliToHMS();
-                                            begin.setText(milliToHMS.milliToHMS(player.getCurrentPosition()));
-                                        }
-                                    });
-                                }
-                            };
-                            timer.schedule(task,0,10);
-
-                            player.start();
-                            firtstPlay = false;
-                            ImageView playButton = findViewById(R.id.PlayButton);
-                            playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
-                        }
-                    });
-                }
-
-                //非首次播放从暂停状态恢复
-                else {
-                    ImageView playButton = findViewById(R.id.PlayButton);
-                    playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
-                    player.start();
-                }
-            }
-
-            //暂停
-            else {
-                player.pause();
-                ImageView playButton = findViewById(R.id.PlayButton);
-                playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
-            }
-        }catch (Exception e){
-            e.printStackTrace();
+        else {
+            new Thread(controlSpeech).start();
         }
     }
+
+    Runnable controlSpeech = new Runnable() {
+        @Override
+        public void run() {
+            if(speech_player.isPlaying()) {
+                speech_player.pause();
+                bgm_player.pause();
+                ChapterActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView playButton = findViewById(R.id.PlayButton);
+                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+                    }
+                });
+            }
+            else {
+                speech_player.start();
+                bgm_player.start();
+                ChapterActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView playButton = findViewById(R.id.PlayButton);
+                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
+                    }
+                });
+            }
+        }
+    };
+
+    //试听音频
+    Runnable prepareSpeech = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                //没有音频或音频尚未转换成功
+                if(speechFile == null){
+                    new MyToast(ChapterActivity.this,"语音文件不存在!");
+                    return;
+                }
+                //首次播放设置数据源
+                seekBar.setProgress(0);
+
+                AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();//数据源类型
+
+                speech_player.setDataSource(MP3_LOCATION);
+                speech_player.setAudioAttributes(audioAttributes);
+
+                bgm_player.setDataSource(BGM_LOCATION);
+                bgm_player.setAudioAttributes(audioAttributes);
+
+                bgm_player.prepare();
+                speech_player.prepareAsync();//异步准备音源
+
+                speech_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+
+                        seekBar.setMax(speech_player.getDuration());
+
+
+                        speech_player.start();
+                        bgm_player.start();
+
+                        bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
+                        bgm_player.setLooping(true);//背景音乐循环播放
+
+                        //进度条更新
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                while (!Thread.currentThread().isInterrupted()){
+                                    try {
+                                        if(speech_player == null) break;
+                                        seekBar.setProgress(speech_player.getCurrentPosition());
+                                        ChapterActivity.this.runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                TextView begin = findViewById(R.id.begin);
+                                                MilliToHMS milliToHMS = new MilliToHMS();
+                                                begin.setText(milliToHMS.milliToHMS(speech_player.getCurrentPosition()));
+                                            }
+                                        });
+                                        Thread.sleep(200);
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }).start();
+
+                        ChapterActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                firtstPlay = false;
+                                ImageView playButton = findViewById(R.id.PlayButton);
+                                playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
+                            }
+                        });
+                    }
+                });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };
 
     Runnable addRecord = new Runnable() {
         @Override
@@ -241,9 +326,7 @@ public class ChapterActivity extends AppCompatActivity {
                 JSONObject params = new JSONObject();
                 params.put("account",account);
                 params.put("id",bookid);
-                Date date = new Date();
-                DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-                params.put("time",format.format(date));
+                params.put("time",String.valueOf(System.currentTimeMillis()));
 
                 byte[] param = params.toString().getBytes();
 
@@ -268,7 +351,7 @@ public class ChapterActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    ChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(ChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -285,7 +368,7 @@ public class ChapterActivity extends AppCompatActivity {
 
                 final JSONObject chapter = new JSONObject(result);
 
-                normal.post(new Runnable() {
+                ChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -296,11 +379,13 @@ public class ChapterActivity extends AppCompatActivity {
                             content.setText(chapter.getString("content"));
 
                             speechPath = chapter.getString("speechPath");
+                            bgmPath = chapter.getString("bgmPath");
 
                             TextView end = findViewById(R.id.end);
                             end.setText(chapter.getString("length"));
 
                             new Thread(getSpeech).start();
+                            new Thread(getBgm).start();
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -323,7 +408,7 @@ public class ChapterActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    ChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(ChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -335,7 +420,7 @@ public class ChapterActivity extends AppCompatActivity {
                     return;
                 }
 
-                normal.post(new Runnable() {
+                ChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -346,22 +431,63 @@ public class ChapterActivity extends AppCompatActivity {
 
                             resultStream.writeTo(outputStream);
 
-                            GetAudioLength getAudioLength = new GetAudioLength();
-                            TextView end = findViewById(R.id.end);
-                            end.setText(getAudioLength.getLength(speechFile));
-
                             seekBar.setProgress(0);
 
                             TextView begin = findViewById(R.id.begin);
                             begin.setText(getResources().getString(R.string.initial));
 
-                            loadingView.setVisibility(View.INVISIBLE);
-                            normal.setVisibility(View.VISIBLE);
+                            outputStream.close();
+
+                            getSpeechDone = true;
+
+                            if(getBGMDone){
+                                loadingView.setVisibility(View.INVISIBLE);
+                                normal.setVisibility(View.VISIBLE);
+                            }
                         }catch (Exception e){
                             e.printStackTrace();
                         }
                     }
                 });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };
+
+    Runnable getBgm = new Runnable() {
+        @Override
+        public void run() {
+            try{
+                GetServer getServer = new GetServer();
+                String url = getServer.getIPADDRESS()+"/audiobook/getBGM?filename=" + URLEncoder.encode(bgmPath,"UTF-8");
+
+                HttpUtils httpUtils = new HttpUtils(url);
+                final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
+
+                ChapterActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            bgm = new File(BGM_LOCATION);//speechFile保存后端语音
+                            if (!bgm.exists()) bgm.createNewFile();
+                            OutputStream outputStream = new FileOutputStream(bgm);
+
+                            resultStream.writeTo(outputStream);
+                            outputStream.close();
+
+                            getBGMDone = true;
+
+                            if(getSpeechDone){
+                                loadingView.setVisibility(View.INVISIBLE);
+                                normal.setVisibility(View.VISIBLE);
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
             }catch (Exception e){
                 e.printStackTrace();
             }

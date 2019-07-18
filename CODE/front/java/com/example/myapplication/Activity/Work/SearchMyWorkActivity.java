@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -18,12 +19,12 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.PicUtils.GetPicture;
 import com.example.myapplication.R;
-import com.example.myapplication.BookActivity;
+import com.example.myapplication.Activity.Book.BookActivity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -49,6 +50,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
     private boolean isRequesting = true;//当前是否在向后端请求书本信息
     private boolean ismanaging = false;//是否处于管理模式
     private String account;
+    private List<Drawable> tag_border_styles;//标签边框样式
 
     final private int SEARCHBTN = 1;
     final private int SCROLL = 2;
@@ -66,6 +68,11 @@ public class SearchMyWorkActivity extends AppCompatActivity {
         normal = findViewById(R.id.normal);
         loadView = findViewById(R.id.Loading);
         pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+
+        tag_border_styles = new ArrayList<>();
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
 
         SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
         account = sharedPreferences.getString("Account","");
@@ -184,7 +191,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
 
 
-                normal.post(new Runnable() {
+                SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         int hasRemoved=0;
@@ -249,7 +256,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
         @Override
         public void run() {
 
-                normal.post(new Runnable() {
+            SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         TextView text = pullDown.findViewById(R.id.content);
@@ -270,7 +277,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream == null){
-                    searchBox.post(new Runnable() {
+                    SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(SearchMyWorkActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -290,7 +297,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                     searchresults.put(resultArray.getJSONObject(i));
                 }
 
-                normal.post(new Runnable() {
+                SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void run() {
@@ -301,16 +308,10 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                             }
 
                             if (searchresults.length() == 0) {//搜索结果为空
-                                searchBox.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        loadView.setVisibility(View.INVISIBLE);
-                                        View noresult = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.search_no_result, null);
-                                        bookTable.removeAllViews();
-                                        bookTable.addView(noresult);
-                                    }
-                                });
-                                return;
+                                    loadView.setVisibility(View.INVISIBLE);
+                                    View noresult = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.search_no_result, null);
+                                    bookTable.removeAllViews();
+                                    bookTable.addView(noresult);
                             }
 
                             for (int i = 0; i < resultArray.length(); i++) {
@@ -325,6 +326,23 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
                                 TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
                                 chapterNumber.setText(resultArray.getJSONObject(i).getInt("chapters") + "章");
+
+                                LinearLayout tagsView = bookRow.findViewById(R.id.tags);
+                                String tagStr = resultArray.getJSONObject(i).getString("tags");
+                                String[] tags = tagStr.split(" ");
+
+                                for(int j=0;j<tags.length;j++){
+                                    String tag = tags[j];
+                                    View tagView = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_tag,null);
+                                    TextView t = tagView.findViewById(R.id.tag);
+                                    t.setText(tag);
+                                    t.setBackground(tag_border_styles.get(j));
+                                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                    layoutParams.setMargins(15,0,0,0);
+                                    tagView.setLayoutParams(layoutParams);
+                                    tagsView.addView(tagView);
+                                }
 
                                 if(ismanaging){
                                     CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
@@ -368,7 +386,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
                 from = from + resultArray.length();//更新请求index
 
-                normal.post(new Runnable() {
+                SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         loadView.setVisibility(View.INVISIBLE);
@@ -397,7 +415,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(searchresults.getJSONObject(index).getInt("id"));
 
-                normal.post(new Runnable() {
+                SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(surface!=null) {

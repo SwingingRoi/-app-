@@ -30,6 +30,7 @@ public class GetSpeechController {
             else {
                 OutputStream outputStream = response.getOutputStream();
                 speech.writeTo(outputStream);
+                outputStream.close();
             }
         }catch (Exception e){
             e.printStackTrace();

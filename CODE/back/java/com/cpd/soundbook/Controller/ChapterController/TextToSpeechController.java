@@ -10,9 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 @RestController
 public class TextToSpeechController {
@@ -26,11 +23,15 @@ public class TextToSpeechController {
     @RequestMapping("/audiobook/textToSpeech")
     public void textToSpeech(HttpServletRequest request, HttpServletResponse response){
         try{
+            //System.out.println("test to speech begin");
             JSONObject text = new JSONObject(httpUtils.getStringParam(request));
             File result = chapterService.textToSpeech(text.getString("text"));
 
             httpUtils.writeFileBack(response,result);
-            //result.delete();//删除临时文件
+            if(result.exists()) {
+                System.out.println(result.delete());//删除临时文件
+            }
+            //System.out.println("text to speech done");
         }catch (Exception e){
             e.printStackTrace();
         }

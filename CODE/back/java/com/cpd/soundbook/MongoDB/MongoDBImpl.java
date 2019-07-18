@@ -30,7 +30,7 @@ public class MongoDBImpl implements MongoDBInter{
     }
 
     @Override
-    public GridFSDBFile getFile(String filename) {
+    public GridFSDBFile getFileByName(String filename) {
         GridFSDBFile gridFSDBFile = new GridFSDBFile();
         try{
             GridFS gridFS = new GridFS(client.getDB("audiobook"));
@@ -42,6 +42,8 @@ public class MongoDBImpl implements MongoDBInter{
         return gridFSDBFile;
     }
 
+
+
     @Override
     public void deleteFile(String filename) {
         try{
@@ -51,5 +53,44 @@ public class MongoDBImpl implements MongoDBInter{
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public GridFSDBFile getBGMByLevel(int level) {
+        GridFSDBFile gridFSDBFile = new GridFSDBFile();
+        try{
+            GridFS gridFS = new GridFS(client.getDB("bgm"));
+            DBObject dbObject = new BasicDBObject("level",level);
+            gridFSDBFile= gridFS.findOne(dbObject);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return gridFSDBFile;
+    }
+
+    @Override
+    public GridFSDBFile getBGMByName(String name) {
+        GridFSDBFile gridFSDBFile = new GridFSDBFile();
+        try{
+            GridFS gridFS = new GridFS(client.getDB("bgm"));
+            DBObject dbObject = new BasicDBObject("filename",name);
+            gridFSDBFile= gridFS.findOne(dbObject);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return gridFSDBFile;
+    }
+
+    @Override
+    public GridFSDBFile getEffectByName(String name) {
+        GridFSDBFile gridFSDBFile = new GridFSDBFile();
+        try{
+            GridFS gridFS = new GridFS(client.getDB("effects"));
+            DBObject dbObject = new BasicDBObject("filename",name);
+            gridFSDBFile= gridFS.findOne(dbObject);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return gridFSDBFile;
     }
 }

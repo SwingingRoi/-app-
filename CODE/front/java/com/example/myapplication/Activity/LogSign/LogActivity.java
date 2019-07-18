@@ -14,13 +14,13 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 
 import com.example.myapplication.Activity.MainActivity;
-import com.example.myapplication.GetServer;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.R;
-import com.example.myapplication.SendEmail;
+import com.example.myapplication.EmailUtils.SendEmail;
 import org.json.JSONObject;
-import com.example.myapplication.CheckInternet;
-import com.example.myapplication.HttpUtils;
+import com.example.myapplication.InternetUtils.CheckInternet;
+import com.example.myapplication.InternetUtils.HttpUtils;
 
 import java.nio.charset.StandardCharsets;
 
@@ -172,7 +172,7 @@ public class LogActivity extends AppCompatActivity {
                 final String result = new String(httpUtils.doHttp(param,"POST","application/json").toByteArray(),
                         StandardCharsets.UTF_8);
 
-                account.post(new Runnable() {
+                LogActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         switch (result){

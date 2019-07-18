@@ -1,10 +1,12 @@
 package com.example.myapplication.Activity.Work;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -12,6 +14,7 @@ import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -19,17 +22,18 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
 import com.example.myapplication.PicUtils.BlurPic;
 import com.example.myapplication.R;
 import com.example.myapplication.PicUtils.CropPic;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.MyComponent.MyToast;
 
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 public class NewBookActivity extends AppCompatActivity {
 
@@ -50,6 +54,9 @@ public class NewBookActivity extends AppCompatActivity {
     private TextView Intro;
     private LinearLayout normal;
 
+    private HashMap<String,Boolean> tagStats;//存储标签的选择状态
+    private int count = 0;//已选择标签数
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +71,20 @@ public class NewBookActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
         account = sharedPreferences.getString("Account","");
 
+        tagStats = new HashMap<>();
+        initTagStat();
+    }
+
+    private void initTagStat(){
+        tagStats.put(getResources().getString(R.string.booktag1),false);
+        tagStats.put(getResources().getString(R.string.booktag2),false);
+        tagStats.put(getResources().getString(R.string.booktag3),false);
+        tagStats.put(getResources().getString(R.string.booktag4),false);
+        tagStats.put(getResources().getString(R.string.booktag5),false);
+        tagStats.put(getResources().getString(R.string.booktag6),false);
+        tagStats.put(getResources().getString(R.string.booktag7),false);
+        tagStats.put(getResources().getString(R.string.booktag8),false);//初始标签默认都没有选择
+        count = 0;
     }
 
     @Override
@@ -219,7 +240,79 @@ public class NewBookActivity extends AppCompatActivity {
         countDownTimer.start();
 
         try {
-            new Thread(storeNewBook).start();
+            chooseTags();//选择标签
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void setTagClickListener(final TextView tagView){
+        try{
+            tagView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    String tag = tagView.getText().toString();
+                    boolean oldStat = tagStats.get(tag);
+
+                    //设置标签样式，更新已选择标签数
+                    if(oldStat == false){//选择标签
+                        if(count == 3){
+                            new MyToast(NewBookActivity.this, getResources().getString(R.string.remind));
+                            return;
+                        }
+
+                        count++;
+                        tagView.setTextColor(Color.RED);
+                        tagStats.put(tag,true);//更新标签选择状态
+                    }
+                    else {//取消选择标签
+                        count--;
+                        tagView.setTextColor(Color.GRAY);
+                        tagStats.put(tag,false);//更新标签选择状态
+                    }
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void chooseTags(){
+        try{
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            View v = LayoutInflater.from(this).inflate(R.layout.book_tags,null);
+
+            setTagClickListener((TextView) v.findViewById(R.id.tag1));
+            setTagClickListener((TextView) v.findViewById(R.id.tag2));
+            setTagClickListener((TextView) v.findViewById(R.id.tag3));
+            setTagClickListener((TextView) v.findViewById(R.id.tag4));
+            setTagClickListener((TextView) v.findViewById(R.id.tag5));
+            setTagClickListener((TextView) v.findViewById(R.id.tag6));
+            setTagClickListener((TextView) v.findViewById(R.id.tag7));
+            setTagClickListener((TextView) v.findViewById(R.id.tag8));
+
+            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //new MyToast(NewBookActivity.this,tagStats.toString());
+                    //检验是否超过三个标签被选择
+                    new Thread(storeNewBook).start();
+                }
+            });
+
+
+            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    initTagStat();
+                }
+            });//重置tagStats
+            builder.setView(v);
+
+            builder.show();
+
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -252,15 +345,12 @@ public class NewBookActivity extends AppCompatActivity {
                 result=null;
             }//用户未选择封面
 
-            normal.post(new Runnable() {
-                @Override
-                public void run() {
-                    if(result==null) surfaceName="";
-                    else {
-                        surfaceName = result;
-                    }//返回封面文件名
-                }
-            });
+
+            if(result==null) surfaceName="";
+            else {
+                surfaceName = result;
+            }//返回封面文件名
+
         }
     };
 
@@ -278,6 +368,34 @@ public class NewBookActivity extends AppCompatActivity {
                 params.put("author",account);
                 params.put("surface",surfaceName);
 
+                String tags = "";
+                if(tagStats.get(getResources().getString(R.string.booktag1)) == true){
+                    tags += getResources().getString(R.string.booktag1) + " ";
+                }
+                if(tagStats.get(getResources().getString(R.string.booktag2)) == true){
+                    tags += getResources().getString(R.string.booktag2) + " ";
+                }
+                if(tagStats.get(getResources().getString(R.string.booktag3)) == true){
+                    tags += getResources().getString(R.string.booktag3) + " ";
+                }
+                if(tagStats.get(getResources().getString(R.string.booktag4)) == true){
+                    tags += getResources().getString(R.string.booktag4) + " ";
+                }
+                if(tagStats.get(getResources().getString(R.string.booktag5)) == true){
+                    tags += getResources().getString(R.string.booktag5) + " ";
+                }
+                if(tagStats.get(getResources().getString(R.string.booktag6)) == true){
+                    tags += getResources().getString(R.string.booktag6) + " ";
+                }
+                if(tagStats.get(getResources().getString(R.string.booktag7)) == true){
+                    tags += getResources().getString(R.string.booktag7) + " ";
+                }
+                if(tagStats.get(getResources().getString(R.string.booktag8)) == true){
+                    tags += getResources().getString(R.string.booktag8) + " ";
+                }
+                params.put("tags",tags);
+                initTagStat();
+
                 byte[] param = params.toString().getBytes();
 
                 HttpUtils httpUtils = new HttpUtils(url);
@@ -286,7 +404,7 @@ public class NewBookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
-                    normal.post(new Runnable() {
+                    NewBookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(NewBookActivity.this,getResources().getString(R.string.HttpTimeOut));
@@ -298,7 +416,7 @@ public class NewBookActivity extends AppCompatActivity {
                 final String result = new String(outputStream.toByteArray(),
                         StandardCharsets.UTF_8);
 
-                normal.post(new Runnable() {
+                NewBookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Button store = findViewById(R.id.Store);
@@ -339,7 +457,7 @@ public class NewBookActivity extends AppCompatActivity {
                 }
             }
 
-            normal.post(new Runnable() {
+            NewBookActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     NewBookActivity.this.finish();

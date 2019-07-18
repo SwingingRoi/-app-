@@ -9,7 +9,13 @@ import java.io.File;
 public interface MongoDBInter {
     void saveFile(File file);
 
-    GridFSDBFile getFile(String filename);
+    GridFSDBFile getFileByName(String filename);
 
     void deleteFile(String filename);
+
+    GridFSDBFile getBGMByLevel(int level);
+
+    GridFSDBFile getBGMByName(String name);
+
+    GridFSDBFile getEffectByName(String name);
 }

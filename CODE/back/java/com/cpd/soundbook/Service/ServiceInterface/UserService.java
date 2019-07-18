@@ -1,10 +1,12 @@
 package com.cpd.soundbook.Service.ServiceInterface;
 
 import com.mongodb.gridfs.GridFSDBFile;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.List;
 
 @Component(value = "userService")
 public interface UserService {
@@ -23,4 +25,10 @@ public interface UserService {
     void saveAvatarName(JSONObject param);
 
     GridFSDBFile getAvatar(String account);
+
+    JSONArray getRecommend(String account,int from,int size);
+
+    String getPreference(String account);
+
+    void storePreference(String account,String preference);
 }

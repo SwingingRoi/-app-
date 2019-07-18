@@ -3,6 +3,7 @@ package com.example.myapplication.Activity.Home;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,10 +16,10 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.myapplication.BookActivity;
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.Activity.Book.BookActivity;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.PicUtils.GetPicture;
 import com.example.myapplication.R;
 
@@ -27,6 +28,8 @@ import org.json.JSONArray;
 import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -44,6 +47,7 @@ public class SearchActivity extends AppCompatActivity {
     final private int SCROLL = 2;
     private int SEARCHREQ = SEARCHBTN;
     private String searchWhat;
+    private List<Drawable> tag_border_styles;//标签边框样式
 
 
 
@@ -52,6 +56,11 @@ public class SearchActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_all_book);
+
+        tag_border_styles = new ArrayList<>();
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
 
         searchBox = findViewById(R.id.SearchBox);
         bookTable = findViewById(R.id.BookTable);
@@ -121,7 +130,7 @@ public class SearchActivity extends AppCompatActivity {
         @Override
         public void run() {
 
-            normal.post(new Runnable() {
+            SearchActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     TextView text = pullDown.findViewById(R.id.content);
@@ -142,7 +151,7 @@ public class SearchActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream == null){
-                    searchBox.post(new Runnable() {
+                    SearchActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(SearchActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -162,7 +171,7 @@ public class SearchActivity extends AppCompatActivity {
                     searchresults.put(resultArray.getJSONObject(i));
                 }
 
-                normal.post(new Runnable() {
+                SearchActivity.this.runOnUiThread(new Runnable() {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void run() {
@@ -173,7 +182,7 @@ public class SearchActivity extends AppCompatActivity {
                             }
 
                             if (searchresults.length() == 0) {//搜索结果为空
-                                searchBox.post(new Runnable() {
+                                SearchActivity.this.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
                                         loadView.setVisibility(View.INVISIBLE);
@@ -196,6 +205,25 @@ public class SearchActivity extends AppCompatActivity {
 
                                 TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
                                 chapterNumber.setText(resultArray.getJSONObject(i).getInt("chapters") + "章");
+
+                                LinearLayout tagsView = bookRow.findViewById(R.id.tags);
+                                String tagStr = resultArray.getJSONObject(i).getString("tags");
+                                String[] tags = tagStr.split(" ");
+
+                                for(int j=0;j<tags.length;j++){
+                                    String tag = tags[j];
+                                    View tagView = LayoutInflater.from(SearchActivity.this).inflate(R.layout.book_tag,null);
+                                    TextView t = tagView.findViewById(R.id.tag);
+                                    t.setText(tag);
+                                    t.setBackground(tag_border_styles.get(j));
+
+                                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                    layoutParams.setMargins(15,0,0,0);
+                                    tagView.setLayoutParams(layoutParams);
+                                    tagsView.addView(tagView);
+                                }
+
                                 bookTable.addView(bookRow);
 
                                 final int id = resultArray.getJSONObject(i).getInt("id");
@@ -233,7 +261,7 @@ public class SearchActivity extends AppCompatActivity {
 
                 from = from + resultArray.length();//更新请求index
 
-                normal.post(new Runnable() {
+                SearchActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         loadView.setVisibility(View.INVISIBLE);
@@ -262,7 +290,7 @@ public class SearchActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(searchresults.getJSONObject(index).getInt("id"));
 
-                normal.post(new Runnable() {
+                SearchActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(surface!=null) {

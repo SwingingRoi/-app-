@@ -16,6 +16,7 @@ public class User {
     private String gender;
     private boolean activated;
     private String avatar;
+    private String preferences;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +31,6 @@ public class User {
                 result.put("name",name);
                 result.put("gender",gender);
                 result.put("email",email);
-                //String password = this.password.replaceAll(".","*");
                 result.put("password",password);
                 result.put("id",id);
         }catch (Exception e){
@@ -111,5 +111,13 @@ public class User {
 
     public String getAvatar() {
         return avatar;
+    }
+
+    public void setPreferences(String preferences) {
+        this.preferences = preferences;
+    }
+
+    public String getPreferences() {
+        return preferences;
     }
 }

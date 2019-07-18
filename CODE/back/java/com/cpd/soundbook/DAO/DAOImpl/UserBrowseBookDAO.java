@@ -14,9 +14,12 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 @Repository
 public class UserBrowseBookDAO implements com.cpd.soundbook.DAO.DAOInterface.UserBrowseBookDAO {
+
+    final private long ONE_DAY = 86400000;
 
     @Autowired
     private EntityManagerFactory factory;
@@ -41,7 +44,7 @@ public class UserBrowseBookDAO implements com.cpd.soundbook.DAO.DAOInterface.Use
         List<UserBrowseBook> records = new ArrayList<>();
         try {
 
-            String hql = "from com.cpd.soundbook.Entity.UserBrowseBook  where account=:account";
+            String hql = "from com.cpd.soundbook.Entity.UserBrowseBook  where account=:account order by id desc ";
             Query query = session.createQuery(hql);
             query.setParameter("account",account);
 
@@ -80,22 +83,40 @@ public class UserBrowseBookDAO implements com.cpd.soundbook.DAO.DAOInterface.Use
         Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
         List<UserBrowseBook> records = new ArrayList<>();
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE,0-day);
-        DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-        String date = format.format(calendar.getTime());
         try{
             String hql;
+            Query query;
 
-            if(day<=2){
-                hql = "from com.cpd.soundbook.Entity.UserBrowseBook  where account=:account and time =:time";
+            long timeNow = System.currentTimeMillis();
+            long todayStartTime = timeNow - (timeNow + TimeZone.getDefault().getRawOffset())% (1000*3600*24);
+            long yesterdayStartTime = todayStartTime - ONE_DAY;
+            long beforeyesStartTime = yesterdayStartTime - ONE_DAY;
+
+            if(day == 0){
+                hql = "from com.cpd.soundbook.Entity.UserBrowseBook  where account=:account and time>=:start and time<=:till order by id desc ";
+                query = session.createQuery(hql);
+                query.setParameter("account",account);
+                query.setParameter("start",String.valueOf(todayStartTime));
+                query.setParameter("till",String.valueOf(timeNow));
             }
-            else {
-                hql = "from com.cpd.soundbook.Entity.UserBrowseBook  where account=:account and time <:time";
+            else if(day == 1){
+                hql = "from com.cpd.soundbook.Entity.UserBrowseBook  where account=:account and time>=:start and time<=:till order by id desc ";
+                query = session.createQuery(hql);
+                query.setParameter("account",account);
+                query.setParameter("start",String.valueOf(yesterdayStartTime));
+                query.setParameter("till",String.valueOf(todayStartTime));
+            }else if(day == 2){
+                hql = "from com.cpd.soundbook.Entity.UserBrowseBook  where account=:account and time>=:start and time<=:till order by id desc ";
+                query = session.createQuery(hql);
+                query.setParameter("account",account);
+                query.setParameter("start",String.valueOf(beforeyesStartTime));
+                query.setParameter("till",String.valueOf(yesterdayStartTime));
+            }else {
+                hql = "from com.cpd.soundbook.Entity.UserBrowseBook  where account=:account and time<=:till order by id desc ";
+                query = session.createQuery(hql);
+                query.setParameter("account",account);
+                query.setParameter("till",String.valueOf(beforeyesStartTime));
             }
-            Query query = session.createQuery(hql);
-            query.setParameter("account",account);
-            query.setParameter("time",date);
 
             query.setFirstResult(from);
             query.setMaxResults(size);

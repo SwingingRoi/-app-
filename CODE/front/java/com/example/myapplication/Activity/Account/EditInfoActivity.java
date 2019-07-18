@@ -17,15 +17,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.myapplication.GetServer;
+import com.example.myapplication.InternetUtils.GetServer;
 import com.example.myapplication.R;
 import org.json.JSONObject;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.PicUtils.DrawAsCircle;
-import com.example.myapplication.HttpUtils;
+import com.example.myapplication.InternetUtils.HttpUtils;
 import com.example.myapplication.PicUtils.GetPicture;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import com.example.myapplication.PicUtils.CropPic;
 
@@ -105,14 +106,14 @@ public class EditInfoActivity extends AppCompatActivity {
         public void run() {
             try {
                 GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS()+"/audiobook/info?account="+accountNow;
+                String url = getServer.getIPADDRESS()+"/audiobook/info?account="+ URLEncoder.encode(accountNow,"UTF-8");
 
                 HttpUtils httpUtils = new HttpUtils(url);
                 ByteArrayOutputStream outputStream = httpUtils.doHttp(null,"GET",
                         "application/json");
 
                 if(outputStream==null) {//请求超时
-                    normal.post(new Runnable() {
+                    EditInfoActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             msg(getResources().getString(R.string.HttpTimeOut));
@@ -128,7 +129,7 @@ public class EditInfoActivity extends AppCompatActivity {
 
                 final JSONObject oldInfo = new JSONObject(result);
 
-                normal.post(new Runnable() {
+                EditInfoActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {//更新UI
                         try {
@@ -205,13 +206,9 @@ public class EditInfoActivity extends AppCompatActivity {
                         StandardCharsets.UTF_8);
 
 
-                normal.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        avatarName = result;//返回头像文件名
-                        new Thread(saveAvatarName).start();
-                    }
-                });
+
+                avatarName = result;//返回头像文件名
+                new Thread(saveAvatarName).start();
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -264,7 +261,7 @@ public class EditInfoActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    EditInfoActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(EditInfoActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -276,7 +273,7 @@ public class EditInfoActivity extends AppCompatActivity {
                 final String result = new String(outputStream.toByteArray(),
                         StandardCharsets.UTF_8);
 
-                normal.post(new Runnable() {//弹出修改结果
+                EditInfoActivity.this.runOnUiThread(new Runnable() {//弹出修改结果
                     @Override
                     public void run() {
                         switch (result){

@@ -15,18 +15,21 @@ import android.widget.TextView;
 
 import com.example.myapplication.Activity.Account.PersonalFragment;
 import com.example.myapplication.Activity.Home.HomeFragment;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.R;
+import com.example.myapplication.Activity.Recommend.RecommendFragment;
 
 public class MainActivity extends AppCompatActivity{
 
     public HomeFragment homeFragment;
+    public RecommendFragment recommendFragment;
     public PersonalFragment personalFragment;//两部分,首页、个人中心、制作
     private FragmentManager manager;
     private boolean hasBacked=false;
     private final Long TIME_DISABLED=Long.parseLong("86400000");//设置若一天没有进入APP，需重新登录
     private final int HOME=0;
-    private final int PERSONAL=1;
+    private final int RECOMMEND = 1;
+    private final int PERSONAL = 2;
     private int WHICH=HOME;//标志当前选中哪个fragment,初始为HOME
     private Fragment[]fragments;
 
@@ -52,8 +55,9 @@ public class MainActivity extends AppCompatActivity{
 
         manager = getFragmentManager();
         homeFragment = new HomeFragment();
+        recommendFragment = new RecommendFragment();
         personalFragment = new PersonalFragment();
-        fragments = new Fragment[]{homeFragment,personalFragment};
+        fragments = new Fragment[]{homeFragment,recommendFragment,personalFragment};
 
         //判断是否登录
         SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
@@ -98,6 +102,20 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    private void setRecommend(){
+        TextView recommendText = findViewById(R.id.RecommendText);
+        ImageView recommendIcon = findViewById(R.id.RecommendIcon);
+        if(WHICH == RECOMMEND){
+            recommendText.setTextColor(Color.parseColor("#f76442"));
+            recommendIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.recommendpressed));
+        }
+        else {
+            recommendText.setTextColor(Color.GRAY);
+            recommendIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.recommend));
+        }
+    }
+
+
     private void setPersonal(){
         TextView personalText = findViewById(R.id.PersonalText);
         ImageView personalIcon = findViewById(R.id.PersonalIcon);
@@ -113,6 +131,7 @@ public class MainActivity extends AppCompatActivity{
 
     private void setStyle(){
         setHome();
+        setRecommend();
         setPersonal();
     }
 
@@ -132,7 +151,23 @@ public class MainActivity extends AppCompatActivity{
         setStyle();
     }
 
+    public void toRecommend(View view){
+        if(WHICH ==  RECOMMEND) return;
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.hide(fragments[WHICH]);
+        if(!fragments[RECOMMEND].isAdded()){
+            transaction.add(R.id.content,fragments[RECOMMEND]);
+        }
+        hasBacked = false;
+        transaction.show(fragments[RECOMMEND]);
+        transaction.commit();
+
+        WHICH = RECOMMEND;
+        setStyle();
+    }
+
     public void toPersonal(View view){
+        if(WHICH == PERSONAL) return;
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.hide(fragments[WHICH]);
         if(!fragments[PERSONAL].isAdded()){
