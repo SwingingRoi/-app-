@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.AudioUtils;
 
 public class MilliToHMS {
     public String milliToHMS(int milliSeconds){

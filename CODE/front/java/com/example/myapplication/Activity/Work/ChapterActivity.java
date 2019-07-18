@@ -15,11 +15,11 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.R;
-import com.example.myapplication.MilliToHMS;
+import com.example.myapplication.AudioUtils.MilliToHMS;
 
 import org.json.JSONObject;
 
@@ -29,8 +29,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class ChapterActivity extends AppCompatActivity {
 
@@ -100,7 +98,7 @@ public class ChapterActivity extends AppCompatActivity {
                     speech_player.seekTo(seekBar.getProgress());
                     bgm_player.seekTo(seekBar.getProgress());
 
-                    normal.post(new Runnable() {
+                    ChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             TextView begin = findViewById(R.id.begin);
@@ -120,7 +118,7 @@ public class ChapterActivity extends AppCompatActivity {
             public void onCompletion(MediaPlayer mp) {
                 resetPlayer();
 
-                normal.post(new Runnable() {
+                ChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
@@ -212,7 +210,7 @@ public class ChapterActivity extends AppCompatActivity {
             if(speech_player.isPlaying()) {
                 speech_player.pause();
                 bgm_player.pause();
-                normal.post(new Runnable() {
+                ChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
@@ -223,7 +221,7 @@ public class ChapterActivity extends AppCompatActivity {
             else {
                 speech_player.start();
                 bgm_player.start();
-                normal.post(new Runnable() {
+                ChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
@@ -280,7 +278,7 @@ public class ChapterActivity extends AppCompatActivity {
                                     try {
                                         if(speech_player == null) break;
                                         seekBar.setProgress(speech_player.getCurrentPosition());
-                                        normal.post(new Runnable() {
+                                        ChapterActivity.this.runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
                                                 TextView begin = findViewById(R.id.begin);
@@ -296,7 +294,7 @@ public class ChapterActivity extends AppCompatActivity {
                             }
                         }).start();
 
-                        normal.post(new Runnable() {
+                        ChapterActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 firtstPlay = false;
@@ -348,7 +346,7 @@ public class ChapterActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    ChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(ChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -365,7 +363,7 @@ public class ChapterActivity extends AppCompatActivity {
 
                 final JSONObject chapter = new JSONObject(result);
 
-                normal.post(new Runnable() {
+                ChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -404,7 +402,7 @@ public class ChapterActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    ChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(ChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -416,7 +414,7 @@ public class ChapterActivity extends AppCompatActivity {
                     return;
                 }
 
-                normal.post(new Runnable() {
+                ChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -431,6 +429,8 @@ public class ChapterActivity extends AppCompatActivity {
 
                             TextView begin = findViewById(R.id.begin);
                             begin.setText(getResources().getString(R.string.initial));
+
+                            outputStream.close();
 
                             new Thread(getBgm).start();
                         }catch (Exception e){
@@ -454,7 +454,7 @@ public class ChapterActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
 
-                normal.post(new Runnable() {
+                ChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {

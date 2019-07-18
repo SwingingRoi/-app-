@@ -16,7 +16,7 @@
         <activity android:name=".Activity.Work.ChapterActivity"></activity>
         <activity android:name=".Activity.Work.EditChapterActivity" />
         <activity android:name=".Activity.Work.EditBookActivity" />
-        <activity android:name=".BookActivity" />
+        <activity android:name=".Activity.Book.BookActivity" />
         <activity android:name=".Activity.Favorite.SearchFavoriteActivity" />
         <activity android:name=".Activity.History.SearchHistoryActivity" />
         <activity android:name=".Activity.Work.EditIntroActivity" />
@@ -30,7 +30,7 @@
         <activity android:name=".Activity.Home.SearchActivity" />
         <activity android:name=".Activity.Account.EditInfoActivity" />
         <activity android:name=".Activity.LogSign.MsgAfterEmailActivity" />
-        <activity android:name=".Activity.SettingActivity" />
+        <activity android:name=".Activity.Setting.SettingActivity" />
         <activity
             android:name=".Activity.LogSign.SignActivity"
             android:parentActivityName=".Activity.LogSign.LogActivity" />

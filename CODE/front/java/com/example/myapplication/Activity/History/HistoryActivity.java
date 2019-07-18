@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -17,12 +18,12 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.myapplication.BookActivity;
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
+import com.example.myapplication.Activity.Book.BookActivity;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
 import com.example.myapplication.PicUtils.GetPicture;
 import com.example.myapplication.R;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.MyComponent.MyToast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -45,6 +46,7 @@ public class HistoryActivity extends AppCompatActivity {
     private boolean firstIn = true;//是否是第一次进入该页面
     private boolean ismanaging = false;//是否处于管理模式
     private boolean isRequesting = false;//当前是否在向后端请求书本信息
+    private List<Drawable> tag_border_styles;//标签边框样式
 
     private JSONArray historyArray;//存储历史记录的数组
 
@@ -61,6 +63,11 @@ public class HistoryActivity extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences("UserState", MODE_PRIVATE);
         account = sharedPreferences.getString("Account", "");
+
+        tag_border_styles = new ArrayList<>();
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
+        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
 
         historyArray = new JSONArray();
 
@@ -141,6 +148,7 @@ public class HistoryActivity extends AppCompatActivity {
             historyArray = new JSONArray();
         }
 
+        normal.setVisibility(View.INVISIBLE);
         loadView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
         findViewById(R.id.Remind).setVisibility(View.INVISIBLE);
@@ -260,7 +268,7 @@ public class HistoryActivity extends AppCompatActivity {
     Runnable getHistory = new Runnable() {
         @Override
         public void run() {
-            normal.post(new Runnable() {
+            HistoryActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     TextView text = pullDown.findViewById(R.id.content);
@@ -279,7 +287,7 @@ public class HistoryActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    HistoryActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(HistoryActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -306,7 +314,7 @@ public class HistoryActivity extends AppCompatActivity {
                         historyArray.put(newRecords.getJSONObject(i));
                 }//向historyArray中添加新请求过来的records
 
-                normal.post(new Runnable() {
+                HistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         bookTable.removeView(pullDown);
@@ -338,9 +346,17 @@ public class HistoryActivity extends AppCompatActivity {
                                 LinearLayout tagsView = bookRow.findViewById(R.id.tags);
                                 String tagStr = newRecords.getJSONObject(i).getString("tags");
                                 String[] tags = tagStr.split(" ");
-                                for(String tag : tags){
-                                    TextView tagView = new TextView(HistoryActivity.this);
-                                    tagView.setText(tag);
+
+                                for(int j=0;j<tags.length;j++){
+                                    String tag = tags[j];
+                                    View tagView = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.book_tag,null);
+                                    TextView t = tagView.findViewById(R.id.tag);
+                                    t.setText(tag);
+                                    t.setBackground(tag_border_styles.get(j));
+                                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                    layoutParams.setMargins(15,0,0,0);
+                                    tagView.setLayoutParams(layoutParams);
                                     tagsView.addView(tagView);
                                 }
 
@@ -388,7 +404,7 @@ public class HistoryActivity extends AppCompatActivity {
 
                 from = from + newRecords.length();//更新请求index
 
-                normal.post(new Runnable() {
+                HistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         loadView.setVisibility(View.INVISIBLE);
@@ -415,7 +431,7 @@ public class HistoryActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(historyArray.getJSONObject(index).getInt("bookid"));
 
-                normal.post(new Runnable() {
+                HistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(surface!=null) {
@@ -461,7 +477,7 @@ public class HistoryActivity extends AppCompatActivity {
                 }
 
 
-                normal.post(new Runnable() {
+                HistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         int hasRemoved=0;
@@ -498,7 +514,7 @@ public class HistoryActivity extends AppCompatActivity {
                 GetServer getServer = new GetServer();
                 String url = getServer.getIPADDRESS()+"/audiobook/clearHistory?account=" + URLEncoder.encode(account,"UTF-8");
 
-                normal.post(new Runnable() {
+                HistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         historyArray = new JSONArray();

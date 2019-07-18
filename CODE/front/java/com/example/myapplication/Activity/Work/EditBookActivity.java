@@ -18,9 +18,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.PicUtils.BlurPic;
 import com.example.myapplication.PicUtils.CropPic;
 import com.example.myapplication.PicUtils.GetPicture;
@@ -147,7 +147,7 @@ public class EditBookActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    EditBookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(EditBookActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -164,7 +164,7 @@ public class EditBookActivity extends AppCompatActivity {
 
                 final JSONObject info = new JSONObject(result);
 
-                normal.post(new Runnable() {
+                EditBookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
 
@@ -192,7 +192,7 @@ public class EditBookActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(bookid);
 
-                normal.post(new Runnable() {
+                EditBookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         setSurface(surface);
@@ -337,7 +337,7 @@ public class EditBookActivity extends AppCompatActivity {
                 result=null;
             }//用户未选择封面
 
-            normal.post(new Runnable() {
+            EditBookActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if(result==null) surfaceName="";
@@ -369,7 +369,7 @@ public class EditBookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
-                    normal.post(new Runnable() {
+                    EditBookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(EditBookActivity.this,getResources().getString(R.string.HttpTimeOut));
@@ -381,7 +381,7 @@ public class EditBookActivity extends AppCompatActivity {
                 final String result = new String(outputStream.toByteArray(),
                         StandardCharsets.UTF_8);
 
-                normal.post(new Runnable() {
+                EditBookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(result.equals("success")) {
@@ -414,7 +414,7 @@ public class EditBookActivity extends AppCompatActivity {
                                 "application/json");
                     }
 
-                    normal.post(new Runnable() {
+                    EditBookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             EditBookActivity.this.finish();

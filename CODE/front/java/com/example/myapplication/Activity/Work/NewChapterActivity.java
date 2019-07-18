@@ -4,7 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
-import com.example.myapplication.AudioUtils;
+import com.example.myapplication.AudioUtils.AudioUtils;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
@@ -21,10 +21,10 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
-import com.example.myapplication.MilliToHMS;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.AudioUtils.MilliToHMS;
+import com.example.myapplication.MyComponent.MyToast;
 
 import com.example.myapplication.R;
 
@@ -96,7 +96,7 @@ public class NewChapterActivity extends AppCompatActivity {
                     speech_player.seekTo(seekBar.getProgress());
                     bgm_player.seekTo(seekBar.getProgress());
 
-                    normal.post(new Runnable() {
+                    NewChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             TextView begin = findViewById(R.id.begin);
@@ -121,7 +121,7 @@ public class NewChapterActivity extends AppCompatActivity {
             public void onCompletion(MediaPlayer mp) {
                 resetPlayer();
 
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
@@ -260,6 +260,7 @@ public class NewChapterActivity extends AppCompatActivity {
 
     public void textToSpeech(View view){
         new Thread(textToSpeech).start();
+        new Thread(matchBGM).start();
     }
 
     private void resetPlayer(){
@@ -291,7 +292,7 @@ public class NewChapterActivity extends AppCompatActivity {
             if(speech_player.isPlaying()) {
                 speech_player.pause();
                 bgm_player.pause();
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
@@ -302,7 +303,7 @@ public class NewChapterActivity extends AppCompatActivity {
             else {
                 speech_player.start();
                 bgm_player.start();
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
@@ -359,7 +360,7 @@ public class NewChapterActivity extends AppCompatActivity {
                                         try {
                                             if(speech_player == null) break;
                                             seekBar.setProgress(speech_player.getCurrentPosition());
-                                            normal.post(new Runnable() {
+                                            NewChapterActivity.this.runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
                                                          TextView begin = findViewById(R.id.begin);
@@ -375,7 +376,7 @@ public class NewChapterActivity extends AppCompatActivity {
                                 }
                             }).start();
 
-                            normal.post(new Runnable() {
+                            NewChapterActivity.this.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     firtstPlay = false;
@@ -417,7 +418,7 @@ public class NewChapterActivity extends AppCompatActivity {
             try{
 
                 //重置播放状态
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         speechFile = null;
@@ -441,7 +442,7 @@ public class NewChapterActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(param, "POST", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    NewChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(NewChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -453,7 +454,7 @@ public class NewChapterActivity extends AppCompatActivity {
                     return;
                 }
 
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -475,7 +476,7 @@ public class NewChapterActivity extends AppCompatActivity {
                             TextView begin = findViewById(R.id.begin);
                             begin.setText(getResources().getString(R.string.initial));
 
-                            new Thread(matchBGM).start();
+                            //new Thread(matchBGM).start();
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -505,7 +506,7 @@ public class NewChapterActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(params.toString().getBytes(), "POST", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    NewChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(NewChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -523,17 +524,9 @@ public class NewChapterActivity extends AppCompatActivity {
                 final JSONObject path = new JSONObject(result);
 
 
-                normal.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            bgmPath = path.getString("bgmPath");
-                            new Thread(getBgm).start();
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
-                });
+
+                bgmPath = path.getString("bgmPath");
+                new Thread(getBgm).start();
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -551,19 +544,19 @@ public class NewChapterActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
 
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
+                            new MyToast(NewChapterActivity.this, getResources().getString(R.string.translateSuccess));
+                            LinearLayout translating = findViewById(R.id.translating);
+                            translating.setVisibility(View.INVISIBLE);
+
                             bgm = new File(BGM_LOCATION);
                             if (!bgm.exists()) bgm.createNewFile();
                             OutputStream outputStream = new FileOutputStream(bgm);
                             resultStream.writeTo(outputStream);
                             outputStream.close();
-
-                            new MyToast(NewChapterActivity.this, getResources().getString(R.string.translateSuccess));
-                            LinearLayout translating = findViewById(R.id.translating);
-                            translating.setVisibility(View.INVISIBLE);
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -586,7 +579,7 @@ public class NewChapterActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
 
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(speech_player != null) {
@@ -597,6 +590,9 @@ public class NewChapterActivity extends AppCompatActivity {
                             bgm_player.release();
                             bgm_player = null;
                         }
+
+                        if(speechFile != null && speechFile.exists()) speechFile.delete();
+                        if(bgm != null && bgm.exists()) bgm.delete();
                         NewChapterActivity.super.onBackPressed();
                     }
                 });
@@ -622,7 +618,7 @@ public class NewChapterActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "GET", "application/json");//向后端发送请求
 
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         new MyToast(NewChapterActivity.this,getResources().getString(R.string.draft));
@@ -634,6 +630,9 @@ public class NewChapterActivity extends AppCompatActivity {
                             bgm_player.release();
                             bgm_player = null;
                         }
+                        if(speechFile != null && speechFile.exists()) speechFile.delete();
+                        if(bgm != null && bgm.exists()) bgm.delete();
+
                         NewChapterActivity.super.onBackPressed();
                     }
                 });
@@ -656,7 +655,7 @@ public class NewChapterActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    NewChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(NewChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
@@ -671,7 +670,7 @@ public class NewChapterActivity extends AppCompatActivity {
                 final String draft = new String(outputStream.toByteArray(),
                         StandardCharsets.UTF_8);
 
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         EditText text = findViewById(R.id.content);
@@ -712,7 +711,7 @@ public class NewChapterActivity extends AppCompatActivity {
             try{
 
                 if(textChanged && !speechChanged){
-                    normal.post(new Runnable() {
+                    NewChapterActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(NewChapterActivity.this,getResources().getString(R.string.askpush));
@@ -747,12 +746,9 @@ public class NewChapterActivity extends AppCompatActivity {
                     bgm_player.pause();
                 }
 
-                normal.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        new Thread(storeSpeech).start();
-                    }
-                });
+
+                new Thread(storeSpeech).start();
+
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -781,7 +777,7 @@ public class NewChapterActivity extends AppCompatActivity {
                 httpUtils.doHttp(param, "POST",
                         "application/json");
 
-                normal.post(new Runnable() {
+                NewChapterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         new MyToast(NewChapterActivity.this,"创建成功!");
@@ -796,6 +792,8 @@ public class NewChapterActivity extends AppCompatActivity {
                             bgm_player = null;
                         }
 
+                        if(speechFile != null && speechFile.exists()) speechFile.delete();
+                        if(bgm != null && bgm.exists()) bgm.delete();
                         NewChapterActivity.super.onBackPressed();
                     }
                 });

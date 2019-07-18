@@ -3,8 +3,8 @@ package com.example.myapplication.PicUtils;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.example.myapplication.GetServer;
-import com.example.myapplication.HttpUtils;
+import com.example.myapplication.InternetUtils.GetServer;
+import com.example.myapplication.InternetUtils.HttpUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;

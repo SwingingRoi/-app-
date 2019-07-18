@@ -1,4 +1,4 @@
-package com.cpd.soundbook;/*
+package com.cpd.soundbook.AudioUtils;/*
 <dependency>
 <groupId>com.hankcs</groupId>
 <artifactId>hanlp</artifactId>
@@ -8,10 +8,11 @@ package com.cpd.soundbook;/*
 Usage:
 getKeyList return a list of terms
 example:
-termList = getKeyList("���꣬����, ��");
-Term1:{word:����, nature:v, offset:0}
-Term2:{word:����, nature:v, offset:3}
-Term3:{word:��, nature:n, offset:6}
+termList = getKeyList("下雨，打雷, 狗");
+
+Term1:{word:下雨, nature:v, offset:0}
+Term2:{word:打雷, nature:v, offset:3}
+Term3:{word:狗, nature:n, offset:6}
 */
 
 import com.hankcs.hanlp.seg.common.Term;
@@ -59,7 +60,6 @@ public class GetEffectKey {
         List<Term> verbList = new ArrayList<Term>();
         List<Term> termList = IndexTokenizer.segment(text);
 
-        //System.out.println(termList.toString());
         //System.out.println(termList);
         String key;
         for(Term term : termList){
@@ -74,11 +74,12 @@ public class GetEffectKey {
     public HashMap<Integer,String> getKeyList(String text){
         HashMap<Integer,String> result = new HashMap<>();
 
+
         List<Term> nounList = getAllNounList(text);
         //System.out.println(nounList);
         List<Term> verbList = getAllVerbList(text);
         //System.out.println(verbList);
-        //List<Term> targetList = new ArrayList<Term>();
+        List<Term> targetList = new ArrayList<Term>();
 
         List<GridFSDBFile> gridFSDBFiles = gridFS.find(new BasicDBObject("contentType", null));
         List<String> verbStringList = new ArrayList<String>();
@@ -139,7 +140,6 @@ public class GetEffectKey {
 
             //noun match in the database
             for(GridFSDBFile gridFSDBFile:gridFSDBFiles){
-                //System.out.println(gridFSDBFile);
 
                 if(gridFSDBFile != null){
 
@@ -150,29 +150,33 @@ public class GetEffectKey {
                     String noun = jsonObject.getString("noun");
 
                     if(term.word.contains(noun)){
-                        //System.out.println(gridFSDBFile);
+                        //System.out.println("verbList contains noun:" + gridFSDBFile);
+                        if(term.nature.toString().equals("v") && term.word.equals(noun)){
 
-                        JSONArray verbs = jsonObject.getJSONArray("verb");
-                        //System.out.println(verbs);
+                            result.put(term.offset,jsonObject.getString("filename"));
+                            isAdd = true;
 
-                        for(int i = 0; i < verbs.length(); ++i){
-                            String verb = (String)verbs.get(i);
-                            //System.out.println(verb);
-                            if(term.word.contains(verb)){
-                                //System.out.println("exist:" + verb);
-                                result.put(term.offset,jsonObject.getString("filename"));
-                                //targetList.add(term);
-                                isAdd = true;
-                                //System.out.println(targetList);
-                                break;
+                        }else{
+
+                            JSONArray verbs = jsonObject.getJSONArray("verb");
+                            //System.out.println(verbs);
+
+                            for(int i = 0; i < verbs.length(); ++i){
+                                String verb = (String)verbs.get(i);
+                                //System.out.println(verb);
+                                if(term.word.contains(verb)){
+                                    //System.out.println("exist:" + verb);
+                                    result.put(term.offset,jsonObject.getString("filename"));
+                                    isAdd = true;
+                                    //System.out.println(targetList);
+                                    break;
+                                }
                             }
                         }
                     }
-
                     //System.out.println(verbs.get(0));
                     //System.out.println(jsonObject.getString("filename"));
                 }
-
                 if(isAdd){
                     break;
                 }

@@ -45,6 +45,7 @@
 
     <!-- MainActivity界面的strings-->
     <string name="Home">首页</string>
+    <string name="recommend">推荐</string>
     <string name="Make">制作</string>
     <string name="Share">分享</string>
     <string name="Personal">账号</string>
@@ -64,7 +65,10 @@
     <string name="Logout">退出登录</string>
 
 
+    <!-- 图鉴界面的strings-->
+
     <!-- 个人中心界面的strings-->
+    <string name="personal">个人中心</string>
     <string name="InfoEdit">编辑资料</string>
     <string name="MakeHistory">我的作品</string>
     <string name="ListenHistory">收听历史</string>

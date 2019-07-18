@@ -27,7 +27,7 @@ public class UserBrowseBook {
             result.put("id",id);
 
             //时间戳转化为日期
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             long timStamp = Long.parseLong(time);
             Date date = new Date(timStamp);
             String t = simpleDateFormat.format(date);

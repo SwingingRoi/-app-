@@ -54,7 +54,6 @@
                     android:layout_height="0dp"
                     android:layout_weight="0.7"
                     android:gravity="center"
-                    android:text="firstbook"
                     android:textSize="16sp" />
 
                 <LinearLayout
@@ -71,7 +70,6 @@
                     android:layout_height="wrap_content"
                     android:gravity="right"
                     android:paddingEnd="20dp"
-                    android:text="TextView"
                     android:textColor="@android:color/darker_gray" />
 
             </LinearLayout>

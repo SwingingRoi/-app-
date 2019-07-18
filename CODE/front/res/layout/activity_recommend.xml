@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity.Home.HomeFragment">
+    tools:context=".Activity.Account.PersonalFragment">
 
     <LinearLayout
         android:id="@+id/Loading"
@@ -38,33 +38,17 @@
         <LinearLayout
             android:id="@+id/ActionBar"
             style="@style/actionbar"
-            android:background="@drawable/gray"
+
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/refresh"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:layout_weight="0.25"
-                android:onClick="re"
-                app:srcCompat="@drawable/refresh" />
-
             <TextView
-                android:id="@+id/textView2"
+                android:id="@+id/partname"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="@string/Home"
-                android:textSize="18dp" />
-
-            <ImageView
-                android:id="@+id/SearchIcon"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:layout_marginEnd="20dp"
-                android:layout_weight="0.1"
-                android:src="@drawable/search" />
+                android:text="@string/recommend"
+                android:textSize="20sp" />
 
         </LinearLayout>
 

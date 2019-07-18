@@ -1,4 +1,4 @@
-package com.example.myapplication.Activity;
+package com.example.myapplication.Activity.Setting;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +9,7 @@ import android.widget.Button;
 
 
 import com.example.myapplication.Activity.LogSign.LogActivity;
+import com.example.myapplication.Activity.MainActivity;
 import com.example.myapplication.R;
 
 public class SettingActivity extends AppCompatActivity {
@@ -39,7 +40,7 @@ public class SettingActivity extends AppCompatActivity {
             editor.clear();
             editor.apply();
 
-            Intent intent = new Intent(this,MainActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }
 

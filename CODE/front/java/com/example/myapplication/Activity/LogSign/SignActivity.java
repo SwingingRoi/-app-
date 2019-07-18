@@ -20,16 +20,16 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
-import com.example.myapplication.CheckInternet;
-import com.example.myapplication.SendEmail;
-import com.example.myapplication.MyToast;
+import com.example.myapplication.InternetUtils.CheckInternet;
+import com.example.myapplication.EmailUtils.SendEmail;
+import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.R;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
-import com.example.myapplication.HttpUtils;
+import com.example.myapplication.InternetUtils.HttpUtils;
 
-import com.example.myapplication.GetServer;
+import com.example.myapplication.InternetUtils.GetServer;
 import com.mob.MobSDK;
 
 import cn.smssdk.EventHandler;
@@ -378,7 +378,7 @@ public class SignActivity extends AppCompatActivity{
                final String result = new String(httpUtils.doHttp(param,"POST","application/json").toByteArray(),
                        StandardCharsets.UTF_8);
 
-                account.post(new Runnable() {
+                SignActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         switch (result){

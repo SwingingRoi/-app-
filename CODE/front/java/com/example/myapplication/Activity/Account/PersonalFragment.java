@@ -4,7 +4,7 @@ import android.app.Fragment;
 import android.content.Intent;
 
 import com.example.myapplication.Activity.LogSign.LogActivity;
-import com.example.myapplication.Activity.SettingActivity;
+import com.example.myapplication.Activity.Setting.SettingActivity;
 
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -157,10 +157,10 @@ public class PersonalFragment extends Fragment {
         public void run() {
             GetPicture getPicture = new GetPicture();
             final Bitmap avatar = getPicture.getAvatar(account);
-            Avatar.post(new Runnable() {
+            getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if(avatar!=null){
+                    if (avatar != null) {
                         Avatar.setImageBitmap(avatar);
                     }
                 }

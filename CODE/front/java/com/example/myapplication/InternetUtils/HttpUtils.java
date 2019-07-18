@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.InternetUtils;
 
 
 import java.io.ByteArrayOutputStream;
@@ -36,9 +36,10 @@ public class HttpUtils {
             }
             connection.connect();
 
+
             if(connection.getResponseCode()==200) {
                 InputStream inputStream = connection.getInputStream();
-                if(inputStream!=null){
+                if(inputStream != null){
                     byte[]buffer = new byte[1024];
                     int len;
                     stream = new ByteArrayOutputStream();
