@@ -1,8 +1,11 @@
 package com.cpd.soundbook;
 
+import org.springframework.stereotype.Component;
+
 import java.util.*;
 
-public class Test {
+@Component(value = "topKTags")
+public class TopKTags {
 
     public List<Map.Entry<String,Integer>> getTopKTags(HashMap<String,Integer> inputs, int k){
         List<Map.Entry<String,Integer>> result = new ArrayList<>();
@@ -38,7 +41,7 @@ public class Test {
             testSet.put(String.valueOf(i),i);
         }
 
-        Test test = new Test();
-        System.out.println(test.getTopKTags(testSet,3));
+        TopKTags topKTags = new TopKTags();
+        System.out.println(topKTags.getTopKTags(testSet,3));
     }
 }

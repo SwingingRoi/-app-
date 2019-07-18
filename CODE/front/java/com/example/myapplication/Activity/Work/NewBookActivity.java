@@ -257,6 +257,11 @@ public class NewBookActivity extends AppCompatActivity {
 
                     //设置标签样式，更新已选择标签数
                     if(oldStat == false){//选择标签
+                        if(count == 3){
+                            new MyToast(NewBookActivity.this, getResources().getString(R.string.remind));
+                            return;
+                        }
+
                         count++;
                         tagView.setTextColor(Color.RED);
                         tagStats.put(tag,true);//更新标签选择状态
@@ -292,11 +297,6 @@ public class NewBookActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     //new MyToast(NewBookActivity.this,tagStats.toString());
                     //检验是否超过三个标签被选择
-                    if(count > 3) {
-                        new MyToast(NewBookActivity.this, getResources().getString(R.string.remind));
-                        initTagStat();
-                        return;
-                    }
                     new Thread(storeNewBook).start();
                 }
             });
@@ -394,6 +394,7 @@ public class NewBookActivity extends AppCompatActivity {
                     tags += getResources().getString(R.string.booktag8) + " ";
                 }
                 params.put("tags",tags);
+                initTagStat();
 
                 byte[] param = params.toString().getBytes();
 

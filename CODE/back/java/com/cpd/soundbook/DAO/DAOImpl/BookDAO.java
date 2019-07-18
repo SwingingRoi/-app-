@@ -22,9 +22,6 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
     private BookRepository bookRepository;
 
     @Autowired
-    private ChapterRepository chapterRepository;
-
-    @Autowired
     private EntityManagerFactory factory;
 
     @Override
@@ -145,8 +142,50 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         }
     }
 
+
     @Override
-    public int getChapterNumbers(int bookid){
-        return chapterRepository.getChapterNumbers(bookid);
+    public List<Book> findBookByTags(List<String> tags,int from,int size) {
+        Session session = factory.unwrap(org.hibernate.SessionFactory.class).openSession();
+        List<Book> books = new ArrayList<>();
+        try {
+            String hql;
+            Query query = null;
+
+            switch (tags.size()){
+                case 1:
+                    hql = "from com.cpd.soundbook.Entity.Book where tags like :tag";
+                    query = session.createQuery(hql);
+                    query.setParameter("tag","%" + tags.get(0) + "%");
+                    break;
+                case 2:
+                    hql = "from com.cpd.soundbook.Entity.Book where tags like :tag1 or " +
+                            "tags like :tag2";
+                    query = session.createQuery(hql);
+                    query.setParameter("tag1","%" + tags.get(0) + "%");
+                    query.setParameter("tag2","%" + tags.get(1) + "%");
+                    break;
+                case 3:
+                    hql = "from com.cpd.soundbook.Entity.Book where tags like :tag1 or " +
+                            "tags like :tag2 or tags like :tag3";
+                    query = session.createQuery(hql);
+                    query.setParameter("tag1","%" + tags.get(0) + "%");
+                    query.setParameter("tag2","%" + tags.get(1) + "%");
+                    query.setParameter("tag3","%" + tags.get(2) + "%");
+                    break;
+                default:
+                    break;
+            }
+
+            query.setFirstResult(from);
+            query.setMaxResults(size);
+
+            books = (List<Book>) query.list();
+
+            session.close();
+        }catch (Exception e){
+            e.printStackTrace();
+            session.close();
+        }
+        return books;
     }
 }

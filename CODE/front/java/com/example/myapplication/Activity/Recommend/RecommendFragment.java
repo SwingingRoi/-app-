@@ -28,7 +28,6 @@ import com.example.myapplication.R;
 import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -154,7 +153,7 @@ public class RecommendFragment extends Fragment {
     Runnable getBooks = new Runnable() {
         @Override
         public void run() {
-            normal.post(new Runnable() {
+            getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     TextView text = pullDown.findViewById(R.id.content);
@@ -168,14 +167,13 @@ public class RecommendFragment extends Fragment {
                 String url = hasLogged ? getServer.getIPADDRESS()+"/audiobook/getrecommend?account=" + URLEncoder.encode(account,"UTF-8") + "&from=" + from + "&size=" + PAGESIZE
                         : getServer.getIPADDRESS()+"/audiobook/getbooks?from=" + from + "&size=" + PAGESIZE;
 
-                System.out.println(url);
                 HttpUtils httpUtils = new HttpUtils(url);
                 ByteArrayOutputStream outputStream = httpUtils.doHttp(null, "GET",
                         "application/json");
 
 
                 if (outputStream == null) {//请求超时
-                    normal.post(new Runnable() {
+                    getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(RecommendFragment.this.getActivity(), getResources().getString(R.string.HttpTimeOut));
@@ -201,7 +199,7 @@ public class RecommendFragment extends Fragment {
                     books.put(newBooks.getJSONObject(i));
                 }//向works中添加新请求过来的work
 
-                normal.post(new Runnable() {
+                getActivity().runOnUiThread(new Runnable() {
                     @SuppressLint("SetTextI18n")
                     @Override
                     public void run() {
@@ -251,8 +249,6 @@ public class RecommendFragment extends Fragment {
 
                                     tagsView.addView(tagView);
                                 }
-
-
 
                                 bookTable.addView(bookRow);
 
@@ -311,7 +307,7 @@ public class RecommendFragment extends Fragment {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(books.getJSONObject(index).getInt("id"));
 
-                normal.post(new Runnable() {
+                getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(surface!=null) {

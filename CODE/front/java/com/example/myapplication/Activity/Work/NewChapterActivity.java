@@ -64,6 +64,9 @@ public class NewChapterActivity extends AppCompatActivity {
 
     private boolean firtstPlay = true;//是否首次播放当前音频
 
+    private boolean ttsDone = false;//是否完成语音转换
+    private boolean matBgmDone = false;//是否完成BGM的匹配
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -250,6 +253,7 @@ public class NewChapterActivity extends AppCompatActivity {
 
                 StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,content,speechPath,bgmPath);
                 new Thread(storeChapter).start();
+                new Thread(storeSpeech).start();
             }
         });
 
@@ -276,6 +280,9 @@ public class NewChapterActivity extends AppCompatActivity {
     }
 
     public void playSpeech(View view){
+        ttsDone = false;
+        matBgmDone = false;
+
         if(firtstPlay)  {
             new Thread(prepareSpeech).start();
         }
@@ -349,7 +356,7 @@ public class NewChapterActivity extends AppCompatActivity {
                             speech_player.start();
                             bgm_player.start();
 
-                            bgm_player.setVolume(0.4f,0.4f);//设置背景音乐音量
+                            bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
                             bgm_player.setLooping(true);//背景音乐循环播放
 
                             //进度条更新
@@ -476,7 +483,14 @@ public class NewChapterActivity extends AppCompatActivity {
                             TextView begin = findViewById(R.id.begin);
                             begin.setText(getResources().getString(R.string.initial));
 
-                            //new Thread(matchBGM).start();
+                            ttsDone = true;
+
+                            if(matBgmDone){
+                                new MyToast(NewChapterActivity.this, getResources().getString(R.string.translateSuccess));
+                                LinearLayout translating = findViewById(R.id.translating);
+                                translating.setVisibility(View.INVISIBLE);
+                            }
+
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -548,15 +562,20 @@ public class NewChapterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            new MyToast(NewChapterActivity.this, getResources().getString(R.string.translateSuccess));
-                            LinearLayout translating = findViewById(R.id.translating);
-                            translating.setVisibility(View.INVISIBLE);
-
                             bgm = new File(BGM_LOCATION);
                             if (!bgm.exists()) bgm.createNewFile();
                             OutputStream outputStream = new FileOutputStream(bgm);
                             resultStream.writeTo(outputStream);
                             outputStream.close();
+
+                            matBgmDone = true;
+
+                            if(ttsDone){
+                                new MyToast(NewChapterActivity.this, getResources().getString(R.string.translateSuccess));
+                                LinearLayout translating = findViewById(R.id.translating);
+                                translating.setVisibility(View.INVISIBLE);
+                            }
+
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -745,9 +764,6 @@ public class NewChapterActivity extends AppCompatActivity {
                 if(bgm_player != null && bgm_player.isPlaying()) {
                     bgm_player.pause();
                 }
-
-
-                new Thread(storeSpeech).start();
 
             }catch (Exception e){
                 e.printStackTrace();

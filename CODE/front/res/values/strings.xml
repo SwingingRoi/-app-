@@ -46,8 +46,7 @@
     <!-- MainActivity界面的strings-->
     <string name="Home">首页</string>
     <string name="recommend">推荐</string>
-    <string name="Make">制作</string>
-    <string name="Share">分享</string>
+    <string name="choosepreference">选择偏好</string>
     <string name="Personal">账号</string>
     <string name="unLogged">未登录</string>
     <string name="avatarDescription">头像</string>
@@ -121,7 +120,7 @@
     <!--制作新章节界面的strings-->
     <string name="trylisten">试听</string>
     <string name="translate">转换</string>
-    <string name="input">输入文字</string>
+    <string name="input">输入文字(不超过3000字)</string>
     <string name="draft">已成功保存草稿!</string>
     <string name="translating">转换中，请稍候</string>
     <string name="translateSuccess">转换成功!</string>

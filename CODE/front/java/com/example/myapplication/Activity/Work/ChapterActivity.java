@@ -52,6 +52,8 @@ public class ChapterActivity extends AppCompatActivity {
     private MediaPlayer bgm_player;//bgm播放
 
     private boolean firtstPlay = true;//是否首次播放当前音频
+    private boolean getSpeechDone = false;//是否已获取音频
+    private boolean getBGMDone = false;//是否已获取BGM
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,6 +197,9 @@ public class ChapterActivity extends AppCompatActivity {
     }
 
     public void playSpeech(View view){
+        getSpeechDone = false;
+        getBGMDone = false;
+
         if(firtstPlay)  {
             new Thread(prepareSpeech).start();
         }
@@ -267,7 +272,7 @@ public class ChapterActivity extends AppCompatActivity {
                         speech_player.start();
                         bgm_player.start();
 
-                        bgm_player.setVolume(0.4f,0.4f);//设置背景音乐音量
+                        bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
                         bgm_player.setLooping(true);//背景音乐循环播放
 
                         //进度条更新
@@ -380,6 +385,7 @@ public class ChapterActivity extends AppCompatActivity {
                             end.setText(chapter.getString("length"));
 
                             new Thread(getSpeech).start();
+                            new Thread(getBgm).start();
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -432,7 +438,12 @@ public class ChapterActivity extends AppCompatActivity {
 
                             outputStream.close();
 
-                            new Thread(getBgm).start();
+                            getSpeechDone = true;
+
+                            if(getBGMDone){
+                                loadingView.setVisibility(View.INVISIBLE);
+                                normal.setVisibility(View.VISIBLE);
+                            }
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -463,9 +474,14 @@ public class ChapterActivity extends AppCompatActivity {
                             OutputStream outputStream = new FileOutputStream(bgm);
 
                             resultStream.writeTo(outputStream);
-                            loadingView.setVisibility(View.INVISIBLE);
-                            normal.setVisibility(View.VISIBLE);
                             outputStream.close();
+
+                            getBGMDone = true;
+
+                            if(getSpeechDone){
+                                loadingView.setVisibility(View.INVISIBLE);
+                                normal.setVisibility(View.VISIBLE);
+                            }
                         }catch (Exception e){
                             e.printStackTrace();
                         }

@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 
@@ -25,10 +24,10 @@ public class GetBGMController {
     @RequestMapping("/audiobook/getBGM")
     public void getBGM(@RequestParam("filename") String filename, HttpServletResponse response){
         try{
-            System.out.println("begin get bgm");
+            //System.out.println("begin get bgm");
             String fileName = URLDecoder.decode(filename,"UTF-8");
             GridFSDBFile bgm = chapterService.getBGM(fileName);
-            System.out.println("begin transfer bgm");
+            //System.out.println("begin transfer bgm");
             if(bgm==null){
                 httpUtils.writeStringBack(response,null);
             }
@@ -38,7 +37,7 @@ public class GetBGMController {
                 outputStream.flush();
                 outputStream.close();
             }
-            System.out.println("done");
+            //System.out.println("done");
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -52,17 +52,22 @@ public class Sentiment {
         client.setConnectionTimeoutInMillis(2000);
         client.setSocketTimeoutInMillis(60000);
 
-        //文本参数
-        // 传入可选参数调用接口
-        HashMap<String, Object> options = new HashMap<String, Object>();
-        // 情感倾向分析
-        JSONObject res = client.sentimentClassify(text, options);
+        double positive = 0.0;
+        try {
+            //文本参数
+            // 传入可选参数调用接口
+            HashMap<String, Object> options = new HashMap<String, Object>();
+            // 情感倾向分析
+            JSONObject res = client.sentimentClassify(text, options);
 
-        JSONArray sentimentarray=res.getJSONArray("items");
-        JSONObject sentimenttable=sentimentarray.getJSONObject(0);
+            JSONArray sentimentarray = res.getJSONArray("items");
+            JSONObject sentimenttable = sentimentarray.getJSONObject(0);
 
-        //取积极指数，为大于0小于1的小数
-        double positive=sentimenttable.getDouble("positive_prob");
+            //取积极指数，为大于0小于1的小数
+            positive = sentimenttable.getDouble("positive_prob");
+        }catch (Exception e){
+            //e.printStackTrace();
+        }
         return compute_level(positive);
     }
 }

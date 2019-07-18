@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.List;
 
 @Component(value = "userService")
 public interface UserService {
@@ -26,4 +27,8 @@ public interface UserService {
     GridFSDBFile getAvatar(String account);
 
     JSONArray getRecommend(String account,int from,int size);
+
+    String getPreference(String account);
+
+    void storePreference(String account,String preference);
 }

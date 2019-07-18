@@ -61,6 +61,8 @@ public class EditChapterActivity extends AppCompatActivity {
     private MediaPlayer bgm_player;//bgm播放
 
     private boolean firtstPlay = true;//是否首次播放当前音频
+    private boolean ttsDone = false;
+    private boolean getBgmDone = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -262,6 +264,7 @@ public class EditChapterActivity extends AppCompatActivity {
 
     public void textToSpeech(View view){
         new Thread(textToSpeech).start();
+        new Thread(matchBGM).start();
     }
 
     public void playSpeech(View view){
@@ -338,7 +341,7 @@ public class EditChapterActivity extends AppCompatActivity {
                         speech_player.start();
                         bgm_player.start();
 
-                        bgm_player.setVolume(0.4f,0.4f);//设置背景音乐音量
+                        bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
                         bgm_player.setLooping(true);//背景音乐循环播放
 
                         //进度条更新
@@ -445,7 +448,12 @@ public class EditChapterActivity extends AppCompatActivity {
                             TextView begin = findViewById(R.id.begin);
                             begin.setText(getResources().getString(R.string.initial));
 
-                            new Thread(matchBGM).start();
+                            ttsDone = true;
+                            if(getBgmDone){
+                                new MyToast(EditChapterActivity.this, getResources().getString(R.string.translateSuccess));
+                                LinearLayout translating = findViewById(R.id.translating);
+                                translating.setVisibility(View.INVISIBLE);
+                            }
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -531,9 +539,12 @@ public class EditChapterActivity extends AppCompatActivity {
                             resultStream.writeTo(outputStream);
                             outputStream.close();
 
-                            new MyToast(EditChapterActivity.this, getResources().getString(R.string.translateSuccess));
-                            LinearLayout translating = findViewById(R.id.translating);
-                            translating.setVisibility(View.INVISIBLE);
+                            getBgmDone = true;
+                            if(ttsDone) {
+                                new MyToast(EditChapterActivity.this, getResources().getString(R.string.translateSuccess));
+                                LinearLayout translating = findViewById(R.id.translating);
+                                translating.setVisibility(View.INVISIBLE);
+                            }
                         }catch (Exception e){
                             e.printStackTrace();
                         }

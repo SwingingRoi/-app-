@@ -24,5 +24,5 @@ public interface BookDAO {
 
     void deleteBooks(JSONArray ids);
 
-    int getChapterNumbers(int bookid);
+    List<Book> findBookByTags(List<String> tags,int from,int size);
 }

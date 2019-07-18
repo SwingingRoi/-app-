@@ -29,8 +29,8 @@ public interface UserRepository extends JpaRepository<User,Integer> {
 
     @Modifying
     @Query("update com.cpd.soundbook.Entity.User set account=:account,password=:password,name=:name," +
-            "gender=:gender,email=:email where id=:id")
+            "gender=:gender,email=:email,preferences=:preferences where id=:id")
     void modifyInfo(@Param("account") String account,@Param("password") String password,
                     @Param("name") String name,@Param("gender") String gender,@Param("email") String email,
-                    @Param("id") int id);
+                    @Param("preferences") String preferences,@Param("id") int id);
 }

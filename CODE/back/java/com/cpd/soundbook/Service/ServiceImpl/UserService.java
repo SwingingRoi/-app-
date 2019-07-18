@@ -1,10 +1,12 @@
 package com.cpd.soundbook.Service.ServiceImpl;
 
+import com.cpd.soundbook.DAO.DAOImpl.BookDAO;
 import com.cpd.soundbook.DAO.DAOImpl.UserFavBookDAO;
 import com.cpd.soundbook.DAO.DAOInterface.UserDAO;
 import com.cpd.soundbook.Entity.Book;
 import com.cpd.soundbook.Entity.User;
 import com.cpd.soundbook.MongoDB.MongoDBInter;
+import com.cpd.soundbook.TopKTags;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,7 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService implements com.cpd.soundbook.Service.ServiceInterface.UserService {
@@ -28,10 +33,17 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
     @Autowired
     private UserBrowseBookService userBrowseBookService;
 
+    @Autowired
+    private BookDAO bookDAO;
+
+    @Autowired
+    private TopKTags topKTags;
+
     final private int INFINITE = 999999999;
 
     final private int FAV_WEIGHT = 8;//收藏在推荐中的比重
     final private int HISTORY_WEIGHT = 2;//浏览历史在推荐中的比重
+    final private int TOP_NUMBER = 3;//获取权重排名前k的标签
 
     @Override
     public String sign(JSONObject newUser) {
@@ -194,24 +206,96 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
 
     @Override
     public JSONArray getRecommend(String account, int from, int size) {
-        List<Book> favBooks = userFavBookDAO.findFavs(account,from,INFINITE);//找到用户收藏的所有书本
+        JSONArray result = new JSONArray();
+
+        try {
+            List<Book> favBooks = userFavBookDAO.findFavs(account, from, INFINITE);//找到用户收藏的所有书本
 
         /*
         browse:{'name':bookname,'bookid':bookid,'tags':tags,'account':account,'id':id,'time':time}
          */
-        JSONArray browses = userBrowseBookService.getRecords(account,from,20);//找最近20条浏览记录
+            JSONArray browses = userBrowseBookService.getRecords(account, from, 20);//找最近20条浏览记录
 
 
-        for(Book book : favBooks){
-            System.out.println(book.getTags());
+            HashMap<String, Integer> inputs = new HashMap<>();
+
+            //计算收藏夹中各标签的权重
+            for (Book book : favBooks) {
+                String[] tags = book.getTags().split(" ");//获取书本tags
+                for (String tag : tags) {//若tag已在inputs中，更新权重
+                    if (inputs.containsKey(tag)) {
+                        int oldWeight = inputs.get(tag);
+                        inputs.put(tag, oldWeight + FAV_WEIGHT);
+                    } else {//否则向inputs中插入标签
+                        inputs.put(tag, FAV_WEIGHT);
+                    }
+                }
+            }
+
+            //计算最近20条浏览记录中各标签的权重
+            for (int i = 0; i < browses.length(); i++) {
+                String[] tags = browses.getJSONObject(i).getString("tags").split(" ");
+                for (String tag : tags) {//若tag已在inputs中，更新权重
+                    if (inputs.containsKey(tag)) {
+                        int oldWeight = inputs.get(tag);
+                        inputs.put(tag, oldWeight + HISTORY_WEIGHT);
+                    } else {//否则向inputs中插入标签
+                        inputs.put(tag, HISTORY_WEIGHT);
+                    }
+                }
+            }
+
+            List<Map.Entry<String, Integer>> topK = topKTags.getTopKTags(inputs, TOP_NUMBER);
+            List<String> kTags = new ArrayList<>();
+
+
+            /*
+            topK.size() == 0对应两种情况：
+            1、新建的用户，没有收藏和浏览记录.
+            2、老用户，但清空了收藏夹和历史记录.
+            此时推荐所需的tags从数据库中users的preference中获取
+             */
+            User user = userDAO.findUserByAccount(account);
+            if(topK.size() == 0){
+                String[] tags = user.getPreferences().split(" ");
+                for(String tag : tags){
+                    kTags.add(tag);
+                }
+            }
+            else {
+                String newPreferences = "";
+                for (Map.Entry<String, Integer> entry : topK) {
+                    kTags.add(entry.getKey());
+                    newPreferences += entry.getKey() + " ";
+                }
+                //更新数据库中users的preference
+                user.setPreferences(newPreferences);
+                userDAO.updateUser(user);
+            }
+
+            List<Book> books = bookDAO.findBookByTags(kTags,from,size);
+            for(Book book : books){
+                result.put(book.toJSONObject());
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        for(int i=0;i<browses.length();i++){
-            System.out.println(browses.getJSONObject(i).getString("tags"));
-        }
 
-        
-        return null;
+        return result;
     }
 
+    @Override
+    public String getPreference(String account) {
+        String result = userDAO.findUserByAccount(account).getPreferences();
+        if(result == null) return "";
+        return result;
+    }
 
+    @Override
+    public void storePreference(String account, String preferences) {
+        User user = userDAO.findUserByAccount(account);
+        user.setPreferences(preferences);
+        userDAO.updateUser(user);
+    }
 }

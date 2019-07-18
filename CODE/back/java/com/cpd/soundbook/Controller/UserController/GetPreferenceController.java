@@ -11,19 +11,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.net.URLDecoder;
 
 @RestController
-public class GetRecommendController {
-
-    @Autowired
-    private HttpUtils httpUtils;
+public class GetPreferenceController {
 
     @Autowired
     private UserService userService;
 
-    @RequestMapping("/audiobook/getrecommend")
-    public void getRecommend(@RequestParam("account") String account, @RequestParam("from") int from, @RequestParam("size") int size,
-                             HttpServletResponse response){
+    @Autowired
+    private HttpUtils httpUtils;
+
+
+    @RequestMapping("/audiobook/getPreference")
+    public void getPreference(@RequestParam("account") String account, HttpServletResponse response){
         try{
-            httpUtils.writeStringBack(response,userService.getRecommend(URLDecoder.decode(account,"UTF-8"), from, size).toString());
+            httpUtils.writeStringBack(response,userService.getPreference(URLDecoder.decode(account,"UTF-8")));
         }catch (Exception e){
             e.printStackTrace();
         }
