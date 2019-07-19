@@ -24,13 +24,13 @@ public class MatchBGMController {
     @RequestMapping("/audiobook/matchBGM")
     public void matchBGM(HttpServletRequest request, HttpServletResponse response){
         try{
-            System.out.println("match bgm begin");
+            //System.out.println("match bgm begin");
             JSONObject param = new JSONObject(httpUtils.getStringParam(request));
             String bgm = chapterService.matchBGM(param.getString("text"));
             JSONObject path = new JSONObject();
             path.put("bgmPath",bgm);
             httpUtils.writeStringBack(response,path.toString());
-            System.out.println("match bgm done");
+            //System.out.println("match bgm done");
         }catch (Exception e){
             e.printStackTrace();
         }

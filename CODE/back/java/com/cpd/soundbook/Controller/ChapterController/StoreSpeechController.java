@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 
 @RestController
@@ -20,10 +21,10 @@ public class StoreSpeechController {
     private HttpUtils httpUtils;
 
     @RequestMapping("/audiobook/storeSpeech")
-    public void storeSpeech(HttpServletRequest request, @RequestParam("path") String path){
+    public void storeSpeech(HttpServletRequest request, HttpServletResponse response){
         try{
-            File file = httpUtils.getMp3Param(request,path);
-            chapterService.storeSpeech(file);
+            File file = httpUtils.getMp3Param(request);
+            httpUtils.writeStringBack(response,chapterService.storeSpeech(file));
         }catch (Exception e){
             e.printStackTrace();
         }

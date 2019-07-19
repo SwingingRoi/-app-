@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 
 @RestController
@@ -21,11 +22,10 @@ public class ModifySpeechController {
 
     @RequestMapping("/audiobook/updateSpeech")
     public void updateSpeech(HttpServletRequest request,
-                             @RequestParam("oldpath") String oldpath,
-                             @RequestParam("newpath") String newpath){
+                             @RequestParam("oldpath") String oldpath, HttpServletResponse response){
         try{
-            File newspeech = httpUtils.getMp3Param(request,newpath);
-            chapterService.updateSpeech(oldpath, newspeech);
+            File newspeech = httpUtils.getMp3Param(request);
+            httpUtils.writeStringBack(response,chapterService.updateSpeech(oldpath, newspeech));
         }catch (Exception e){
             e.printStackTrace();
         }

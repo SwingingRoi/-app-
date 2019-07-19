@@ -1,6 +1,7 @@
 package com.example.myapplication.Activity.Book;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -18,7 +19,8 @@ import android.view.Window;
 import android.view.WindowManager;
 
 
-import com.example.myapplication.Activity.Work.NewChapterActivity;
+import com.example.myapplication.Activity.Work.NewChapterForTTSActivity;
+import com.example.myapplication.Activity.Work.NewChapterForSTTActivity;
 
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -264,9 +266,43 @@ public class BookActivity extends AppCompatActivity {
     }
 
     private void toNewChapter(){
-        Intent intent = new Intent(this,NewChapterActivity.class);
-        intent.putExtra("bookid",bookid);
-        startActivity(intent);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.gender_edit_dialog,null);
+
+        TextView title = view.findViewById(R.id.Title);
+        title.setText(getResources().getString(R.string.mode));
+
+        TextView tts = view.findViewById(R.id.Male);
+        tts.setText(getResources().getString(R.string.tts));
+
+        TextView stt = view.findViewById(R.id.Female);
+        stt.setText(getResources().getString(R.string.stt));
+
+        builder.setView(view);
+
+        final AlertDialog dialog = builder.show();
+
+        tts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(BookActivity.this, NewChapterForTTSActivity.class);
+                intent.putExtra("bookid",bookid);
+                dialog.dismiss();
+                startActivity(intent);
+            }
+        });
+
+
+        stt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(BookActivity.this, NewChapterForSTTActivity.class);
+                intent.putExtra("bookid",bookid);
+                dialog.dismiss();
+                startActivity(intent);
+            }
+        });
     }
 
     //开启管理模式

@@ -1,6 +1,8 @@
 package com.cpd.soundbook;
 
+import com.cpd.soundbook.AudioUtils.RandomName;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -9,6 +11,9 @@ import java.io.*;
 
 @Component(value = "httpUtils")
 public class HttpUtils {
+    @Autowired
+    private RandomName randomName;
+
     public String getStringParam(HttpServletRequest request){
         String result="";
         try {
@@ -45,7 +50,7 @@ public class HttpUtils {
         File file = null;
         try{
             InputStream param = request.getInputStream();
-            String path = System.getProperty("user.dir")+"\\"+System.currentTimeMillis()+".png";
+            String path = System.getProperty("user.dir")+"\\"+System.currentTimeMillis()/*randomName.randomname*/+".png";
             file = createFile(path,param);
             param.close();
         }catch (Exception e){
@@ -54,10 +59,11 @@ public class HttpUtils {
         return file;
     }
 
-    public File getMp3Param(HttpServletRequest request,String path){
+    public File getMp3Param(HttpServletRequest request){
         File file = null;
         try{
             InputStream param = request.getInputStream();
+            String path = System.getProperty("user.dir")+"\\"+System.currentTimeMillis()/*randomName.randomname*/+".mp3";
             file = createFile(path,param);
             param.close();
         }catch (Exception e){

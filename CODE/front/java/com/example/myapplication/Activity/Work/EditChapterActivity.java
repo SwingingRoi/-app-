@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.example.myapplication.Activity.Book.BookActivity;
 import com.example.myapplication.InternetUtils.GetServer;
 import com.example.myapplication.InternetUtils.HttpUtils;
 import com.example.myapplication.AudioUtils.MilliToHMS;
@@ -41,7 +42,6 @@ public class EditChapterActivity extends AppCompatActivity {
     private LinearLayout loadingView;
     private LinearLayout normal;
     private SeekBar seekBar;//进度条
-    private EditText content;
     private boolean textChanged = false;
     private boolean speechChanged = false;//同步音频与文本
 
@@ -76,11 +76,9 @@ public class EditChapterActivity extends AppCompatActivity {
 
         normal = findViewById(R.id.normal);
 
-        content = findViewById(R.id.content);
-        content.addTextChangedListener(watcher);
-
         EditText content = findViewById(R.id.content);
         content.setMovementMethod(ScrollingMovementMethod.getInstance());
+        content.addTextChangedListener(watcher);
 
         loadingView = findViewById(R.id.Loading);
         loadingView.setVisibility(View.VISIBLE);
@@ -198,7 +196,7 @@ public class EditChapterActivity extends AppCompatActivity {
                         return;
                     }
 
-                    new Thread(updateChapter).start();
+                    new Thread(updateSpeech).start();
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -209,6 +207,18 @@ public class EditChapterActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+
+                if(speech_player != null) {
+                    speech_player.reset();
+                    speech_player.release();
+                    speech_player = null;
+                }
+                if(bgm_player != null) {
+                    bgm_player.reset();
+                    bgm_player.release();
+                    bgm_player = null;
+                }
+
                 EditChapterActivity.super.onBackPressed();
             }
         });
@@ -259,7 +269,7 @@ public class EditChapterActivity extends AppCompatActivity {
             bgm_player.pause();
         }
 
-        new Thread(updateChapter).start();
+        new Thread(updateSpeech).start();
     }
 
     public void textToSpeech(View view){
@@ -644,7 +654,6 @@ public class EditChapterActivity extends AppCompatActivity {
                 EditText content = findViewById(R.id.content);
                 object.put("content",content.getText());
 
-                newSpeechPath = System.currentTimeMillis() + ".mp3";
                 object.put("speechPath",newSpeechPath);
 
                 object.put("bgmPath",bgmPath);
@@ -658,7 +667,26 @@ public class EditChapterActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "GET", "application/json");
 
-                new Thread(updateSpeech).start();
+                EditChapterActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        new MyToast(EditChapterActivity.this,"修改成功!");
+                        speechFile.delete();
+
+                        if(speech_player != null) {
+                            speech_player.reset();
+                            speech_player.release();
+                            speech_player = null;
+                        }
+                        if(bgm_player != null) {
+                            bgm_player.reset();
+                            bgm_player.release();
+                            bgm_player = null;
+                        }
+
+                        EditChapterActivity.super.onBackPressed();
+                    }
+                });
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -722,7 +750,7 @@ public class EditChapterActivity extends AppCompatActivity {
         public void run() {
             try{
                 GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS()+"/audiobook/updateSpeech?oldpath=" + oldSpeechPath + "&newpath=" + newSpeechPath;
+                String url = getServer.getIPADDRESS()+"/audiobook/updateSpeech?oldpath=" + oldSpeechPath;
 
                 FileInputStream inputStream = new FileInputStream(speechFile);
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -736,27 +764,23 @@ public class EditChapterActivity extends AppCompatActivity {
                 byte[] param = byteArrayOutputStream.toByteArray();
 
                 HttpUtils httpUtils = new HttpUtils(url);
-                httpUtils.doHttp(param, "POST",
+                ByteArrayOutputStream outputStream = httpUtils.doHttp(param, "GET",
                         "application/json");
 
-                EditChapterActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        new MyToast(EditChapterActivity.this,"修改成功!");
-                        speechFile.delete();
-
-                        if(speech_player != null) {
-                            speech_player.release();
-                            speech_player = null;
+                if (outputStream == null) {//请求超时
+                    EditChapterActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new MyToast(EditChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
                         }
-                        if(bgm_player != null) {
-                            bgm_player.release();
-                            bgm_player = null;
-                        }
+                    });
+                    return;
+                }
 
-                        EditChapterActivity.super.onBackPressed();
-                    }
-                });
+                newSpeechPath = new String(outputStream.toByteArray(),
+                        StandardCharsets.UTF_8);
+
+                new Thread(updateChapter).start();
             }catch (Exception e){
                 e.printStackTrace();
             }

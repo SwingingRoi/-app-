@@ -217,12 +217,15 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
     }
 
     @Override
-    public void storeSpeech(File speech) {
+    public String storeSpeech(File speech) {
+        String result = "";
         try{
             mongoDAO.saveFile(speech);
+            result = speech.getName();
         }catch (Exception e){
             e.printStackTrace();
         }
+        return result;
     }
 
     @Override
@@ -231,8 +234,9 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
     }
 
     @Override
-    public void updateSpeech(String oldpath, File newspeech) {
+    public String updateSpeech(String oldpath, File newspeech) {
         mongoDAO.deleteFile(oldpath);
         mongoDAO.saveFile(newspeech);
+        return newspeech.getName();
     }
 }

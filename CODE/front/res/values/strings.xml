@@ -117,7 +117,7 @@
     <string name="SearchFav">搜索收藏夹</string>
 
     <string name="initial">00:00</string>
-    <!--制作新章节界面的strings-->
+    <!--文本转语音界面的strings-->
     <string name="trylisten">试听</string>
     <string name="translate">转换</string>
     <string name="input">输入文字(不超过3000字)</string>
@@ -125,6 +125,11 @@
     <string name="translating">转换中，请稍候</string>
     <string name="translateSuccess">转换成功!</string>
     <string name="titlelong">标题不能超过20个字!</string>
+
+    <!--语音转文本界面的strings-->
+    <string name="waitTranslate">待转换......</string>
+    <string name="choosefile">选择文件</string>
+    <string name="askchoosefile">请选择音频文件</string>
 
     <!--章节收听界面的strings-->
     <string name="listen">章节收听</string>
@@ -170,6 +175,9 @@
     <string name="cancelfav">已取消收藏</string>
     <string name="bookdeleted">该书已被删除</string>
     <string name="newChapter">新建章节</string>
+    <string name="mode">选择创建方式</string>
+    <string name="tts">文本转语音</string>
+    <string name="stt">语音转文本</string>
     <string-array name="manageChapter">
         <item>新建章节</item>
         <item>管理章节</item>

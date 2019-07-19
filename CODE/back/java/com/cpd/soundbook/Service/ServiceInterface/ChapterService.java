@@ -25,9 +25,9 @@ public interface ChapterService {
 
     File textToSpeech(String text);
 
-    void storeSpeech(File speech);
+    String storeSpeech(File speech);
 
     GridFSDBFile getSpeech(String path);
 
-    void updateSpeech(String oldpath,File newspeech);
+    String updateSpeech(String oldpath,File newspeech);
 }

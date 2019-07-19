@@ -35,7 +35,6 @@ public class ChapterActivity extends AppCompatActivity {
     private LinearLayout loadingView;
     private LinearLayout normal;
     private SeekBar seekBar;//进度条
-    private TextView end;
 
     private int chapterID;
     private int bookid;
@@ -77,7 +76,6 @@ public class ChapterActivity extends AppCompatActivity {
         loadingView = findViewById(R.id.Loading);
         loadingView.setVisibility(View.VISIBLE);
         normal.setVisibility(View.INVISIBLE);
-        end = findViewById(R.id.end);
 
         SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
         account = sharedPreferences.getString("Account","");
@@ -142,12 +140,12 @@ public class ChapterActivity extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         if(speech_player != null) {
-            if(speech_player.isPlaying()) speech_player.pause();
+            speech_player.reset();
             speech_player.release();
             speech_player = null;
         }
         if(bgm_player != null) {
-            if(bgm_player.isPlaying()) bgm_player.pause();
+            bgm_player.reset();
             bgm_player.release();
             bgm_player = null;
         }
@@ -267,7 +265,6 @@ public class ChapterActivity extends AppCompatActivity {
                     public void onPrepared(MediaPlayer mp) {
 
                         seekBar.setMax(speech_player.getDuration());
-
 
                         speech_player.start();
                         bgm_player.start();
