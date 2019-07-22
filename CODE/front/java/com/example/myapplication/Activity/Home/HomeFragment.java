@@ -187,12 +187,11 @@ public class HomeFragment extends Fragment {
 
         isRequesting = true;
 
-        if (!firstIn) {
-            from = 0;
-            firstIn = true;
-            bookTable.removeAllViews();
-            books = new JSONArray();
-        }
+        from = 0;
+        firstIn = true;
+        bookTable.removeAllViews();
+        books = new JSONArray();
+
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         loadView.findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
@@ -331,6 +330,8 @@ public class HomeFragment extends Fragment {
                 public void run() {
                     try {
                         bookTable.removeView(pullDown);
+                        loadView.setVisibility(View.INVISIBLE);
+                        normal.setVisibility(View.VISIBLE);
 
                         if (firstIn) {//如果是首次进入该activity
                             firstIn = false;
@@ -410,10 +411,6 @@ public class HomeFragment extends Fragment {
                         }
 
                         from = from + newBooks.length();//更新请求index
-
-                        loadView.setVisibility(View.INVISIBLE);
-                        normal.setVisibility(View.VISIBLE);
-
                     }catch (Exception e){
                         e.printStackTrace();
                     }

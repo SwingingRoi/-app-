@@ -156,4 +156,9 @@ public class BookService implements com.cpd.soundbook.Service.ServiceInterface.B
     public void deleteBooks(JSONArray ids) {
         bookDAO.deleteBooks(ids);
     }
+
+    @Override
+    public void publishBook(int bookid) {
+        bookDAO.publishBook(bookid);
+    }
 }

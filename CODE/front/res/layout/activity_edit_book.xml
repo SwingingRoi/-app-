@@ -168,15 +168,30 @@
             android:alpha="0.5"
             android:background="@drawable/gray" />
 
-        <Button
-            android:id="@+id/Store"
-            android:layout_width="150dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="35dp"
-            android:layout_weight="0.3"
-            android:onClick="storeModify"
-            android:text="@string/Store"
-            android:textSize="17sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/Publish"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="50dp"
+                android:onClick="publishBook"
+                android:text="@string/publish"
+                android:textSize="17sp" />
+
+            <Button
+                android:id="@+id/Store"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:onClick="storeModify"
+                android:text="@string/Store"
+                android:textSize="17sp" />
+        </LinearLayout>
 
     </LinearLayout>
 

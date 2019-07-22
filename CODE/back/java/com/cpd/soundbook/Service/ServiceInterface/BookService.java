@@ -30,4 +30,6 @@ public interface BookService {
     void deleteSurface(String fileanme);
 
     void deleteBooks(JSONArray ids);
+
+    void publishBook(int bookid);
 }

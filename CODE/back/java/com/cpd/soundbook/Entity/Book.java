@@ -15,6 +15,7 @@ public class Book {
     private int chapters;
     private int views;
     private String tags;
+    private boolean publish;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +35,7 @@ public class Book {
             result.put("chapters",chapters);
             result.put("views",views);
             result.put("tags",tags);
+            result.put("publish",publish);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -102,5 +104,13 @@ public class Book {
 
     public String getTags() {
         return tags;
+    }
+
+    public void setPublish(boolean publish) {
+        this.publish = publish;
+    }
+
+    public boolean isPublish() {
+        return publish;
     }
 }

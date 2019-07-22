@@ -201,13 +201,10 @@ public class EditInfoActivity extends AppCompatActivity {
                 String url = getServer.getIPADDRESS() + "/audiobook/saveAvatar";
 
                 HttpUtils httpUtils = new HttpUtils(url);
-                final String result=new String(httpUtils.doHttp(avatarStream,"POST",
+                avatarName=new String(httpUtils.doHttp(avatarStream,"POST",
                         "application/json").toByteArray(),
                         StandardCharsets.UTF_8);
 
-
-
-                avatarName = result;//返回头像文件名
                 new Thread(saveAvatarName).start();
 
             }catch (Exception e){
@@ -237,6 +234,15 @@ public class EditInfoActivity extends AppCompatActivity {
     Runnable saveNewInfo = new Runnable() {
         @Override
         public void run() {
+            EditInfoActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    LinearLayout storing = findViewById(R.id.storing);
+                    storing.setVisibility(View.VISIBLE);
+                }
+            });
+
+
             GetServer getServer = new GetServer();
             String url = getServer.getIPADDRESS()+"/audiobook/updateuser";
 
@@ -276,6 +282,9 @@ public class EditInfoActivity extends AppCompatActivity {
                 EditInfoActivity.this.runOnUiThread(new Runnable() {//弹出修改结果
                     @Override
                     public void run() {
+                        LinearLayout storing = findViewById(R.id.storing);
+                        storing.setVisibility(View.INVISIBLE);
+
                         switch (result){
                             case "success":
                                 changeAccount();

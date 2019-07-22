@@ -30,4 +30,6 @@ public interface ChapterService {
     GridFSDBFile getSpeech(String path);
 
     String updateSpeech(String oldpath,File newspeech);
+
+    JSONArray getChapterIDs(int bookid);
 }

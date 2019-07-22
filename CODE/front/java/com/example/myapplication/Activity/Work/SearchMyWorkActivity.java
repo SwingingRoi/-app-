@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
@@ -317,19 +318,31 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                             for (int i = 0; i < resultArray.length(); i++) {
                                 View bookRow = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_row_style, null);
 
+                                JSONObject result = resultArray.getJSONObject(i);
 
                                 TextView title = bookRow.findViewById(R.id.BookName);
-                                title.setText(resultArray.getJSONObject(i).getString("name"));
+                                title.setText(result.getString("name"));
 
                                 TextView viewNumber = bookRow.findViewById(R.id.viewnumber);
-                                viewNumber.setText(String.valueOf(resultArray.getJSONObject(i).getInt("views")));
+                                viewNumber.setText(String.valueOf(result.getInt("views")));
 
                                 TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
-                                chapterNumber.setText(resultArray.getJSONObject(i).getInt("chapters") + "章");
+                                chapterNumber.setText(result.getInt("chapters") + "章");
 
                                 LinearLayout tagsView = bookRow.findViewById(R.id.tags);
-                                String tagStr = resultArray.getJSONObject(i).getString("tags");
+                                String tagStr = result.getString("tags");
                                 String[] tags = tagStr.split(" ");
+
+                                TextView publishView = bookRow.findViewById(R.id.hasPublished);
+                                publishView.setVisibility(View.VISIBLE);
+                                if(result.getBoolean("publish")){
+                                    publishView.setText(getResources().getString(R.string.published));
+                                    publishView.setTextColor(Color.GREEN);
+                                }
+                                else {
+                                    publishView.setText(getResources().getString(R.string.nopublished));
+                                    publishView.setTextColor(Color.RED);
+                                }
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];

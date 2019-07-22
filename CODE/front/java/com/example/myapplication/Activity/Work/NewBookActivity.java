@@ -295,9 +295,8 @@ public class NewBookActivity extends AppCompatActivity {
             builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    //new MyToast(NewBookActivity.this,tagStats.toString());
-                    //检验是否超过三个标签被选择
                     new Thread(storeNewBook).start();
+                    NewBookActivity.this.finish();
                 }
             });
 
@@ -419,14 +418,9 @@ public class NewBookActivity extends AppCompatActivity {
                 NewBookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Button store = findViewById(R.id.Store);
-                        store.setClickable(true);
-
 
                         if(result.equals("success")) {
                             new MyToast(NewBookActivity.this, getResources().getString(R.string.makesuccess));
-                            NewBookActivity.this.setResult(RESULT_OK);
-                            NewBookActivity.this.finish();
                         }
 
                         if(result.equals("fail")){

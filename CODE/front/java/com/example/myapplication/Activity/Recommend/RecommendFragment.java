@@ -42,6 +42,7 @@ public class RecommendFragment extends Fragment {
     private LinearLayout normal;
     private LinearLayout loadView;
     private LinearLayout bookTable;
+    private ImageView refresh;
 
     private ScrollView scrollView;
     private View pullDown;//请求文字提示
@@ -70,6 +71,13 @@ public class RecommendFragment extends Fragment {
 
         normal = view.findViewById(R.id.normal);
         bookTable = view.findViewById(R.id.BookTable);
+        refresh = view.findViewById(R.id.refresh);
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refresh();
+            }
+        });
 
         pullDown = LayoutInflater.from(getActivity()).inflate(R.layout.pull_down, null);
         bookTable.addView(pullDown);
@@ -117,6 +125,7 @@ public class RecommendFragment extends Fragment {
 
     public void refresh(){
 
+        refresh.setClickable(false);
         loadView.setClickable(false);
 
         CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
@@ -127,6 +136,7 @@ public class RecommendFragment extends Fragment {
 
             @Override
             public void onFinish() {
+                refresh.setClickable(true);
                 loadView.setClickable(true);
             }
         };//防止用户高频率点击
@@ -136,12 +146,11 @@ public class RecommendFragment extends Fragment {
 
         isRequesting = true;
 
-        if (!firstIn) {
-            from = 0;
-            firstIn = true;
-            bookTable.removeAllViews();
-            books = new JSONArray();
-        }
+        from = 0;
+        firstIn = true;
+        bookTable.removeAllViews();
+        books = new JSONArray();
+
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         loadView.findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);

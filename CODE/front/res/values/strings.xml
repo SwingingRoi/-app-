@@ -16,6 +16,7 @@
 
 
     <!-- 注册界面的strings-->
+    <string name="verifying">注册信息验证中......</string>
     <string name="SignAccount">用户名 (4-20位中文/字母/数字)</string>
     <string name="SignPassword">密码 (6-16位字母/数字)</string>
     <string name="SignButton">注册</string>
@@ -79,6 +80,7 @@
     <string name="EditName">姓名</string>
     <string name="EditGender">性别</string>
     <string name="EditEmail">邮箱</string>
+    <string name="storing">保存中......</string>
 
     <!--搜索界面的strings-->
     <string name="Search">搜索</string>
@@ -133,6 +135,11 @@
 
     <!--章节收听界面的strings-->
     <string name="listen">章节收听</string>
+    <string-array name="audioMode">
+        <item>单曲循环</item>
+        <item>顺序播放</item>
+        <item>列表循环</item>
+    </string-array>
 
     <!--修改章节界面的strings-->
     <string name="editchapter">修改章节</string>
@@ -189,10 +196,14 @@
     <string name="hasEnd">已经到底啦~</string>
     <string name="noresult">没有结果</string>
     <string name="manage">管理</string>
+    <string name="published">已发布</string>
+    <string name="nopublished">未发布</string>
 
 
     <!--修改书本信息-->
     <string name="modifybook">修改作品</string>
+    <string name="publish">发布</string>
+    <string name="publishSuccess">发布成功!</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

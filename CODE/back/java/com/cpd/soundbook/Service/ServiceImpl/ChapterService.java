@@ -36,6 +36,8 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
     @Autowired
     private MongoDBInter mongoDAO;
 
+    final private int INFINITE = 99999999;
+
     @Override
     public void storeChapter(JSONObject chapter) {
         try{
@@ -168,7 +170,7 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
         for(int pLevel : pLevels){
             result += pLevel;
         }
-        //System.out.println("Level: " + result / pLevels.size());
+        System.out.println("Level: " + result / pLevels.size());
 
         return result / pLevels.size();
 
@@ -238,5 +240,21 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
         mongoDAO.deleteFile(oldpath);
         mongoDAO.saveFile(newspeech);
         return newspeech.getName();
+    }
+
+    @Override
+    public JSONArray getChapterIDs(int bookid) {
+        JSONArray result = new JSONArray();
+        try{
+            List<Chapter> chapters = chapterDAO.getChapters(bookid,0,INFINITE);
+            for(Chapter chapter : chapters){
+                JSONObject object = new JSONObject();
+                object.put("id",chapter.getId());
+                result.put(object);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
     }
 }

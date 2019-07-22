@@ -12,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -94,9 +95,7 @@ public class EditBookActivity extends AppCompatActivity {
                 if(!surfaceName.equals(initialSurface)) {
                     new Thread(deleteSurface).start();
                 }
-                else {
-                    EditBookActivity.this.finish();
-                }
+                EditBookActivity.this.finish();
             }
         });
 
@@ -129,6 +128,31 @@ public class EditBookActivity extends AppCompatActivity {
 
         try {
             new Thread(storeNewBook).start();
+            EditBookActivity.this.finish();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void publishBook(View view){
+        try{
+            final Button publish = findViewById(R.id.Publish);
+            publish.setClickable(false);
+            CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+
+                }
+
+                @Override
+                public void onFinish() {
+                    publish.setClickable(true);
+                }
+            };//防止用户高频率点击
+            countDownTimer.start();
+
+            new Thread(publishBook).start();
+            new MyToast(this,getResources().getString(R.string.publishSuccess));
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -173,6 +197,11 @@ public class EditBookActivity extends AppCompatActivity {
                             Intro.setText(info.getString("intro"));
                             surfaceName = info.getString("surface");
                             initialSurface = surfaceName;
+
+                            if(info.getBoolean("publish")){
+                                Button publish = findViewById(R.id.Publish);
+                                publish.setVisibility(View.GONE);
+                            }
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -349,6 +378,21 @@ public class EditBookActivity extends AppCompatActivity {
         }
     };
 
+    Runnable publishBook = new Runnable() {
+        @Override
+        public void run() {
+            try{
+                GetServer getServer = new GetServer();
+                String url = getServer.getIPADDRESS()+"/audiobook/publishBook?id=" + bookid;
+
+                HttpUtils httpUtils = new HttpUtils(url);
+                httpUtils.doHttp(null,"POST", "application/json");
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };
+
     Runnable storeNewBook = new Runnable() {
         @Override
         public void run() {
@@ -386,7 +430,6 @@ public class EditBookActivity extends AppCompatActivity {
                     public void run() {
                         if(result.equals("success")) {
                             new MyToast(EditBookActivity.this, getResources().getString(R.string.EditSuccess));
-                            EditBookActivity.this.finish();
                         }
 
                         if(result.equals("fail")){

@@ -327,4 +327,28 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/storing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gray"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/loadinggif2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/loading" />
+
+        <TextView
+            android:id="@+id/remind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/storing"
+            android:textSize="16sp" />
+    </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>

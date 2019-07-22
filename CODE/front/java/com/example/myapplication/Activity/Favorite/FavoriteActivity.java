@@ -130,14 +130,13 @@ public class FavoriteActivity extends AppCompatActivity {
 
         isRequesting = true;
 
-        if (!firstIn) {
-            from = 0;
-            firstIn = true;
-            if(ismanaging) cancelManage();
-            ismanaging = false;
-            bookTable.removeAllViews();
-            books = new JSONArray();
-        }
+        from = 0;
+        firstIn = true;
+        if(ismanaging) cancelManage();
+        ismanaging = false;
+        bookTable.removeAllViews();
+        books = new JSONArray();
+
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);

@@ -80,6 +80,7 @@ public class AddEffect {
             int plainSpeechLength = plainSpeechAudioHeader.getTrackLength();
 
             HashMap<Integer,String> divideResult = getEffectKey.getKeyList(text);
+
             Iterator<Map.Entry<Integer,String>> entryIterator = divideResult.entrySet().iterator();
 
             if(divideResult.size() != 0) {
@@ -190,7 +191,7 @@ public class AddEffect {
             commands.add("-i");
             commands.add(srcF);
             commands.add("-af");
-            commands.add("volume=-1dB");
+            commands.add("volume=-5dB");
             commands.add(desF);
 
             ProcessBuilder processBuilder = new ProcessBuilder(commands);

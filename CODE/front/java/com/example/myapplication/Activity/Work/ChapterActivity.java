@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -17,10 +18,12 @@ import android.widget.TextView;
 
 import com.example.myapplication.InternetUtils.GetServer;
 import com.example.myapplication.InternetUtils.HttpUtils;
+import com.example.myapplication.MyComponent.MySpinner;
 import com.example.myapplication.MyComponent.MyToast;
 import com.example.myapplication.R;
 import com.example.myapplication.AudioUtils.MilliToHMS;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -35,12 +38,23 @@ public class ChapterActivity extends AppCompatActivity {
     private LinearLayout loadingView;
     private LinearLayout normal;
     private SeekBar seekBar;//进度条
+    private MySpinner menu;
 
     private int chapterID;
     private int bookid;
     private String account;
     private String speechPath;
     private String bgmPath;
+    private JSONArray chapterIDs;//对应bookid的所有chapterID
+    private int now_chapter_index = 0;
+
+    final private int SINGLE_LOOP = 1;//单曲循环
+    final private int SEQUENCE = 2;//顺序播放(没有循环)
+    final private int LOOP = 3;//列表循环
+    private int NOW_MODE = SINGLE_LOOP;//默认为单曲循环
+    private boolean hasClickMenu = false;//是否点击菜单
+    private boolean hasPlayerReset = false;
+
 
     private File speechFile = null;
     private File bgm = null;
@@ -49,10 +63,6 @@ public class ChapterActivity extends AppCompatActivity {
 
     private MediaPlayer speech_player;//音频播放
     private MediaPlayer bgm_player;//bgm播放
-
-    private boolean firtstPlay = true;//是否首次播放当前音频
-    private boolean getSpeechDone = false;//是否已获取音频
-    private boolean getBGMDone = false;//是否已获取BGM
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +77,53 @@ public class ChapterActivity extends AppCompatActivity {
         bookid = intent.getIntExtra("bookid",-1);
 
 
+        menu = findViewById(R.id.menu);
+        menu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(!hasClickMenu){
+                    hasClickMenu = true;
+                    return;
+                }//取消spinner的默认选择
+
+                String select = parent.getItemAtPosition(position).toString();
+
+                switch (select){
+                    case "单曲循环":
+                        NOW_MODE = SINGLE_LOOP;
+                        ChapterActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                               menu.setBackground(getResources().getDrawable(R.drawable.singleloop));
+                            }
+                        });
+                        break;
+                    case "顺序播放":
+                        NOW_MODE = SEQUENCE;
+                        ChapterActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                menu.setBackground(getResources().getDrawable(R.drawable.sequence));
+                            }
+                        });
+                        break;
+                    case "列表循环":
+                        NOW_MODE = LOOP;
+                        ChapterActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                menu.setBackground(getResources().getDrawable(R.drawable.loop));
+                            }
+                        });
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         TextView content = findViewById(R.id.content);
         content.setMovementMethod(ScrollingMovementMethod.getInstance());
@@ -116,18 +173,31 @@ public class ChapterActivity extends AppCompatActivity {
         speech_player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
+                //当前音频播放完时，有三种情况
                 resetPlayer();
 
-                ChapterActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ImageView playButton = findViewById(R.id.PlayButton);
-                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+               try {
+                    switch (NOW_MODE) {
+                        case SINGLE_LOOP:
+                            new Thread(prepareSpeech).start();
+                            break;
+
+                        case SEQUENCE:
+                            if (now_chapter_index < chapterIDs.length() - 1) {//播放下一首
+                                playNextSpeech();
+                            }
+                            break;
+
+                        case LOOP:
+                            playNextSpeech();
+                            break;
                     }
-                });
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         });
-
 
         new Thread(addRecord).start();//添加浏览记录
         refresh();
@@ -154,6 +224,8 @@ public class ChapterActivity extends AppCompatActivity {
 
     //重置播放状态
     private void resetPlayer(){
+        hasPlayerReset = true;
+
         if(speech_player != null){
             speech_player.reset();
         }
@@ -162,7 +234,79 @@ public class ChapterActivity extends AppCompatActivity {
             bgm_player.reset();
         }
 
-        firtstPlay = true;
+        ChapterActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ImageView playButton = findViewById(R.id.PlayButton);
+                playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+            }
+        });
+    }
+
+    //控制音乐的播放与暂停
+    public void controlSpeech(View view){
+            new Thread(controlSpeech).start();
+    }
+
+    private void playNextSpeech(){
+        try {
+            resetPlayer();
+
+            if (now_chapter_index == chapterIDs.length() - 1) now_chapter_index = 0;
+            else now_chapter_index++;
+
+            chapterID = chapterIDs.getJSONObject(now_chapter_index).getInt("id");
+
+            ChapterActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    loadingView = findViewById(R.id.Loading);
+                    loadingView.setVisibility(View.VISIBLE);
+                    normal.setVisibility(View.INVISIBLE);
+                }
+            });
+            new Thread(getChapter).start();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void playNextSpeech(View view){
+        resetPlayer();
+        playNextSpeech();
+    }
+
+    private void playPreSpeech(){
+        try {
+            resetPlayer();
+
+            if (now_chapter_index == 0) now_chapter_index = chapterIDs.length() - 1;
+            else now_chapter_index--;
+
+            chapterID = chapterIDs.getJSONObject(now_chapter_index).getInt("id");
+
+            ChapterActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    loadingView = findViewById(R.id.Loading);
+                    loadingView.setVisibility(View.VISIBLE);
+                    normal.setVisibility(View.INVISIBLE);
+                }
+            });
+            new Thread(getChapter).start();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void playPreSpeech(View view) {
+            playPreSpeech();
+    }
+
+    //刷新界面
+    public void refresh(View view){
+        refresh();
     }
 
     public void refresh(){
@@ -187,55 +331,10 @@ public class ChapterActivity extends AppCompatActivity {
         findViewById(R.id.Remind).setVisibility(View.INVISIBLE);
 
         new Thread(getChapter).start();
+        new Thread(getChapterIDs).start();
     }
 
-    //刷新界面
-    public void refresh(View view){
-        refresh();
-    }
-
-    public void playSpeech(View view){
-        getSpeechDone = false;
-        getBGMDone = false;
-
-        if(firtstPlay)  {
-            new Thread(prepareSpeech).start();
-        }
-
-        else {
-            new Thread(controlSpeech).start();
-        }
-    }
-
-    Runnable controlSpeech = new Runnable() {
-        @Override
-        public void run() {
-            if(speech_player.isPlaying()) {
-                speech_player.pause();
-                bgm_player.pause();
-                ChapterActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ImageView playButton = findViewById(R.id.PlayButton);
-                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
-                    }
-                });
-            }
-            else {
-                speech_player.start();
-                bgm_player.start();
-                ChapterActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ImageView playButton = findViewById(R.id.PlayButton);
-                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
-                    }
-                });
-            }
-        }
-    };
-
-    //试听音频
+    //准备并播放音频
     Runnable prepareSpeech = new Runnable() {
         @Override
         public void run() {
@@ -245,6 +344,7 @@ public class ChapterActivity extends AppCompatActivity {
                     new MyToast(ChapterActivity.this,"语音文件不存在!");
                     return;
                 }
+
                 //首次播放设置数据源
                 seekBar.setProgress(0);
 
@@ -272,13 +372,16 @@ public class ChapterActivity extends AppCompatActivity {
                         bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
                         bgm_player.setLooping(true);//背景音乐循环播放
 
+                        hasPlayerReset = false;
                         //进度条更新
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 while (!Thread.currentThread().isInterrupted()){
                                     try {
-                                        if(speech_player == null) break;
+                                        if(speech_player == null || hasPlayerReset){
+                                            break;
+                                        }
                                         seekBar.setProgress(speech_player.getCurrentPosition());
                                         ChapterActivity.this.runOnUiThread(new Runnable() {
                                             @Override
@@ -299,7 +402,6 @@ public class ChapterActivity extends AppCompatActivity {
                         ChapterActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                firtstPlay = false;
                                 ImageView playButton = findViewById(R.id.PlayButton);
                                 playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
                             }
@@ -308,6 +410,36 @@ public class ChapterActivity extends AppCompatActivity {
                 });
             }catch (Exception e){
                 e.printStackTrace();
+            }
+        }
+    };
+
+    Runnable controlSpeech = new Runnable() {
+        @Override
+        public void run() {
+            if(speech_player == null || bgm_player == null) return;
+
+            if(speech_player.isPlaying()) {
+                speech_player.pause();
+                bgm_player.pause();
+                ChapterActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView playButton = findViewById(R.id.PlayButton);
+                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+                    }
+                });
+            }
+            else {
+                speech_player.start();
+                bgm_player.start();
+                ChapterActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ImageView playButton = findViewById(R.id.PlayButton);
+                        playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
+                    }
+                });
             }
         }
     };
@@ -329,6 +461,49 @@ public class ChapterActivity extends AppCompatActivity {
 
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "POST", "application/json");
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };
+
+    Runnable getChapterIDs = new Runnable() {
+        @Override
+        public void run() {
+            try{
+                GetServer getServer = new GetServer();
+                String url = getServer.getIPADDRESS()+"/audiobook/getchapterIDs?bookid="
+                        + bookid;
+
+                HttpUtils httpUtils = new HttpUtils(url);
+                ByteArrayOutputStream outputStream = httpUtils.doHttp(null, "GET",
+                        "application/json");
+
+                if (outputStream == null) {//请求超时
+                    ChapterActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new MyToast(ChapterActivity.this, getResources().getString(R.string.HttpTimeOut));
+
+                            findViewById(R.id.loadinggif).setVisibility(View.INVISIBLE);
+                            findViewById(R.id.Remind).setVisibility(View.VISIBLE);
+                        }
+                    });
+                    return;
+                }
+
+                final String result = new String(outputStream.toByteArray(),
+                        StandardCharsets.UTF_8);
+
+                chapterIDs = new JSONArray(result);
+
+                for(int i=0;i<chapterIDs.length();i++){
+                    //获取当前播放的chapter在chapterIDs中的index
+                    if(chapterIDs.getJSONObject(i).getInt("id") == chapterID){
+                        now_chapter_index = i;
+                        break;
+                    }
+                }
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -382,7 +557,6 @@ public class ChapterActivity extends AppCompatActivity {
                             end.setText(chapter.getString("length"));
 
                             new Thread(getSpeech).start();
-                            new Thread(getBgm).start();
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -435,12 +609,7 @@ public class ChapterActivity extends AppCompatActivity {
 
                             outputStream.close();
 
-                            getSpeechDone = true;
-
-                            if(getBGMDone){
-                                loadingView.setVisibility(View.INVISIBLE);
-                                normal.setVisibility(View.VISIBLE);
-                            }
+                            new Thread(getBgm).start();
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -473,12 +642,12 @@ public class ChapterActivity extends AppCompatActivity {
                             resultStream.writeTo(outputStream);
                             outputStream.close();
 
-                            getBGMDone = true;
 
-                            if(getSpeechDone){
-                                loadingView.setVisibility(View.INVISIBLE);
-                                normal.setVisibility(View.VISIBLE);
-                            }
+                            loadingView.setVisibility(View.INVISIBLE);
+                            loadingView.setClickable(false);
+                            normal.setVisibility(View.VISIBLE);
+                            new Thread(prepareSpeech).start();
+
                         }catch (Exception e){
                             e.printStackTrace();
                         }

@@ -50,6 +50,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
     private int bookid;
     private String chapterTitle;
     private String bgmPath;
+    private String speechLength;
     //private final int WRITE_EXTERNAL_CODE = 1;
 
 
@@ -156,14 +157,21 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
         }
     };
 
+    private void releasePlayer(){
+        if(speech_player != null) {
+            speech_player.reset();
+            speech_player.release();
+            speech_player = null;
+        }
+        if(bgm_player != null) {
+            bgm_player.reset();
+            bgm_player.release();
+            bgm_player = null;
+        }
+    }
+
     @Override
     public void onBackPressed(){
-        if(speech_player != null && speech_player.isPlaying()) {
-            speech_player.pause();
-        }
-        if(bgm_player != null && bgm_player.isPlaying()) {
-            bgm_player.pause();
-        }
 
         //保存草稿
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -177,6 +185,13 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 try{
                     //保存草稿数据至后端
                     new Thread(storeDraft).start();
+
+                    releasePlayer();
+                    if(speechFile != null && speechFile.exists()) speechFile.delete();
+                    if(bgm != null && bgm.exists()) bgm.delete();
+
+                    NewChapterForTTSActivity.super.finish();
+
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -188,6 +203,12 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
                 new Thread(deleteDraft).start();
+
+                releasePlayer();
+                if(speechFile != null && speechFile.exists()) speechFile.delete();
+                if(bgm != null && bgm.exists()) bgm.delete();
+
+                NewChapterForTTSActivity.super.finish();
             }
         });
 
@@ -247,11 +268,22 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 EditText title = v.findViewById(R.id.Edit);
                 chapterTitle = title.getText().toString();
 
+                AudioUtils audioUtils = new AudioUtils();
+                MilliToHMS milliToHMS = new MilliToHMS();
+                speechLength = milliToHMS.milliToHMS(audioUtils.getLength(MP3_LOCATION));
+
                 if(chapterTitle.length() > 20){//标题不能超过20个字
                     new MyToast(NewChapterForTTSActivity.this,getResources().getString(R.string.titlelong));
                     return;
                 }
                 new Thread(storeSpeech).start();
+
+                releasePlayer();
+
+                if(speechFile != null && speechFile.exists()) speechFile.delete();
+                if(bgm != null && bgm.exists()) bgm.delete();
+                NewChapterForTTSActivity.super.finish();
+
             }
         });
 
@@ -615,7 +647,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
 
                         if(speechFile != null && speechFile.exists()) speechFile.delete();
                         if(bgm != null && bgm.exists()) bgm.delete();
-                        NewChapterForTTSActivity.super.onBackPressed();
+                        NewChapterForTTSActivity.super.finish();
                     }
                 });
             }catch (Exception e){
@@ -643,20 +675,6 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         new MyToast(NewChapterForTTSActivity.this,getResources().getString(R.string.draft));
-                        if(speech_player != null) {
-                            speech_player.reset();
-                            speech_player.release();
-                            speech_player = null;
-                        }
-                        if(bgm_player != null) {
-                            bgm_player.reset();
-                            bgm_player.release();
-                            bgm_player = null;
-                        }
-                        if(speechFile != null && speechFile.exists()) speechFile.delete();
-                        if(bgm != null && bgm.exists()) bgm.delete();
-
-                        NewChapterForTTSActivity.super.onBackPressed();
                     }
                 });
             }catch (Exception e){
@@ -787,10 +805,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 info.put("content",content);
                 info.put("speechPath",speechPath);
                 info.put("bgmPath",bgmPath);
-
-               AudioUtils audioUtils = new AudioUtils();
-               MilliToHMS milliToHMS = new MilliToHMS();
-               info.put("length",milliToHMS.milliToHMS(audioUtils.getLength(MP3_LOCATION)));
+                info.put("length",speechLength);
 
                 byte[]param = info.toString().getBytes();
 
@@ -808,22 +823,6 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         new MyToast(NewChapterForTTSActivity.this,"创建成功!");
-                        if(speechFile.exists()) speechFile.delete();
-
-                        if(speech_player != null) {
-                            speech_player.reset();
-                            speech_player.release();
-                            speech_player = null;
-                        }
-                        if(bgm_player != null) {
-                            bgm_player.reset();
-                            bgm_player.release();
-                            bgm_player = null;
-                        }
-
-                        if(speechFile != null && speechFile.exists()) speechFile.delete();
-                        if(bgm != null && bgm.exists()) bgm.delete();
-                        NewChapterForTTSActivity.super.onBackPressed();
                     }
                 });
 

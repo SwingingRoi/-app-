@@ -139,14 +139,12 @@ public class HistoryActivity extends AppCompatActivity {
 
         isRequesting = true;
 
-        if (!firstIn) {
-            from = 0;
-            firstIn = true;
-            if(ismanaging) cancelManage();
-            ismanaging = false;
-            bookTable.removeAllViews();
-            historyArray = new JSONArray();
-        }
+        from = 0;
+        firstIn = true;
+        if(ismanaging) cancelManage();
+        ismanaging = false;
+        bookTable.removeAllViews();
+        historyArray = new JSONArray();
 
         normal.setVisibility(View.INVISIBLE);
         loadView.setVisibility(View.VISIBLE);//加载画面

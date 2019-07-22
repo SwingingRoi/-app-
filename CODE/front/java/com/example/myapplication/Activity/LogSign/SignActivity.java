@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -357,6 +358,14 @@ public class SignActivity extends AppCompatActivity{
     Runnable sign = new Runnable() {
         @Override
         public void run() {
+            SignActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    LinearLayout verifying = findViewById(R.id.verifying);
+                    verifying.setVisibility(View.VISIBLE);
+                }
+            });
+
             GetServer getServer = new GetServer();
             String url=getServer.getIPADDRESS()+"/audiobook/sign";
 
@@ -381,6 +390,10 @@ public class SignActivity extends AppCompatActivity{
                 SignActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        LinearLayout verifying = findViewById(R.id.verifying);
+                        verifying.setVisibility(View.INVISIBLE);
+
+
                         switch (result){
                             case "timeout":
                                 msg(getResources().getString(R.string.HttpTimeOut));

@@ -262,14 +262,25 @@ public class EditChapterActivity extends AppCompatActivity {
             return;
         }
 
-        if(speech_player != null && speech_player.isPlaying()) {
-            speech_player.pause();
+        if(textChanged && !speechChanged){//文本修改了，但语音尚未修改，提醒用户按下转换按钮
+            new MyToast(EditChapterActivity.this,getResources().getString(R.string.askpush));
+            return;
         }
-        if(bgm_player != null && bgm_player.isPlaying()) {
-            bgm_player.pause();
+
+        if(speech_player != null) {
+            speech_player.reset();
+            speech_player.release();
+            speech_player = null;
+        }
+        if(bgm_player != null) {
+            bgm_player.reset();
+            bgm_player.release();
+            bgm_player = null;
         }
 
         new Thread(updateSpeech).start();
+
+        EditChapterActivity.super.onBackPressed();
     }
 
     public void textToSpeech(View view){
@@ -631,16 +642,6 @@ public class EditChapterActivity extends AppCompatActivity {
         @Override
         public void run() {
             try{
-
-                if(textChanged && !speechChanged){//文本修改了，但语音尚未修改，提醒用户按下转换按钮
-                    EditChapterActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            new MyToast(EditChapterActivity.this,getResources().getString(R.string.askpush));
-                        }
-                    });
-                    return;
-                }
 
                 GetServer getServer = new GetServer();
                 String url = getServer.getIPADDRESS()+"/audiobook/modifychapter";

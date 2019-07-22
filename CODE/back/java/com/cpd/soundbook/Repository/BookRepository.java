@@ -30,4 +30,8 @@ public interface BookRepository extends JpaRepository<Book,Integer> {
     @Modifying
     @Query("update com.cpd.soundbook.Entity.Book set views = views + 1 where id=:id")
     void increaView(@Param("id") int bookid);
+
+    @Modifying
+    @Query("update com.cpd.soundbook.Entity.Book set publish = true where id=:id")
+    void publishBook(@Param("id") int bookid);
 }
