@@ -158,15 +158,15 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
                     query.setParameter("tag","%" + tags.get(0) + "%");
                     break;
                 case 2:
-                    hql = "from com.cpd.soundbook.Entity.Book where tags like :tag1 or " +
-                            "tags like :tag2  and publish = true ";
+                    hql = "from com.cpd.soundbook.Entity.Book where (tags like :tag1 or " +
+                            "tags like :tag2)  and publish = true ";
                     query = session.createQuery(hql);
                     query.setParameter("tag1","%" + tags.get(0) + "%");
                     query.setParameter("tag2","%" + tags.get(1) + "%");
                     break;
                 case 3:
-                    hql = "from com.cpd.soundbook.Entity.Book where tags like :tag1 or " +
-                            "tags like :tag2 or tags like :tag3 and publish = true";
+                    hql = "from com.cpd.soundbook.Entity.Book where (tags like :tag1 or " +
+                            "tags like :tag2 or tags like :tag3) and publish = true";
                     query = session.createQuery(hql);
                     query.setParameter("tag1","%" + tags.get(0) + "%");
                     query.setParameter("tag2","%" + tags.get(1) + "%");

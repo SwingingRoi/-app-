@@ -11,7 +11,6 @@ public class Chapter {
     private String speechpath;
     private String time;
     private String bgmpath;
-    private boolean publish;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -74,13 +73,5 @@ public class Chapter {
 
     public String getBgmpath() {
         return bgmpath;
-    }
-
-    public void setPublish(boolean publish) {
-        this.publish = publish;
-    }
-
-    public boolean isPublish() {
-        return publish;
     }
 }

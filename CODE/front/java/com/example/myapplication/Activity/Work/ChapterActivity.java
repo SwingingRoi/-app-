@@ -10,6 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -77,6 +80,9 @@ public class ChapterActivity extends AppCompatActivity {
         bookid = intent.getIntExtra("bookid",-1);
 
 
+        TextView content = findViewById(R.id.content);
+        content.setMovementMethod(ScrollingMovementMethod.getInstance());
+
         menu = findViewById(R.id.menu);
         menu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -124,9 +130,6 @@ public class ChapterActivity extends AppCompatActivity {
 
             }
         });
-
-        TextView content = findViewById(R.id.content);
-        content.setMovementMethod(ScrollingMovementMethod.getInstance());
 
         normal = findViewById(R.id.normal);
 
@@ -201,6 +204,36 @@ public class ChapterActivity extends AppCompatActivity {
 
         new Thread(addRecord).start();//添加浏览记录
         refresh();
+    }
+
+    private void setRotateAnime(){
+        ImageView rotation = findViewById(R.id.rotation);
+        Animation rotate = AnimationUtils.loadAnimation(this,R.anim.image_rotate);
+        LinearInterpolator linearInterpolator = new LinearInterpolator();
+        rotate.setInterpolator(linearInterpolator);
+        rotation.setAnimation(rotate);
+        rotation.startAnimation(rotate);
+    }
+
+    private void clearRotateAnime(){
+        ImageView rotation = findViewById(R.id.rotation);
+        rotation.clearAnimation();
+    }
+
+    //无文本,显示唱片，隐藏文本框
+    private void setRecord(){
+        TextView content = findViewById(R.id.content);
+        LinearLayout rotate = findViewById(R.id.rotateLayout);
+        content.setVisibility(View.GONE);
+        rotate.setVisibility(View.VISIBLE);
+    }
+
+    //有文本，隐藏唱片，显示文本框
+    private void setTextView(){
+        TextView content = findViewById(R.id.content);
+        LinearLayout rotate = findViewById(R.id.rotateLayout);
+        content.setVisibility(View.VISIBLE);
+        rotate.setVisibility(View.GONE);
     }
 
     public void onBackPressed(View view){
@@ -427,6 +460,7 @@ public class ChapterActivity extends AppCompatActivity {
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
                         playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+                        clearRotateAnime();
                     }
                 });
             }
@@ -438,6 +472,7 @@ public class ChapterActivity extends AppCompatActivity {
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
                         playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
+                        setRotateAnime();
                     }
                 });
             }
@@ -547,8 +582,16 @@ public class ChapterActivity extends AppCompatActivity {
                             TextView title = findViewById(R.id.title);
                             title.setText(chapter.getString("title"));
 
-                            TextView content = findViewById(R.id.content);
-                            content.setText(chapter.getString("content"));
+                            String text = chapter.getString("content");
+                            if(text.length() == 0){
+                                setRecord();
+                                setRotateAnime();//设置唱片旋转动画
+                            }
+                            else {
+                                setTextView();
+                                TextView content = findViewById(R.id.content);
+                                content.setText(text);
+                            }
 
                             speechPath = chapter.getString("speechPath");
                             bgmPath = chapter.getString("bgmPath");

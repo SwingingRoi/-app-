@@ -32,4 +32,6 @@ public interface ChapterService {
     String updateSpeech(String oldpath,File newspeech);
 
     JSONArray getChapterIDs(int bookid);
+
+    String speechToText(File file);
 }

@@ -1,13 +1,10 @@
 package com.cpd.soundbook.Service.ServiceImpl;
 
-import com.cpd.soundbook.AudioUtils.AddEffect;
+import com.cpd.soundbook.AudioUtils.*;
 import com.cpd.soundbook.DAO.DAOInterface.ChapterDAO;
 import com.cpd.soundbook.DAO.DAOInterface.DraftDAO;
 import com.cpd.soundbook.Entity.Chapter;
 import com.cpd.soundbook.MongoDB.MongoDBInter;
-import com.cpd.soundbook.AudioUtils.RandomName;
-import com.cpd.soundbook.AudioUtils.TextToSpeech;
-import com.cpd.soundbook.AudioUtils.Sentiment;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,13 +25,13 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
     private DraftDAO draftDAO;
 
     @Autowired
-    private TextToSpeech tts;
-
-    @Autowired
     private AddEffect addEffect;
 
     @Autowired
     private MongoDBInter mongoDAO;
+
+    @Autowired
+    private AudioToText audioToText;
 
     final private int INFINITE = 99999999;
 
@@ -255,6 +252,13 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
         }catch (Exception e){
             e.printStackTrace();
         }
+        return result;
+    }
+
+    @Override
+    public String speechToText(File file) {
+        String result = audioToText.audio2text(file);
+        System.out.println(result);
         return result;
     }
 }

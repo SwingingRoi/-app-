@@ -1,4 +1,4 @@
-package com.cpd.soundbook;
+package com.cpd.soundbook.AudioUtils;
 
 import com.baidu.aip.speech.AipSpeech;
 import it.sauronsoftware.jave.EncoderException;
@@ -7,14 +7,25 @@ import org.json.JSONObject;
 
 import it.sauronsoftware.jave.Encoder;
 import it.sauronsoftware.jave.MultimediaInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Audio2Text {
+@Component(value = "audioToText")
+public class AudioToText {
+
+    @Autowired
+    private static RandomName randomName;
+
     //设置APPID/AK/SK
     private static final String APP_ID = "16840366";
     private static final String API_KEY = "cgKsQvXGPiHwdw0RnqQWVVGE";
     private static final String SECRET_KEY = "jmkD1r807v1zbDAbsWRS9hSN8iRmxgC7";
+
+    private final String FFMPEG_PATH = "D:\\ffmepg\\ffmepg\\bin\\ffmpeg.exe";//ffmpeg执行路径
 
     private static int mp3CutOneForAll(File file,String localpath){
         Encoder encoder = new Encoder();
@@ -32,7 +43,7 @@ public class Audio2Text {
 
         int i;
         //更改裁剪间隔修改这个参数
-        int duration=30;
+        int duration=60;
 
         for(i = 0; duration * i < length - duration + 1; i++){
 
@@ -97,7 +108,7 @@ public class Audio2Text {
                     continue;
                 }
                 bos.write(bytes);   //写入的都是在我们预先指定的字节范围之内
-                if(total >= end){  //当tatol的值超过预先设定的范围，则立刻刷新bos流对象，并结束循环
+                if(total >= end){  //当total的值超过预先设定的范围，则立刻刷新bos流对象，并结束循环
                     bos.flush();
                     break;
                 }
@@ -129,7 +140,7 @@ public class Audio2Text {
         path.delete();
     }
 
-    public static String audio2text(File file){
+    public  String audio2text(File file){
         // 初始化一个AipSpeech
         AipSpeech client = new AipSpeech(APP_ID, API_KEY, SECRET_KEY);
 
@@ -150,36 +161,52 @@ public class Audio2Text {
         String result="";
 
         //@localstore:本地用来存放裁剪的音频和转换的pcm的文件夹，在函数执行完毕后会删除
-        String localpath="C://Users/jhd/Desktop/test/";
-        File localstore=new File(localpath);
-        localstore.mkdir();
 
+        String localpath = System.getProperty("user.dir") + "\\test\\";
+        File localStore = new File(localpath);
+        localStore.mkdir();
         //@num:裁完的音频数,要根据性能修改裁剪时间时改上面的函数里的数字，现在默认为30秒，改时把30改成需要的就行
         int num=mp3CutOneForAll(file,localpath);
+        List<String> tempPaths = new ArrayList<>();
 
+        if(file != null) file.delete();
+
+        tempPaths.add(localpath);
         for(int i=0;i<num;i++){
-            String path1=localpath+i+".mp3";
-            String path2=localpath+i+".pcm";
+            String path1 = localpath + i + ".mp3";
+            String path2 = localpath + i + ".pcm";
+            tempPaths.add(path1);
+            tempPaths.add(path2);
             try{
                 //执行cmd窗口命令
-                String cmdstr=String.format("cmd /c ffmpeg -y -i %s -acodec pcm_s16le -f s16le -ac 1 -ar 16000 %s",path1,path2);
-                Process process=Runtime.getRuntime().exec(cmdstr);
-                //等待执行完毕，不然会报找不到文件的错
+                List<String> commands = new ArrayList<>();
+                commands.add(FFMPEG_PATH);
+                commands.add("-y");
+                commands.add("-i");
+                commands.add(path1);
+                commands.add("-acodec");
+                commands.add("pcm_s16le");
+                commands.add("-f");
+                commands.add("s16le");
+                commands.add("-ac");
+                commands.add("1");
+                commands.add("-ar");
+                commands.add("16000");
+                commands.add(path2);
+
+                ProcessBuilder processBuilder = new ProcessBuilder(commands);
+                Process process = processBuilder.start();
                 process.waitFor();
 
                 JSONObject res = client.asr(path2, "pcm", 16000, null);
-                JSONArray r=(JSONArray) res.get("result");
-                result+=r.get(0).toString();
+                JSONArray r =( JSONArray) res.get("result");
+                result += r.get(0).toString();
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
 
-        deleteAllFilesOfDir(localstore);
+        deleteAllFilesOfDir(localStore);
         return result;
-    }
-
-    public static void main(String[] args) throws Exception{
-        System.out.print(audio2text(new File("C://Users/jhd/Desktop/test.mp3")));
     }
 }

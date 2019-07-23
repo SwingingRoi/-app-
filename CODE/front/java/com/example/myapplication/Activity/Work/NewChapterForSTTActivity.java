@@ -14,6 +14,9 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -68,12 +71,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
         MP3_LOCATION = this.getCacheDir().getAbsolutePath()+"/temp.mp3";
         BGM_LOCATION = this.getCacheDir().getAbsolutePath()+"/bgm.mp3";
 
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
         normal = findViewById(R.id.normal);
-
-        TextView content = findViewById(R.id.content);
-        content.setMovementMethod(ScrollingMovementMethod.getInstance());
 
         seekBar = findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -125,6 +123,20 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    private void setAnimation(){
+        ImageView rotation = findViewById(R.id.rotation);
+        Animation rotate = AnimationUtils.loadAnimation(this,R.anim.image_rotate);
+        LinearInterpolator linearInterpolator = new LinearInterpolator();
+        rotate.setInterpolator(linearInterpolator);
+        rotation.setAnimation(rotate);
+        rotation.startAnimation(rotate);
+    }
+
+    private void clearAnimation(){
+        ImageView rotation = findViewById(R.id.rotation);
+        rotation.clearAnimation();
     }
 
     private void resetPlayer(){
@@ -216,7 +228,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
     //保存章节
     public void storeChapter(View view){
         if(speechChanged){
-            new MyToast(NewChapterForSTTActivity.this,getResources().getString(R.string.askpush));
+            new MyToast(NewChapterForSTTActivity.this,"请转换修改后的音频");
             return;
         }
 
@@ -225,9 +237,6 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
         final View v = LayoutInflater.from(this).inflate(R.layout.dialog_layout,null);
         TextView titleView = v.findViewById(R.id.Title);
         titleView.setText("标题");
-
-        TextView text = findViewById(R.id.content);
-        final String content = text.getText().toString();
 
         builder.setView(v);
 
@@ -244,9 +253,9 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
                 speechPath = System.currentTimeMillis() + ".mp3";
 
-                StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,content,speechPath,bgmPath);
+                /*StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,content,speechPath,bgmPath);
                 new Thread(storeChapter).start();
-                new Thread(storeSpeech).start();
+                new Thread(storeSpeech).start();*/
             }
         });
 
@@ -323,6 +332,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
                         playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
+                        clearAnimation();
                     }
                 });
             }
@@ -334,6 +344,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
                         playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
+                        setAnimation();
                     }
                 });
             }
@@ -408,6 +419,8 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                                 firtstPlay = false;
                                 ImageView playButton = findViewById(R.id.PlayButton);
                                 playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
+
+                                setAnimation();
                             }
                         });
                     }
@@ -425,6 +438,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
                 //重置播放状态
                 resetPlayer();
+                speechChanged = false;
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -443,7 +457,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 });
 
                 GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS()+"/audiobook/SpeechToText";
+                String url = getServer.getIPADDRESS()+"/audiobook/speechToText";
 
                 InputStream inputStream = new FileInputStream(MP3_LOCATION);
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -483,9 +497,6 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            TextView content = findViewById(R.id.content);
-                            content.setText(result);
-
                             new Thread(matchBGM).start();
                         }catch (Exception e){
                             e.printStackTrace();

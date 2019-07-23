@@ -241,6 +241,9 @@ public class HistoryActivity extends AppCompatActivity {
             public void onClick(View v) {
                 dialog.dismiss();
                 new MyToast(HistoryActivity.this,"已清空!");
+                historyArray = new JSONArray();
+                bookTable.removeAllViews();
+                from = 0;//更新请求书本的index
 
                 final LinearLayout clear = findViewById(R.id.clear);
                 clear.setClickable(false);
@@ -508,22 +511,11 @@ public class HistoryActivity extends AppCompatActivity {
         public void run() {
 
             try {
-
                 GetServer getServer = new GetServer();
                 String url = getServer.getIPADDRESS()+"/audiobook/clearHistory?account=" + URLEncoder.encode(account,"UTF-8");
 
-                HistoryActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        historyArray = new JSONArray();
-                        bookTable.removeAllViews();
-                        from = 0;//更新请求书本的index
-                    }
-                });
-
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(null, "POST", "application/json");//向后端发送删除请求
-
             }catch (Exception e){
                 e.printStackTrace();
             }
