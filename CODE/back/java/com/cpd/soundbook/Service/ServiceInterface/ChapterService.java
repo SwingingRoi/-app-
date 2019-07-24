@@ -33,5 +33,5 @@ public interface ChapterService {
 
     JSONArray getChapterIDs(int bookid);
 
-    String speechToText(File file);
+    File speechToText(File file);
 }

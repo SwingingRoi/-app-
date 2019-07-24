@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 
 @RestController
 public class SpeechToTextController {
@@ -21,8 +22,9 @@ public class SpeechToTextController {
     @RequestMapping("/audiobook/speechToText")
     public void speechToText(HttpServletRequest request, HttpServletResponse response){
         try{
-            httpUtils.writeStringBack(response,
-                    chapterService.speechToText(httpUtils.getMp3Param(request)));
+            File result = chapterService.speechToText(httpUtils.getMp3Param(request));
+            httpUtils.writeFileBack(response,result);
+            if(result != null) result.delete();
         }catch (Exception e){
             e.printStackTrace();
         }

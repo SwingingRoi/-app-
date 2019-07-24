@@ -1,7 +1,6 @@
 package com.example.myapplication.Activity.Book;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;

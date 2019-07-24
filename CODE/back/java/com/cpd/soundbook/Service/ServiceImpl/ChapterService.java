@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ChapterService implements com.cpd.soundbook.Service.ServiceInterface.ChapterService {
@@ -32,6 +34,15 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
 
     @Autowired
     private AudioToText audioToText;
+
+    @Autowired
+    private TextToSpeech tts;
+
+    @Autowired
+    private FfmpegUtils ffmpegUtils;
+
+    @Autowired
+    private AudioUtils audioUtils;
 
     final private int INFINITE = 99999999;
 
@@ -191,19 +202,22 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
             int preIndex = 0;
             for(int i=0;i<text.length();i++) {
                 String textNow = "";
-                if(text.charAt(i) == '。' || i==text.length() - 1){
+                if(text.charAt(i) == ',' || text.charAt(i) == '，' || text.charAt(i) == '.' || text.charAt(i) == '。' || i==text.length() - 1){
                     textNow = text.substring(preIndex,i+1);
                     preIndex = preIndex + textNow.length();
-                    File file = addEffect.addEffect(textNow);
+                    File srcFile = tts.translate(textNow);
+
+                    File file = addEffect.addEffect(srcFile,textNow);
 
                     paths.add(file.getAbsolutePath());
                     printWriter.write("file " + "\'" + file.getAbsolutePath() + "\'" + System.getProperty("line.separator"));
                     printWriter.flush();
+                    srcFile.delete();
                 }
             }
             printWriter.close();
 
-            result = addEffect.concat(filenamePath,resultPath);//执行ffmepg的拼接命令
+            result = ffmpegUtils.concat(filenamePath,resultPath);//执行ffmepg的拼接命令
 
             for(String path : paths){
                 File file = new File(path);
@@ -256,9 +270,60 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
     }
 
     @Override
-    public String speechToText(File file) {
-        String result = audioToText.audio2text(file);
-        System.out.println(result);
+    public File speechToText(File srcFile) {
+        RandomName randomName = new RandomName();
+        PrintWriter printWriter;
+        File result = null;
+
+        //tempDir:<存放源文件剪切文件的文件夹，文件数量>
+        HashMap<String,Integer> tempDir = audioUtils.cutFile(srcFile);
+        Map.Entry<String,Integer> entry = tempDir.entrySet().iterator().next();
+        System.out.println("tempDir:" + entry.getKey());
+        /*
+        filenamePath:执行ffmpeg concat命令所需txt文件
+        resultPath:存放最终结果的文件
+         */
+        String filenamePath = System.getProperty("user.dir")+"\\mp3\\result\\" + randomName.randomName() + ".txt";
+        String resultPath = System.getProperty("user.dir")+"\\mp3\\result\\" + randomName.randomName() + ".mp3";
+
+        System.out.println("filenamePath:" + filenamePath);
+        System.out.println("resultPath:" + resultPath);
+        //paths:存储临时文件的文件路径
+        List<String> paths = new ArrayList<>();
+        paths.add(filenamePath);
+
+        try {
+            printWriter = new PrintWriter(filenamePath);
+            for (int i = 0; i < entry.getValue(); i++) {
+                //将mp3文件转化为pcm文件，以便调用百度接口
+                File mp3FileI = new File(entry.getKey() + i + ".mp3");
+                ffmpegUtils.transformMp3ToPcm(entry.getKey() + i + ".mp3",
+                        entry.getKey() + i + ".pcm");
+                File pcmFileI = new File(entry.getKey() + i + ".pcm");
+
+                String text = audioToText.audioToText(pcmFileI);
+                System.out.println("text" + i + ": " + text);
+                File tempFile = addEffect.addEffect(mp3FileI, text);
+
+                //将要合并的文件名写入filenamePath
+                printWriter.write("file " + "\'" + tempFile.getAbsolutePath() + "\'" + System.getProperty("line.separator"));
+                printWriter.flush();
+                paths.add(tempFile.getAbsolutePath());
+            }
+            printWriter.close();
+
+            result = ffmpegUtils.concat(filenamePath,resultPath);
+
+            for(String path : paths){
+                File file = new File(path);
+                if(file.exists()) file.delete();
+            }
+
+            audioUtils.deleteAllFilesOfDir(new File(entry.getKey()));//删除临时文件
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         return result;
     }
 }

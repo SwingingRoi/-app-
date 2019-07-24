@@ -1,12 +1,15 @@
 package com.example.myapplication.Activity.Work;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +20,7 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -43,22 +47,23 @@ import java.nio.charset.StandardCharsets;
 
 public class NewChapterForSTTActivity extends AppCompatActivity {
 
-    private LinearLayout normal;
     private SeekBar seekBar;//进度条
     private boolean speechChanged = false;//同步音频与文本
 
     private int bookid;
     private String chapterTitle;
-    private String speechPath;
     private String bgmPath;
+    private Uri fileUri;
 
     private File speechFile = null;
     private File bgm = null;
     private String MP3_LOCATION;
     private String BGM_LOCATION;
 
+    final private int WRITE_EXTERNAL_STORAGE = 1;
+
     private MediaPlayer speech_player;//音频播放
-    private MediaPlayer bgm_player;//bgm播放
+    private MediaPlayer bgm_player = null;//bgm播放
 
     private boolean firtstPlay = true;//是否首次播放当前音频
     final private int GET_FILE = 1;
@@ -71,7 +76,6 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
         MP3_LOCATION = this.getCacheDir().getAbsolutePath()+"/temp.mp3";
         BGM_LOCATION = this.getCacheDir().getAbsolutePath()+"/bgm.mp3";
 
-        normal = findViewById(R.id.normal);
 
         seekBar = findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -89,7 +93,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if(speechFile != null){
                     speech_player.seekTo(seekBar.getProgress());
-                    bgm_player.seekTo(seekBar.getProgress());
+                    //bgm_player.seekTo(seekBar.getProgress());
 
                     NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                         @Override
@@ -107,12 +111,13 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
         bookid = intent.getIntExtra("bookid",-1);
 
         speech_player = new MediaPlayer();
-        bgm_player = new MediaPlayer();
+        //bgm_player = new MediaPlayer();
 
         speech_player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 resetPlayer();
+                clearAnimation();
 
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
@@ -144,14 +149,33 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
             speech_player.reset();
         }
 
-        if(bgm_player != null){
+        /*if(bgm_player != null){
             bgm_player.reset();
-        }
+        }*/
 
         firtstPlay = true;
     }
 
+    private void releasePlayer(){
+        if(speech_player != null) {
+            speech_player.reset();
+            speech_player.release();
+            speech_player = null;
+        }
+        if(bgm_player != null) {
+            bgm_player.reset();
+            bgm_player.release();
+            bgm_player = null;
+        }
+    }
+
     public void playSpeech(View view){
+
+        if(speechFile == null || new AudioUtils().getLength(MP3_LOCATION) == 0){
+            new MyToast(NewChapterForSTTActivity.this,"语音文件不存在!");
+            return;
+        }
+
         if(firtstPlay)  {
             new Thread(prepareSpeech).start();
         }
@@ -167,13 +191,6 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed(){
-        if(speech_player != null && speech_player.isPlaying()) {
-            speech_player.pause();
-        }
-        if(bgm_player != null && bgm_player.isPlaying()) {
-            bgm_player.pause();
-        }
-
         //保存草稿
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("退出");
@@ -185,21 +202,12 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 try{
                     dialog.dismiss();
 
-                    if(speech_player != null) {
-                        speech_player.reset();
-                        speech_player.release();
-                        speech_player = null;
-                    }
-                    if(bgm_player != null) {
-                        bgm_player.reset();
-                        bgm_player.release();
-                        bgm_player = null;
-                    }
+                    releasePlayer();
 
                     if(speechFile != null && speechFile.exists()) speechFile.delete();
                     if(bgm != null && bgm.exists()) bgm.delete();
 
-                    NewChapterForSTTActivity.super.onBackPressed();
+                    NewChapterForSTTActivity.super.finish();
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -251,11 +259,12 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                     return;
                 }
 
-                speechPath = System.currentTimeMillis() + ".mp3";
+                new Thread(storeSpeech).start();
+                releasePlayer();
 
-                /*StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,content,speechPath,bgmPath);
-                new Thread(storeChapter).start();
-                new Thread(storeSpeech).start();*/
+                if(speechFile != null && speechFile.exists()) speechFile.delete();
+                if(bgm != null && bgm.exists()) bgm.delete();
+                NewChapterForSTTActivity.super.finish();
             }
         });
 
@@ -283,35 +292,19 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 if (requestCode == GET_FILE) {
                     if(data != null) {
-                        Uri uri = data.getData();
-                        if(uri != null) {
-                            InputStream inputStream = getContentResolver().openInputStream(uri);
-                            OutputStream outputStream = new FileOutputStream(MP3_LOCATION);
-                            byte[] buffer = new byte[1024];
-                            int len;
-
-                            if(inputStream != null) {
-                                while ((len = inputStream.read(buffer)) != -1) {
-                                        outputStream.write(buffer,0,len);
-                                }
+                        fileUri = data.getData();
+                        if(fileUri != null) {
+                            //查看是否有访问external_storage的权限，没有则申请
+                            int permission = ActivityCompat.checkSelfPermission(NewChapterForSTTActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                            if(permission != PackageManager.PERMISSION_GRANTED){
+                                ActivityCompat.requestPermissions(NewChapterForSTTActivity.this,
+                                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                        WRITE_EXTERNAL_STORAGE);
                             }
-
-                            outputStream.close();
-                            inputStream.close();
-
-                            speechFile = new File(MP3_LOCATION);
-
-                            //更新MP3文件时长
-                            NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    AudioUtils audioUtils = new AudioUtils();
-                                    MilliToHMS milliToHMS = new MilliToHMS();
-                                    TextView end = findViewById(R.id.end);
-                                    end.setText(milliToHMS.milliToHMS(audioUtils.getLength(MP3_LOCATION)));
-                                }
-                            });
-
+                            else {
+                                UpdateUIAfterChooseFile updateUIAfterChooseFile = new UpdateUIAfterChooseFile(fileUri);
+                                updateUIAfterChooseFile.start();
+                            }
                         }
                     }
                 }
@@ -321,12 +314,64 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String []permissions, int[] grantResults){
+        if (requestCode == WRITE_EXTERNAL_STORAGE){
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                UpdateUIAfterChooseFile updateUIAfterChooseFile = new UpdateUIAfterChooseFile(fileUri);
+                updateUIAfterChooseFile.start();
+            }
+        }
+    }
+
+    private class UpdateUIAfterChooseFile extends Thread{
+        Uri uri;
+
+        public UpdateUIAfterChooseFile(Uri uri){
+            this.uri = uri;
+        }
+
+        @Override
+        public void run(){
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(uri);
+                OutputStream outputStream = new FileOutputStream(MP3_LOCATION);
+                byte[] buffer = new byte[1024];
+                int len;
+
+                if (inputStream != null) {
+                    while ((len = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, len);
+                    }
+                }
+
+                outputStream.close();
+                inputStream.close();
+
+                speechFile = new File(MP3_LOCATION);
+
+                //更新MP3文件时长
+                NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AudioUtils audioUtils = new AudioUtils();
+                        MilliToHMS milliToHMS = new MilliToHMS();
+                        TextView end = findViewById(R.id.end);
+                        end.setText(milliToHMS.milliToHMS(audioUtils.getLength(MP3_LOCATION)));
+                    }
+                });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
     Runnable controlSpeech = new Runnable() {
         @Override
         public void run() {
             if(speech_player.isPlaying()) {
                 speech_player.pause();
-                bgm_player.pause();
+                //bgm_player.pause();
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -338,7 +383,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
             }
             else {
                 speech_player.start();
-                bgm_player.start();
+               // bgm_player.start();
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -356,11 +401,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                //没有音频或音频尚未转换成功
-                if(speechFile == null){
-                    new MyToast(NewChapterForSTTActivity.this,"语音文件不存在!");
-                    return;
-                }
+
                 //首次播放设置数据源
                 seekBar.setProgress(0);
 
@@ -370,10 +411,10 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 speech_player.setDataSource(MP3_LOCATION);
                 speech_player.setAudioAttributes(audioAttributes);
 
-                bgm_player.setDataSource(BGM_LOCATION);
+                /*bgm_player.setDataSource(BGM_LOCATION);
                 bgm_player.setAudioAttributes(audioAttributes);
 
-                bgm_player.prepare();
+                bgm_player.prepare();*/
                 speech_player.prepareAsync();//异步准备音源
 
                 speech_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -384,10 +425,10 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
 
                         speech_player.start();
-                        bgm_player.start();
+                        //bgm_player.start();
 
-                        bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
-                        bgm_player.setLooping(true);//背景音乐循环播放
+                        //bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
+                        //bgm_player.setLooping(true);//背景音乐循环播放
 
                         //进度条更新
                         new Thread(new Runnable() {
@@ -439,18 +480,14 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 //重置播放状态
                 resetPlayer();
                 speechChanged = false;
+
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         seekBar.setProgress(0);
                         TextView begin = findViewById(R.id.begin);
                         begin.setText(getResources().getString(R.string.initial));
-                    }
-                });
 
-                NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
                         LinearLayout translating = findViewById(R.id.translating);
                         translating.setVisibility(View.VISIBLE);
                     }
@@ -489,15 +526,29 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
                 firtstPlay = true;
 
-                final String result = new String(resultStream.toByteArray(),
-                        StandardCharsets.UTF_8);
+                speechFile = new File(MP3_LOCATION);//speechFile保存后端语音
+                if (!speechFile.exists()) speechFile.createNewFile();
+                OutputStream outputStream = new FileOutputStream(speechFile);
+                resultStream.writeTo(outputStream);
+                speechChanged = false;
+                outputStream.close();
+
 
 
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            new Thread(matchBGM).start();
+                            LinearLayout translating = findViewById(R.id.translating);
+                            translating.setVisibility(View.INVISIBLE);
+                            ImageView playButton = findViewById(R.id.PlayButton);
+                            playButton.setVisibility(View.VISIBLE);
+
+                            AudioUtils audioUtils = new AudioUtils();
+                            MilliToHMS milliToHMS = new MilliToHMS();
+                            TextView end = findViewById(R.id.end);
+                            end.setText(milliToHMS.milliToHMS(audioUtils.getLength(MP3_LOCATION)));
+                            //new Thread(matchBGM).start();
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -596,6 +647,49 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
         }
     };
 
+    Runnable storeSpeech = new Runnable() {
+        @Override
+        public void run() {
+            try{
+                GetServer getServer = new GetServer();
+                String url = getServer.getIPADDRESS()+"/audiobook/storeSpeech";
+
+                FileInputStream inputStream = new FileInputStream(speechFile);
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                int n;
+                byte[] b = new byte[1024];
+                while ((n = inputStream.read(b)) != -1){
+                    byteArrayOutputStream.write(b,0,n);
+                }
+                inputStream.close();
+                byteArrayOutputStream.close();
+                byte[] param = byteArrayOutputStream.toByteArray();
+
+                HttpUtils httpUtils = new HttpUtils(url);
+                ByteArrayOutputStream outputStream = httpUtils.doHttp(param, "GET",
+                        "application/json");
+
+                if (outputStream == null) {//请求超时
+                    NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new MyToast(NewChapterForSTTActivity.this, getResources().getString(R.string.HttpTimeOut));
+                        }
+                    });
+                    return;
+                }
+
+                final String result = new String(outputStream.toByteArray(),
+                        StandardCharsets.UTF_8);
+
+                StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,"",result,bgmPath);
+                storeChapter.start();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    };
+
     private class StoreChapter extends Thread
     {
         private String title;
@@ -634,64 +728,15 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "POST", "application/json");
 
-                if(speech_player != null && speech_player.isPlaying()) {
-                    speech_player.pause();
-                }
-                if(bgm_player != null && bgm_player.isPlaying()) {
-                    bgm_player.pause();
-                }
-
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
-
-    Runnable storeSpeech = new Runnable() {
-        @Override
-        public void run() {
-            try{
-                GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS()+"/audiobook/storeSpeech?path=" + speechPath;
-
-                FileInputStream inputStream = new FileInputStream(speechFile);
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                int n;
-                byte[] b = new byte[1024];
-                while ((n = inputStream.read(b)) != -1){
-                    byteArrayOutputStream.write(b,0,n);
-                }
-                inputStream.close();
-                byteArrayOutputStream.close();
-                byte[] param = byteArrayOutputStream.toByteArray();
-
-                HttpUtils httpUtils = new HttpUtils(url);
-                httpUtils.doHttp(param, "POST",
-                        "application/json");
-
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         new MyToast(NewChapterForSTTActivity.this,"创建成功!");
-                        if(speechFile.exists()) speechFile.delete();
-
-                        if(speech_player != null) {
-                            speech_player.release();
-                            speech_player = null;
-                        }
-                        if(bgm_player != null) {
-                            bgm_player.release();
-                            bgm_player = null;
-                        }
-
-                        if(speechFile != null && speechFile.exists()) speechFile.delete();
-                        if(bgm != null && bgm.exists()) bgm.delete();
-                        NewChapterForSTTActivity.super.onBackPressed();
                     }
                 });
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
-    };
+    }
 }

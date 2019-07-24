@@ -437,6 +437,7 @@ public class ChapterActivity extends AppCompatActivity {
                             public void run() {
                                 ImageView playButton = findViewById(R.id.PlayButton);
                                 playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
+                                setRotateAnime();
                             }
                         });
                     }

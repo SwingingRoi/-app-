@@ -491,19 +491,20 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                     return;
                 }
 
+                firtstPlay = true;
+
+                speechFile = new File(MP3_LOCATION);//speechFile保存后端语音
+                if (!speechFile.exists()) speechFile.createNewFile();
+                OutputStream outputStream = new FileOutputStream(speechFile);
+                resultStream.writeTo(outputStream);
+                textChanged = false;
+                outputStream.close();
+
+
                 NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            firtstPlay = true;
-
-                            speechFile = new File(MP3_LOCATION);//speechFile保存后端语音
-                            if (!speechFile.exists()) speechFile.createNewFile();
-                            OutputStream outputStream = new FileOutputStream(speechFile);
-                            resultStream.writeTo(outputStream);
-                            textChanged = false;
-                            outputStream.close();
-
                             AudioUtils audioUtils = new AudioUtils();
                             MilliToHMS milliToHMS = new MilliToHMS();
                             TextView end = findViewById(R.id.end);
@@ -812,12 +813,6 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "POST", "application/json");
 
-                if(speech_player != null && speech_player.isPlaying()) {
-                    speech_player.pause();
-                }
-                if(bgm_player != null && bgm_player.isPlaying()) {
-                    bgm_player.pause();
-                }
 
                 NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                     @Override

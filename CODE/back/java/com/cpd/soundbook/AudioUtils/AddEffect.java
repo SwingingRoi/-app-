@@ -18,8 +18,9 @@ import java.util.*;
 @Component(value = "addEffect")
 public class AddEffect {
 
+    @Autowired
+    private FfmpegUtils ffmpegUtils;
 
-    private final String FFMPEG_PATH = "D:\\ffmepg\\ffmepg\\bin\\ffmpeg.exe";//ffmpeg执行路径
 
     @Autowired
     private RandomName randomName;
@@ -30,7 +31,7 @@ public class AddEffect {
     @Autowired
     private MongoDBInter mongoDAO;
 
-    public File addEffect(String text){
+    public File addEffect(File srcFile,String text){
 
         List<String> paths = new ArrayList<>();
         //存储音效的临时文件
@@ -71,11 +72,8 @@ public class AddEffect {
 */
         File file = null;
         try{
-            //首先将text转化为语音speech,plainSpeechLength为speech的时长
-            TextToSpeech textToSpeech = new TextToSpeech();
-            File speech = textToSpeech.translate(text);
-            paths.add(speech.getAbsolutePath());
-            MP3File plainSpeech = (MP3File)AudioFileIO.read(speech);
+            //plainSpeechLength为srcFile的时长
+            MP3File plainSpeech = (MP3File)AudioFileIO.read(srcFile);
             MP3AudioHeader plainSpeechAudioHeader = (MP3AudioHeader) plainSpeech.getAudioHeader();
             int plainSpeechLength = plainSpeechAudioHeader.getTrackLength();
 
@@ -92,15 +90,15 @@ public class AddEffect {
                 OutputStream outputStream = new FileOutputStream(effectPath);
                 gridFSDBFile.writeTo(outputStream);
 
-                split("00:00:00", String.valueOf(rate), speech.getAbsolutePath(),
+                ffmpegUtils.split("00:00:00", String.valueOf(rate), srcFile.getAbsolutePath(),
                         tempPath1);
 
-                split(String.valueOf(rate), String.valueOf(plainSpeechLength + 100), speech.getAbsolutePath(),
+                ffmpegUtils.split(String.valueOf(rate), String.valueOf(plainSpeechLength + 100), srcFile.getAbsolutePath(),
                         tempPath2);
 
-                volumeDown(effectPath, downEffectPath);
+                ffmpegUtils.volumeDown(effectPath, downEffectPath);
 
-                compose(tempPath2, downEffectPath, tempEffectPath);//合成后半部分和音效
+                ffmpegUtils.compose(tempPath2, downEffectPath, tempEffectPath);//合成后半部分和音效
 
                 String path1 = "file " + "\'" + tempPath1 + "\'" + System.getProperty("line.separator");
                 String path2 = "file " + "\'" + tempEffectPath + "\'" + System.getProperty("line.separator");
@@ -112,25 +110,25 @@ public class AddEffect {
                     writer.flush();
                     writer.close();
 
-                    file = concat(txtPath, resultPath);
+                    file = ffmpegUtils.concat(txtPath, resultPath);
                 } else if (rate == 0) {
                     writer.write(path2);
                     writer.flush();
                     writer.close();
 
-                    file = concat(txtPath, resultPath);
+                    file = ffmpegUtils.concat(txtPath, resultPath);
                 } else if (rate == plainSpeechLength) {
                     writer.write(path1);
                     writer.flush();
                     writer.close();
 
-                    file = concat(txtPath, resultPath);
+                    file = ffmpegUtils.concat(txtPath, resultPath);
                 }
 
                 outputStream.close();
                 deleteTempFile(paths);
             }else {
-                file = speech;
+                file = srcFile;
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -151,106 +149,4 @@ public class AddEffect {
             e.printStackTrace();
         }
     }
-
-    //分割音频
-    //ffmpeg -i input -vn -acodec copy -ss from -t to output
-    private void split(String from,String to,String srcF,String desF){
-        try {
-            File file = new File(desF);
-            if (file.exists()) file.delete();
-
-            List<String> commands = new ArrayList<>();
-            commands.add(FFMPEG_PATH);
-            commands.add("-i");
-            commands.add(srcF);
-            commands.add("-vn");
-            commands.add("-acodec");
-            commands.add("copy");
-            commands.add("-ss");
-            commands.add(from);
-            commands.add("-t");
-            commands.add(to);
-            commands.add(desF);
-            ProcessBuilder processBuilder = new ProcessBuilder(commands);
-            Process process = processBuilder.start();
-            process.waitFor();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    //降低音量
-    //ffmpeg -i input -af volume=?dB output
-    private void volumeDown(String srcF,String desF){
-        try{
-            File file = new File(desF);
-            if(file.exists()) file.delete();
-
-            List<String> commands = new ArrayList<>();
-            commands.add(FFMPEG_PATH);
-            commands.add("-i");
-            commands.add(srcF);
-            commands.add("-af");
-            commands.add("volume=-5dB");
-            commands.add(desF);
-
-            ProcessBuilder processBuilder = new ProcessBuilder(commands);
-            Process process = processBuilder.start();
-            process.waitFor();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    //合成语音和音效
-    //ffmpeg -i input1 -i input2 -filter_complex amix=inputs=2:duration=first output
-    private void compose(String srcF1,String srcF2,String desF){
-        try{
-            File file = new File(desF);
-            if(file.exists()) file.delete();
-
-            List<String> commands = new ArrayList<>();
-            commands.add(FFMPEG_PATH);
-            commands.add("-i");
-            commands.add(srcF1);
-            commands.add("-i");
-            commands.add(srcF2);
-            commands.add("-filter_complex");
-            commands.add("amix=inputs=2:duration=first");
-            commands.add(desF);
-            ProcessBuilder processBuilder = new ProcessBuilder(commands);
-            Process process = processBuilder.start();
-            process.waitFor();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    //拼接音频
-    //ffmpeg -f concat -safe 0 -i input.txt -c copy output
-    public File concat(String src,String desF){
-        File file = new File(desF);
-        try{
-            if (file.exists()) file.delete();
-
-            List<String> commands = new ArrayList<>();
-            commands.add(FFMPEG_PATH);
-            commands.add("-f");
-            commands.add("concat");
-            commands.add("-safe");
-            commands.add("0");
-            commands.add("-i");
-            commands.add(src);
-            commands.add("-c");
-            commands.add("copy");
-            commands.add(desF);
-            ProcessBuilder processBuilder = new ProcessBuilder(commands);
-            Process process = processBuilder.start();
-            process.waitFor();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return file;
-    }
-
 }
