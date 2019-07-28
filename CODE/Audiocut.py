@@ -19,7 +19,8 @@ def main():
     # 将录音文件拆分成适合百度语音识别的大小
     path=prepare_for_baiduaip(name, sound, silence_thresh, min_silence_len, length_limit, abandon_chunk_len,
                                  joint_silence_len)
-    print(path)
+    for i in path:
+        print(i)
 
 
 def prepare_for_baiduaip(name, sound, silence_thresh=-70, min_silence_len=700, length_limit=60 * 1000,
