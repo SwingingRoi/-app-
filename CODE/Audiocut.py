@@ -17,8 +17,9 @@ def main():
     joint_silence_len = 1300  # 段拼接时加入1300毫秒间隔用于断句
 
     # 将录音文件拆分成适合百度语音识别的大小
-    prepare_for_baiduaip(name, sound, silence_thresh, min_silence_len, length_limit, abandon_chunk_len,
+    path=prepare_for_baiduaip(name, sound, silence_thresh, min_silence_len, length_limit, abandon_chunk_len,
                                  joint_silence_len)
+    print(path)
 
 
 def prepare_for_baiduaip(name, sound, silence_thresh=-70, min_silence_len=700, length_limit=60 * 1000,
@@ -42,33 +43,30 @@ def prepare_for_baiduaip(name, sound, silence_thresh=-70, min_silence_len=700, l
     '''
 
     # 按句子停顿，拆分成长度不大于1分钟录音片段
-    print('开始拆分(如果录音较长，请耐心等待)\n', ' *' * 30)
     chunks = chunk_split_length_limit(sound, min_silence_len=min_silence_len, length_limit=length_limit,
                                       silence_thresh=silence_thresh)  # silence time:700ms and silence_dBFS<-70dBFS
-    print('拆分结束，返回段数:', len(chunks), '\n', ' *' * 30)
 
     # 放弃长度小于0.5秒的录音片段
     for i in list(range(len(chunks)))[::-1]:
         if len(chunks[i]) <= abandon_chunk_len:
             chunks.pop(i)
-    print('取有效分段：', len(chunks))
 
     # 时间过短的相邻段合并，单段不超过1分钟
     chunks = chunk_join_length_limit(chunks, joint_silence_len=joint_silence_len, length_limit=length_limit)
-    print('合并后段数：', len(chunks))
 
     # 保存前处理一下路径文件名
-    if not os.path.exists('C://Users/jhd/Desktop/chunks/'): os.mkdir('C://Users/jhd/Desktop/chunks/')
+    pathfold="C://Users/jhd/Desktop/chunks/"
+    path=[]
+    if not os.path.exists(pathfold): os.mkdir(pathfold)
 
     # 保存所有分段
     total = len(chunks)
     for i in range(total):
-        new = chunks[i]
+        newpath=pathfold+"chunk"+str(i)+".wav"
+        path.append(newpath)
         chunks[i].export('C://Users/jhd/Desktop/chunks/chunk' + str(i) + ".wav", format="wav")
-        print('%04d' % i, len(new))
-    print('保存完毕')
 
-    return total
+    return path
 
 
 def chunk_split_length_limit(chunk, min_silence_len=700, length_limit=60 * 1000, silence_thresh=-70, level=0):
@@ -84,34 +82,28 @@ def chunk_split_length_limit(chunk, min_silence_len=700, length_limit=60 * 1000,
     '''
     if len(chunk) > length_limit:
         # 长度超过length_limit，拆分
-        print('%d 执行拆分,len=%d,dBFs=%d' % (level, min_silence_len, silence_thresh))
         chunk_splits = split_on_silence(chunk, min_silence_len=min_silence_len, silence_thresh=silence_thresh)
         # 修改静默时长，并检测是否已经触底
         min_silence_len -= 100
         if min_silence_len <= 0:
             tempname = 'C://Users/jhd/Desktop/chunks/temp_%d.wav' % int(time.time())
             chunk.export(tempname, format='wav')
-            print('%d 参数已经变成负数%d,依旧超长%d,片段已保存至%s' % (level, min_silence_len, len(chunk), tempname))
             raise Exception
         # 处理拆分结果
         if len(chunk_splits) < 2:
             # 拆分失败，缩短静默时间后，嵌套chunk_split_length_limit继续拆
-            print('%d 拆分失败,设置间隔时间为%d毫秒,嵌套调用方法继续拆分' % (level, min_silence_len))
             chunk_splits = chunk_split_length_limit(chunk, min_silence_len=min_silence_len, length_limit=length_limit,
                                                     silence_thresh=silence_thresh, level=level + 1)
         else:
             # 拆分成功。
-            print('%d 拆分成功,共%d段,逐段检查拆分后长度' % (level, len(chunk_splits)))
             arr = []
             min_silence_len -= 100
             for c in chunk_splits:
                 if len(c) < length_limit:
                     # 长度没length_limit
-                    print('%d 长度符合,len=%d' % (level, len(c)))
                     arr.append(c)
                 else:
                     # 长度超过length_limit，缩短静默时间后，嵌套chunk_split_length_limit继续拆
-                    print('%d 长度超过,len=%d,设置dBFs=%d,嵌套调用方法继续拆分' % (level, len(c), min_silence_len))
                     arr += chunk_split_length_limit(c, min_silence_len=min_silence_len, length_limit=length_limit,
                                                     silence_thresh=silence_thresh, level=level + 1)
             chunk_splits = arr
