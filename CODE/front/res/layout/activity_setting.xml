@@ -7,14 +7,40 @@
     tools:context=".Activity.Setting.SettingActivity">
 
     <LinearLayout
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/LogButton"
+            android:layout_width="258dp"
+            android:layout_height="48dp"
+            android:background="@drawable/normal_btn_style"
+            android:onClick="doPush"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/changeSkin"
+            android:layout_width="258dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/normal_btn_style"
+            android:onClick="toNight"
+            android:text="@string/changeToNight"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/ActionBar"
+        style="@style/actionbar"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        style="@style/actionbar"
-        >
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/BackArrow"
@@ -29,25 +55,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:gravity="center"
             android:paddingStart="20dp"
             android:paddingEnd="90dp"
-            android:gravity="center"
             android:text="@string/settingDescription"
             android:textSize="20sp" />
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/LogButton"
-        android:layout_width="258dp"
-        android:layout_height="48dp"
-        android:background="@drawable/normal_btn_style"
-        android:onClick="doPush"
-        android:textColor="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.499" />
 </android.support.constraint.ConstraintLayout>

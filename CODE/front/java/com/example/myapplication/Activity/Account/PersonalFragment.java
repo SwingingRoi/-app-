@@ -29,9 +29,23 @@ public class PersonalFragment extends Fragment {
     private boolean hasLogged;
     private ImageView Avatar;
     private TextView Account;
+    private boolean isInNight = false;//是否处于夜间模式
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_personal, container, false);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UserState",MODE_PRIVATE);
+        hasLogged = sharedPreferences.getBoolean("HasLogged",false);
+        account = sharedPreferences.getString("account",getResources().getString(R.string.goLog));
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
+        View view;
+        if(isInNight){
+            view = inflater.inflate(R.layout.activity_personal_night, container, false);
+        }else {
+            view = inflater.inflate(R.layout.activity_personal, container, false);
+        }
+
         Avatar = view.findViewById(R.id.Avatar);
         Account = view.findViewById(R.id.Account);
         ImageView Setting = view.findViewById(R.id.Setting);
@@ -46,9 +60,6 @@ public class PersonalFragment extends Fragment {
             }
         });
 
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UserState",MODE_PRIVATE);
-        hasLogged = sharedPreferences.getBoolean("HasLogged",false);
-        account = sharedPreferences.getString("account",getResources().getString(R.string.goLog));
 
         LinearLayout editLayout = view.findViewById(R.id.EditLayout);
         LinearLayout workLayout = view.findViewById(R.id.WorkLayout);
@@ -172,7 +183,17 @@ public class PersonalFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
+
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UserState",MODE_PRIVATE);
+
+        boolean isNight = sharedPreferences.getBoolean("night",false);
+        if(isNight != isInNight){
+            Intent intent = getActivity().getIntent();
+            getActivity().finish();
+            startActivity(intent);
+            return;
+        }
         account = sharedPreferences.getString("Account","");
         if(account.equals("")) return;
         Account.setText(account);

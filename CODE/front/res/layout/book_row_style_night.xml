@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#3F3E3E"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/surface"
+                android:layout_width="150dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="10dp"
+                android:paddingStart="20dp"
+                app:srcCompat="@drawable/nopictureblue" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:orientation="vertical">
+
+                <CheckBox
+                    android:id="@+id/checkBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="15dp"
+                    android:button="@drawable/book_row_checkbox_style"
+                    android:gravity="right"
+                    android:visibility="invisible" />
+
+                <TextView
+                    android:id="@+id/BookName"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.7"
+                    android:gravity="center"
+                    android:textColor="#888282"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="200dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/viewIcon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_weight="3"
+                        app:srcCompat="@drawable/listeniconblue" />
+
+                    <TextView
+                        android:id="@+id/viewnumber"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-55dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#888282" />
+
+                    <ImageView
+                        android:id="@+id/chapterIcon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_weight="1"
+                        app:srcCompat="@drawable/waveiconblue" />
+
+                    <TextView
+                        android:id="@+id/chapternumber"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-20dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#888282" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:gravity="center"
+                    android:orientation="horizontal" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/hasPublished"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="已发布"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/split4"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:alpha="0.5"
+            android:background="@drawable/gray" />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

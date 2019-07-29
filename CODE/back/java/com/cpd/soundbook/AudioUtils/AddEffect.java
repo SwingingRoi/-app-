@@ -96,6 +96,7 @@ public class AddEffect {
                 ffmpegUtils.split(String.valueOf(rate), String.valueOf(plainSpeechLength + 100), srcFile.getAbsolutePath(),
                         tempPath2);
 
+
                 ffmpegUtils.volumeDown(effectPath, downEffectPath);
 
                 ffmpegUtils.compose(tempPath2, downEffectPath, tempEffectPath);//合成后半部分和音效

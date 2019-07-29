@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.example.myapplication.Activity.LogSign.LogActivity;
 import com.example.myapplication.Activity.Work.EditChapterActivity;
 import com.example.myapplication.Activity.Work.ChapterActivity;
 import com.example.myapplication.InternetUtils.GetServer;
@@ -71,6 +72,7 @@ public class BookActivity extends AppCompatActivity {
     final private int PAGESIZE=10;
     private int bookid;
     private JSONArray chapters;
+    private boolean isInNight;//是否处于夜间模式
 
     private String title;
     private String author;
@@ -82,8 +84,18 @@ public class BookActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        account = sharedPreferences.getString("Account","");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_book);
+        if(isInNight){
+            setContentView(R.layout.activity_book_night);
+        }else {
+            setContentView(R.layout.activity_book);
+        }
+
         Intro = findViewById(R.id.intro);
         Chapter = findViewById(R.id.chapter);
         fav = findViewById(R.id.favicon);
@@ -121,12 +133,13 @@ public class BookActivity extends AppCompatActivity {
             }
         });
 
-        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
-        account = sharedPreferences.getString("Account","");
-
         chapterTable = findViewById(R.id.chaptertable);
 
-        pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        if(isInNight){
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down_night, null);
+        }else {
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        }
         chapterTable.addView(pullDown);
 
         introScroll = findViewById(R.id.introScroll);
@@ -208,11 +221,9 @@ public class BookActivity extends AppCompatActivity {
         if(WHICH==INTRO) return;
 
         WHICH=INTRO;
-        Intro.setTextSize(17);
-        Intro.setTextColor(Color.BLACK);
+        Intro.setTextSize(19);
 
         Chapter.setTextSize(14);
-        Chapter.setTextColor(0xFFAAAAAA);
 
         introScroll.setVisibility(View.VISIBLE);
         chapterScroll.setVisibility(View.INVISIBLE);
@@ -222,17 +233,23 @@ public class BookActivity extends AppCompatActivity {
         if(WHICH==CHAPTER) return;
 
         WHICH=CHAPTER;
-        Chapter.setTextSize(17);
-        Chapter.setTextColor(Color.BLACK);
+        Chapter.setTextSize(19);
 
         Intro.setTextSize(14);
-        Intro.setTextColor(0xFFAAAAAA);
 
         introScroll.setVisibility(View.INVISIBLE);
         chapterScroll.setVisibility(View.VISIBLE);
     }
 
     public void isFav(View view){
+        //如果用户未登录，跳转到登陆界面
+        if(account.equals("")){
+            Intent intent = new Intent(this,LogActivity.class);
+            startActivity(intent);
+            return;
+        }
+
+
         fav.setClickable(false);
         CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
             @Override
@@ -547,7 +564,12 @@ public class BookActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView = LayoutInflater.from(BookActivity.this).inflate(R.layout.book_tag,null);
+                                    View tagView;
+                                    if(isInNight){
+                                        tagView = LayoutInflater.from(BookActivity.this).inflate(R.layout.book_tag_night,null);
+                                    }else {
+                                        tagView = LayoutInflater.from(BookActivity.this).inflate(R.layout.book_tag,null);
+                                    }
                                     TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
                                     t.setBackground(tag_border_styles.get(j));
@@ -668,7 +690,13 @@ public class BookActivity extends AppCompatActivity {
                             try{
                                 final JSONObject chapter = newChapters.getJSONObject(i);
 
-                                View chapterRow = LayoutInflater.from(BookActivity.this).inflate(R.layout.chapter_row, null);
+                                View chapterRow;
+                                if(isInNight){
+                                    chapterRow = LayoutInflater.from(BookActivity.this).inflate(R.layout.chapter_row_night, null);
+                                }else {
+                                    chapterRow = LayoutInflater.from(BookActivity.this).inflate(R.layout.chapter_row, null);
+                                }
+
                                 TextView titleView = chapterRow.findViewById(R.id.chaptername);
                                 titleView.setText(chapter.getString("title"));
 

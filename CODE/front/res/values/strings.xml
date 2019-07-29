@@ -63,6 +63,8 @@
     <!-- 设置界面的strings-->
     <string name="Login">登录</string>
     <string name="Logout">退出登录</string>
+    <string name="changeToNight">夜间模式</string>
+    <string name="changeToDay">日间模式</string>
 
 
     <!-- 图鉴界面的strings-->
@@ -129,9 +131,9 @@
     <string name="titlelong">标题不能超过20个字!</string>
 
     <!--语音转文本界面的strings-->
-    <string name="waitTranslate">待转换......</string>
     <string name="choosefile">选择文件</string>
     <string name="askchoosefile">请选择音频文件</string>
+    <string name="handling">正在处理中......</string>
 
     <!--章节收听界面的strings-->
     <string name="listen">章节收听</string>

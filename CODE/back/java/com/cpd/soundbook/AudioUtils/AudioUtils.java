@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 @Component(value = "audioUtils")
 public class AudioUtils {
-    final private int duration = 30;//裁剪间隔
+    final private int duration = 60;//裁剪间隔
 
     //file:待切割文件
     //localPath:切割后文件存储的目录

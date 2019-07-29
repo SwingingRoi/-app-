@@ -8,7 +8,7 @@ import java.util.List;
 
 @Component(value = "ffmpegUtils")
 public class FfmpegUtils {
-    private final String FFMPEG_PATH = "D:\\ffmepg\\ffmepg\\bin\\ffmpeg.exe";//ffmpeg执行路径
+    private final String FFMPEG_PATH = "D:\\ffmpeg\\ffmpeg\\bin\\ffmpeg.exe";//ffmpeg执行路径
 
     //分割音频
     //ffmpeg -i input -vn -acodec copy -ss from -t to output
@@ -49,7 +49,7 @@ public class FfmpegUtils {
             commands.add("-i");
             commands.add(srcF);
             commands.add("-af");
-            commands.add("volume=-5dB");
+            commands.add("volume=-8dB");
             commands.add(desF);
 
             ProcessBuilder processBuilder = new ProcessBuilder(commands);
@@ -89,8 +89,8 @@ public class FfmpegUtils {
     public File concat(String src,String desF){
         File file = new File(desF);
         try{
-            if (file.exists()) file.delete();
-
+            if(file.exists()) file.delete();
+            //System.out.println("concat begin");
             List<String> commands = new ArrayList<>();
             commands.add(FFMPEG_PATH);
             commands.add("-f");
@@ -105,13 +105,14 @@ public class FfmpegUtils {
             ProcessBuilder processBuilder = new ProcessBuilder(commands);
             Process process = processBuilder.start();
             process.waitFor();
+            //System.out.println("concat done");
         }catch (Exception e){
             e.printStackTrace();
         }
         return file;
     }
 
-    public void transformMp3ToPcm(String src,String dest){
+    public void transformFormat(String src,String dest){
         try{
             //执行cmd窗口命令
             List<String> commands = new ArrayList<>();

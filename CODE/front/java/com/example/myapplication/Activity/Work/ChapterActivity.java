@@ -43,6 +43,7 @@ public class ChapterActivity extends AppCompatActivity {
     private SeekBar seekBar;//进度条
     private MySpinner menu;
 
+    private boolean hasReachedEnd = false;//是否已到达顺序播放的结尾
     private int chapterID;
     private int bookid;
     private String account;
@@ -57,6 +58,7 @@ public class ChapterActivity extends AppCompatActivity {
     private int NOW_MODE = SINGLE_LOOP;//默认为单曲循环
     private boolean hasClickMenu = false;//是否点击菜单
     private boolean hasPlayerReset = false;
+    private boolean isInNight = false;//是否处于夜间模式
 
 
     private File speechFile = null;
@@ -69,8 +71,16 @@ public class ChapterActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        account = sharedPreferences.getString("Account","");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chapter);
+        if(isInNight){
+            setContentView(R.layout.activity_chapter_night);
+        }else {
+            setContentView(R.layout.activity_chapter);
+        }
 
         MP3_LOCATION = this.getCacheDir().getAbsolutePath()+"/temp.mp3";
         BGM_LOCATION = this.getCacheDir().getAbsolutePath()+"/bgm.mp3";
@@ -137,9 +147,6 @@ public class ChapterActivity extends AppCompatActivity {
         loadingView.setVisibility(View.VISIBLE);
         normal.setVisibility(View.INVISIBLE);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
-        account = sharedPreferences.getString("Account","");
-
         seekBar = findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -188,6 +195,8 @@ public class ChapterActivity extends AppCompatActivity {
                         case SEQUENCE:
                             if (now_chapter_index < chapterIDs.length() - 1) {//播放下一首
                                 playNextSpeech();
+                            }else if(now_chapter_index == chapterIDs.length() - 1){
+                                hasReachedEnd = true;
                             }
                             break;
 
@@ -242,6 +251,7 @@ public class ChapterActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed(){
+        hasPlayerReset = true;
         if(speech_player != null) {
             speech_player.reset();
             speech_player.release();
@@ -252,7 +262,7 @@ public class ChapterActivity extends AppCompatActivity {
             bgm_player.release();
             bgm_player = null;
         }
-        super.onBackPressed();
+        super.finish();
     }
 
     //重置播放状态
@@ -278,7 +288,11 @@ public class ChapterActivity extends AppCompatActivity {
 
     //控制音乐的播放与暂停
     public void controlSpeech(View view){
-            new Thread(controlSpeech).start();
+        if(hasReachedEnd){
+            hasReachedEnd = false;
+            new Thread(prepareSpeech).start();
+        }
+        else new Thread(controlSpeech).start();
     }
 
     private void playNextSpeech(){

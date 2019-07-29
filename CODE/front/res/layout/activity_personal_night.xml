@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#3F3E3E"
+    tools:context=".Activity.Account.PersonalFragment">
+
+    <LinearLayout
+        android:id="@+id/ActionBar"
+        style="@style/actionbar"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/partname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:paddingStart="40dp"
+            android:text="@string/personal"
+            android:textSize="20sp" />
+
+        <ImageView
+            android:id="@+id/Setting"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/settingDescription"
+            android:src="@drawable/setting" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="408dp"
+        android:layout_height="147dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.095">
+
+        <ImageView
+            android:id="@+id/Avatar"
+            style="@style/avatar"
+            android:layout_weight="0.1"
+            android:contentDescription="@string/avatarDescription"
+            app:srcCompat="@mipmap/ic_launcher_round" />
+
+        <TextView
+            android:id="@+id/Account"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textColor="#C2BEBE" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/split"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:alpha="0.5"
+        android:background="@drawable/gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.286" />
+
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="155dp"
+        android:background="@drawable/border_radius_night"
+        android:baselineAligned="false"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:translationZ="5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/EditLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/EditIcon"
+                android:layout_width="30dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:src="@drawable/editblue" />
+
+            <TextView
+                android:id="@+id/EditInfo"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/InfoEdit"
+                android:textColor="#C2BEBE" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/WorkLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/DiskIcon"
+                android:layout_width="30dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:src="@drawable/diskblue" />
+
+            <TextView
+                android:id="@+id/MakeHistory"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/MakeHistory"
+                android:textColor="#C2BEBE"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/HistoryLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/HistoryIcon"
+                android:layout_width="30dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:src="@drawable/historyblue" />
+
+            <TextView
+                android:id="@+id/listenHistory"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/ListenHistory"
+                android:textColor="#C2BEBE"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/FavoriteLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/FavoriteIcon"
+                android:layout_width="30dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:src="@drawable/favoriteblue" />
+
+            <TextView
+                android:id="@+id/Favorite"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="@string/Favorites"
+                android:textColor="#C2BEBE"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

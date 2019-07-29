@@ -3,6 +3,7 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+    <drawable name="nightTextcolor">#646262</drawable>
     <drawable name="gray">#CCCCCC</drawable>
     <drawable name="darkorange">#da4b2a</drawable>
     <drawable name="lightorange">#f76442</drawable>

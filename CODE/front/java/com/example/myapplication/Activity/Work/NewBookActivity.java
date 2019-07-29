@@ -56,11 +56,20 @@ public class NewBookActivity extends AppCompatActivity {
 
     private HashMap<String,Boolean> tagStats;//存储标签的选择状态
     private int count = 0;//已选择标签数
+    private boolean isInNight = false;//是否处于夜间模式
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        account = sharedPreferences.getString("Account","");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_book);
+        if(isInNight){
+            setContentView(R.layout.activity_new_book_night);
+        }else {
+            setContentView(R.layout.activity_new_book);
+        }
 
         Title = findViewById(R.id.Title);
         Intro = findViewById(R.id.Intro);
@@ -68,8 +77,6 @@ public class NewBookActivity extends AppCompatActivity {
 
         cropPic = new CropPic();
 
-        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
-        account = sharedPreferences.getString("Account","");
 
         tagStats = new HashMap<>();
         initTagStat();

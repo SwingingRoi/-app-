@@ -49,12 +49,12 @@ public class AudioToText {
             //@localstore:本地用来存放裁剪的音频和转换的pcm的文件夹，在函数执行完毕后会删除
 
             JSONObject res = client.asr(srcFile.getAbsolutePath(), "pcm", 16000, null);
-            System.out.println(res.toString());
+            //System.out.println(res.toString());
             JSONArray r = (JSONArray) res.get("result");
             return r.get(0).toString();
         }catch (Exception e){
             //e.printStackTrace();
-            return "";
+            return null;
         }
     }
 }

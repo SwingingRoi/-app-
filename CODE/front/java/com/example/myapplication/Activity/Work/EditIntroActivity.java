@@ -1,6 +1,7 @@
 package com.example.myapplication.Activity.Work;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,10 +14,18 @@ public class EditIntroActivity extends AppCompatActivity {
 
     private String intro;
     private EditText Intro;
+    private boolean isInNight = false;//是否处于夜间模式
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_intro);
+        if(isInNight){
+            setContentView(R.layout.activity_edit_intro_night);
+        }else {
+            setContentView(R.layout.activity_edit_intro);
+        }
 
         Intro = findViewById(R.id.EditIntro);
         Intent intent = getIntent();

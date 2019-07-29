@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.Account.EditInfoActivity">
+
+    <LinearLayout
+        android:id="@+id/Loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#3F3E3E"
+        android:gravity="center"
+        android:onClick="refresh"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/loadinggif"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/loading" />
+
+        <TextView
+            android:id="@+id/Remind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/TouchRefresh"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/Normal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#3F3E3E"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/Avatar"
+            style="@style/avatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:layout_weight="2.5"
+            android:onClick="getPictureDir"
+            android:paddingTop="50dp"
+            app:srcCompat="@mipmap/ic_launcher_round" />
+
+        <TextView
+            android:id="@+id/SplitLine1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.3"
+            android:alpha="0.3"
+            android:background="@drawable/gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:onClick="editAccount"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/EditAccount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_weight="1"
+                android:text="@string/EditAccount"
+                android:textColor="#C2BEBE"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/Account"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="20dp"
+                android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/Arrow1"
+                android:layout_width="0dp"
+                android:layout_height="15dp"
+                android:layout_weight="0.1"
+                android:background="@drawable/arrow" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/Split1"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:alpha="0.5"
+            android:background="@drawable/gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:onClick="editPassword"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/EditPassword"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_weight="1"
+                android:text="@string/EditPassword"
+                android:textColor="#C2BEBE"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/Password"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="20dp"
+                android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/Arrow2"
+                android:layout_width="0dp"
+                android:layout_height="15dp"
+                android:layout_weight="0.1"
+                android:background="@drawable/arrow" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/Split2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:alpha="0.5"
+            android:background="@drawable/gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:onClick="editName"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/EditName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_weight="1"
+                android:text="@string/EditName"
+                android:textColor="#C2BEBE"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/Name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="20dp"
+                android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/Arrow3"
+                android:layout_width="0dp"
+                android:layout_height="15dp"
+                android:layout_weight="0.1"
+                android:background="@drawable/arrow" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/Split3"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:alpha="0.5"
+            android:background="@drawable/gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:onClick="editGender"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/EditGender"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_weight="1"
+                android:text="@string/EditGender"
+                android:textColor="#C2BEBE"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/Gender"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="20dp"
+                android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/Arrow4"
+                android:layout_width="0dp"
+                android:layout_height="15dp"
+                android:layout_weight="0.1"
+                android:background="@drawable/arrow" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/Split4"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:alpha="0.5"
+            android:background="@drawable/gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:onClick="editEmail"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/EditEmail"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_weight="1"
+                android:text="@string/EditEmail"
+                android:textColor="#C2BEBE"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/Email"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="20dp"
+                android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/Arrow5"
+                android:layout_width="0dp"
+                android:layout_height="15dp"
+                android:layout_weight="0.1"
+                android:background="@drawable/arrow" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/SplitLine2"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.3"
+            android:alpha="0.3"
+            android:background="@drawable/gray" />
+
+        <Button
+            android:id="@+id/Store"
+            style="@style/button"
+            android:layout_width="150dp"
+            android:layout_height="0dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="20dp"
+            android:layout_weight="1.5"
+            android:background="@drawable/normal_button_style_night"
+            android:onClick="store"
+            android:text="@string/Store" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/storing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gray"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/loadinggif2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/loading" />
+
+        <TextView
+            android:id="@+id/remind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/storing"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ActionBar"
+        style="@style/actionbar"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/BackArrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_weight="0.1"
+            android:onClick="onBackPressed"
+            app:srcCompat="?attr/actionModeCloseDrawable" />
+
+        <TextView
+            android:id="@+id/partname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-20dp"
+            android:layout_weight="1"
+            android:paddingStart="110dp"
+            android:paddingEnd="20dp"
+            android:text="@string/InfoEdit"
+            android:textSize="20sp" />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
