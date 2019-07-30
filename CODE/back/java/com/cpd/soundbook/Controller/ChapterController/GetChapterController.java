@@ -26,4 +26,23 @@ public class GetChapterController {
             e.printStackTrace();
         }
     }
+
+    @RequestMapping("/audiobook/getchapterIDs")
+    public void getChapterIDs(@RequestParam("bookid") int bookid, HttpServletResponse response){
+        try{
+            httpUtils.writeStringBack(response,chapterService.getChapterIDs(bookid).toString());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @RequestMapping("/audiobook/getChapters")
+    public void getChapters(@RequestParam("bookid") int bookid, @RequestParam("from") int from,
+                            @RequestParam("size") int size, HttpServletResponse response){
+        try{
+            httpUtils.writeStringBack(response, chapterService.getChapters(bookid, from, size).toString());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }

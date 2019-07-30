@@ -1,6 +1,7 @@
 package com.example.myapplication.Activity.Work;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -41,6 +42,7 @@ public class EditBookActivity extends AppCompatActivity {
     private TextView Intro;
     private ImageView Surface;
     private int bookid;
+    private boolean isInNight = false;//是否处于夜间模式
 
     private final int TITLE=1;
     private final int INTRO=2;
@@ -57,8 +59,15 @@ public class EditBookActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_book);
+        if(isInNight){
+            setContentView(R.layout.activity_edit_book_night);
+        }else {
+            setContentView(R.layout.activity_edit_book);
+        }
 
         Intent intent = getIntent();
         bookid = intent.getIntExtra("id",0);

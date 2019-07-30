@@ -1,20 +1,15 @@
 package com.cpd.soundbook.AudioUtils;
 
 import com.baidu.aip.speech.AipSpeech;
-import it.sauronsoftware.jave.EncoderException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import it.sauronsoftware.jave.Encoder;
-import it.sauronsoftware.jave.MultimediaInfo;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 
 @Component(value = "audioToText")
 public class AudioToText {
@@ -49,12 +44,12 @@ public class AudioToText {
             //@localstore:本地用来存放裁剪的音频和转换的pcm的文件夹，在函数执行完毕后会删除
 
             JSONObject res = client.asr(srcFile.getAbsolutePath(), "pcm", 16000, null);
-            System.out.println(res.toString());
+            //System.out.println(res.toString());
             JSONArray r = (JSONArray) res.get("result");
             return r.get(0).toString();
         }catch (Exception e){
             //e.printStackTrace();
-            return "";
+            return null;
         }
     }
 }

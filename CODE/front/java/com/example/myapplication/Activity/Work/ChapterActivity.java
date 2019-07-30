@@ -1,11 +1,13 @@
 package com.example.myapplication.Activity.Work;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -41,8 +43,9 @@ public class ChapterActivity extends AppCompatActivity {
     private LinearLayout loadingView;
     private LinearLayout normal;
     private SeekBar seekBar;//进度条
-    private MySpinner menu;
+    private MySpinner menu;//播放模式选择
 
+    private boolean hasReachedEnd = false;//是否已到达顺序播放的结尾
     private int chapterID;
     private int bookid;
     private String account;
@@ -50,6 +53,8 @@ public class ChapterActivity extends AppCompatActivity {
     private String bgmPath;
     private JSONArray chapterIDs;//对应bookid的所有chapterID
     private int now_chapter_index = 0;
+    private int EXIT_TIME_CHOICE = 0;//退出时间的选择
+    private CountDownTimer countDownTimer;//定时退出计时器
 
     final private int SINGLE_LOOP = 1;//单曲循环
     final private int SEQUENCE = 2;//顺序播放(没有循环)
@@ -57,6 +62,7 @@ public class ChapterActivity extends AppCompatActivity {
     private int NOW_MODE = SINGLE_LOOP;//默认为单曲循环
     private boolean hasClickMenu = false;//是否点击菜单
     private boolean hasPlayerReset = false;
+    private boolean isInNight = false;//是否处于夜间模式
 
 
     private File speechFile = null;
@@ -69,8 +75,16 @@ public class ChapterActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        account = sharedPreferences.getString("Account","");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chapter);
+        if(isInNight){
+            setContentView(R.layout.activity_chapter_night);
+        }else {
+            setContentView(R.layout.activity_chapter);
+        }
 
         MP3_LOCATION = this.getCacheDir().getAbsolutePath()+"/temp.mp3";
         BGM_LOCATION = this.getCacheDir().getAbsolutePath()+"/bgm.mp3";
@@ -137,9 +151,6 @@ public class ChapterActivity extends AppCompatActivity {
         loadingView.setVisibility(View.VISIBLE);
         normal.setVisibility(View.INVISIBLE);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
-        account = sharedPreferences.getString("Account","");
-
         seekBar = findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -188,6 +199,8 @@ public class ChapterActivity extends AppCompatActivity {
                         case SEQUENCE:
                             if (now_chapter_index < chapterIDs.length() - 1) {//播放下一首
                                 playNextSpeech();
+                            }else if(now_chapter_index == chapterIDs.length() - 1){
+                                hasReachedEnd = true;
                             }
                             break;
 
@@ -236,12 +249,84 @@ public class ChapterActivity extends AppCompatActivity {
         rotate.setVisibility(View.GONE);
     }
 
-    public void onBackPressed(View view){
-        super.onBackPressed();
+    /*
+    time:定时退出的秒数
+     */
+    public void exitTimerStart(View view){
+        final String[] timeChoice = new String[]{"1分钟","10分钟","30分钟","1小时","5小时","取消定时"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setPositiveButton("确定",null);
+        builder.setNegativeButton("取消",null);
+        builder.setTitle("定时退出");
+
+        //设置选择监听事件
+        final int formerChoice = EXIT_TIME_CHOICE;//之前的退出时间
+        builder.setSingleChoiceItems(timeChoice, EXIT_TIME_CHOICE,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        EXIT_TIME_CHOICE = which;
+                    }
+                });
+
+        final AlertDialog dialog = builder.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                int time = 0;
+                switch (EXIT_TIME_CHOICE){
+                    case 0:
+                        time = 60;
+                        break;
+                    case 1:
+                        time = 600;
+                        break;
+                    case 2:
+                        time = 1800;
+                        break;
+                    case 3:
+                        time = 3600;
+                        break;
+                    case 4:
+                        time = 18000;
+                        break;
+                    default:
+                        break;
+                }
+
+                if(countDownTimer != null) countDownTimer.cancel();
+
+                if(time > 0) {
+                    countDownTimer = new CountDownTimer(time * 1000, 1000) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            releasePlayer();
+                            ChapterActivity.super.onBackPressed();
+                        }
+                    };
+                    countDownTimer.start();
+                }
+            }
+        });
+
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                EXIT_TIME_CHOICE = formerChoice;
+            }
+        });
     }
 
-    @Override
-    public void onBackPressed(){
+    private void releasePlayer(){
         if(speech_player != null) {
             speech_player.reset();
             speech_player.release();
@@ -252,7 +337,17 @@ public class ChapterActivity extends AppCompatActivity {
             bgm_player.release();
             bgm_player = null;
         }
-        super.onBackPressed();
+    }
+
+    public void onBackPressed(View view){
+        onBackPressed();
+    }
+
+    @Override
+    public void onBackPressed(){
+        hasPlayerReset = true;
+        releasePlayer();
+        super.finish();
     }
 
     //重置播放状态
@@ -278,7 +373,11 @@ public class ChapterActivity extends AppCompatActivity {
 
     //控制音乐的播放与暂停
     public void controlSpeech(View view){
-            new Thread(controlSpeech).start();
+        if(hasReachedEnd){
+            hasReachedEnd = false;
+            new Thread(prepareSpeech).start();
+        }
+        else new Thread(controlSpeech).start();
     }
 
     private void playNextSpeech(){

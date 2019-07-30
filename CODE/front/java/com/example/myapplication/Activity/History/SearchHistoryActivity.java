@@ -49,6 +49,7 @@ public class SearchHistoryActivity extends AppCompatActivity {
     final private int SEARCHBTN = 1;
     final private int SCROLL = 2;
     private int SEARCHREQ = SEARCHBTN;
+    private boolean isInNight = false;//是否处于夜间模式
 
     private List<Drawable> tag_border_styles;//标签边框样式
 
@@ -64,11 +65,18 @@ public class SearchHistoryActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_history);
 
         SharedPreferences sharedPreferences = getSharedPreferences("UserState", MODE_PRIVATE);
         account = sharedPreferences.getString("Account", "");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
+        super.onCreate(savedInstanceState);
+        if(isInNight){
+            setContentView(R.layout.activity_search_history_night);
+        }else {
+            setContentView(R.layout.activity_search_history);
+        }
+
 
         tag_border_styles = new ArrayList<>();
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
@@ -79,7 +87,12 @@ public class SearchHistoryActivity extends AppCompatActivity {
         manageBox = findViewById(R.id.manage);
         normal = findViewById(R.id.normal);
         loadView = findViewById(R.id.Loading);
-        pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        if(isInNight){
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down_night, null);
+        }else {
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        }
+
 
         scrollView = findViewById(R.id.scrollView);
         scrollView.setOnTouchListener(new View.OnTouchListener() {
@@ -277,7 +290,12 @@ public class SearchHistoryActivity extends AppCompatActivity {
 
                             for (int i = 0; i < resultArray.length(); i++) {
                                 JSONObject record = resultArray.getJSONObject(i);
-                                View bookRow = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.history_row, null);
+                                View bookRow;
+                                if(isInNight){
+                                    bookRow = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.history_row_night, null);
+                                }else {
+                                    bookRow = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.history_row, null);
+                                }
 
                                 TextView title = bookRow.findViewById(R.id.BookName);
                                 title.setText(record.getString("name"));
@@ -291,7 +309,13 @@ public class SearchHistoryActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.book_tag,null);
+                                    View tagView;
+                                    if(isInNight){
+                                        tagView = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.book_tag_night,null);
+                                    }else {
+                                        tagView = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.book_tag,null);
+                                    }
+
                                     TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
                                     t.setBackground(tag_border_styles.get(j));

@@ -43,6 +43,7 @@ public class EditInfoActivity extends AppCompatActivity {
     private final int CROP_PICTURE=2;
     private CropPic cropPic;
     private Uri avatarUri;
+    private boolean isInNight = false;//是否处于夜间模式
 
 
     public void onBackPressed(View view){
@@ -51,16 +52,22 @@ public class EditInfoActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        accountNow = sharedPreferences.getString("Account","");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_info);
+        if(isInNight){
+            setContentView(R.layout.activity_edit_info_night);
+        }else {
+            setContentView(R.layout.activity_edit_info);
+        }
 
         normal = findViewById(R.id.Normal);
         loadView = findViewById(R.id.Loading);
         normal.setVisibility(View.INVISIBLE);
 
 
-        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
-        accountNow = sharedPreferences.getString("Account","");
 
         Account = findViewById(R.id.Account);
         Password = findViewById(R.id.Password);
@@ -68,6 +75,7 @@ public class EditInfoActivity extends AppCompatActivity {
         Gender = findViewById(R.id.Gender);
         Email = findViewById(R.id.Email);
         Account.setText(accountNow);
+
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.Remind).setVisibility(View.INVISIBLE);

@@ -52,6 +52,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
     private boolean ismanaging = false;//是否处于管理模式
     private String account;
     private List<Drawable> tag_border_styles;//标签边框样式
+    private boolean isInNight = false;//是否处于夜间模式
 
     final private int SEARCHBTN = 1;
     final private int SCROLL = 2;
@@ -61,22 +62,33 @@ public class SearchMyWorkActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        account = sharedPreferences.getString("Account","");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_my_work);
+        if(isInNight){
+            setContentView(R.layout.activity_search_my_work_night);
+        }else {
+            setContentView(R.layout.activity_search_my_work);
+        }
+
         searchBox = findViewById(R.id.SearchBox);
         bookTable = findViewById(R.id.BookTable);
         manageBox = findViewById(R.id.manage);
         normal = findViewById(R.id.normal);
         loadView = findViewById(R.id.Loading);
-        pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        if(isInNight){
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down_night, null);
+        }else {
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        }
+
 
         tag_border_styles = new ArrayList<>();
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
-
-        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
-        account = sharedPreferences.getString("Account","");
 
         scrollView = findViewById(R.id.scrollView);
         scrollView.setOnTouchListener(new View.OnTouchListener() {
@@ -316,7 +328,13 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                             }
 
                             for (int i = 0; i < resultArray.length(); i++) {
-                                View bookRow = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_row_style, null);
+                                View bookRow;
+                                if(isInNight){
+                                    bookRow = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_row_style_night, null);
+                                }else {
+                                    bookRow = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_row_style, null);
+                                }
+
 
                                 JSONObject result = resultArray.getJSONObject(i);
 
@@ -346,7 +364,13 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_tag,null);
+                                    View tagView;
+                                    if(isInNight){
+                                        tagView = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_tag_night,null);
+                                    }else {
+                                        tagView = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_tag,null);
+                                    }
+
                                     TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
                                     t.setBackground(tag_border_styles.get(j));

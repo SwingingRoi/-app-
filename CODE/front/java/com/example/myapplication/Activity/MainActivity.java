@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity{
     public PersonalFragment personalFragment;//两部分,首页、个人中心、制作
     private FragmentManager manager;
     private boolean hasBacked=false;
+    private boolean isInNight = false;//是否处于夜间模式
     private final Long TIME_DISABLED=Long.parseLong("86400000");//设置若一天没有进入APP，需重新登录
     private final int HOME=0;
     private final int RECOMMEND = 1;
@@ -33,6 +34,8 @@ public class MainActivity extends AppCompatActivity{
     private int WHICH=HOME;//标志当前选中哪个fragment,初始为HOME
     private Fragment[]fragments;
 
+    final private String NIGHT_TEXT_COLOR = "#888282";//夜间模式字体颜色
+    final private String PRESSED_TEXT_COLOR = "#f76442";//被选择后的字体颜色
 
     @Override
     public void onBackPressed(){
@@ -50,15 +53,6 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        manager = getFragmentManager();
-        homeFragment = new HomeFragment();
-        recommendFragment = new RecommendFragment();
-        personalFragment = new PersonalFragment();
-        fragments = new Fragment[]{homeFragment,recommendFragment,personalFragment};
-
         //判断是否登录
         SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -68,9 +62,24 @@ public class MainActivity extends AppCompatActivity{
         editor.putLong("time",timeNow);//更新preference中的时间
         editor.apply();
 
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
 
-        if(timeNow-timeLast>TIME_DISABLED){
-            editor.clear();
+        super.onCreate(savedInstanceState);
+        if(isInNight){
+            setContentView(R.layout.activity_main_night);
+        }else {
+            setContentView(R.layout.activity_main);
+        }
+
+        manager = getFragmentManager();
+        homeFragment = new HomeFragment();
+        recommendFragment = new RecommendFragment();
+        personalFragment = new PersonalFragment();
+        fragments = new Fragment[]{homeFragment,recommendFragment,personalFragment};
+
+        if(timeNow - timeLast > TIME_DISABLED){
+            editor.putString("Account","");
+            editor.putBoolean("HasLogged",false);
             editor.apply();
         }//如果超过一天未使用APP，清除登录信息
 
@@ -93,12 +102,17 @@ public class MainActivity extends AppCompatActivity{
         TextView homeText = findViewById(R.id.HomeText);
         ImageView homeIcon = findViewById(R.id.HomeIcon);
         if(WHICH==HOME) {
-            homeText.setTextColor(Color.parseColor("#f76442"));
+            homeText.setTextColor(Color.parseColor(PRESSED_TEXT_COLOR));
             homeIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.homeiconpressed));
         }
         else {
-            homeText.setTextColor(Color.GRAY);
-            homeIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.homeicon));
+            if(isInNight){
+                homeText.setTextColor(Color.parseColor(NIGHT_TEXT_COLOR));
+                homeIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.homeiconblue));
+            }else {
+                homeText.setTextColor(Color.GRAY);
+                homeIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.homeicon));
+            }
         }
     }
 
@@ -106,12 +120,17 @@ public class MainActivity extends AppCompatActivity{
         TextView recommendText = findViewById(R.id.RecommendText);
         ImageView recommendIcon = findViewById(R.id.RecommendIcon);
         if(WHICH == RECOMMEND){
-            recommendText.setTextColor(Color.parseColor("#f76442"));
+            recommendText.setTextColor(Color.parseColor(PRESSED_TEXT_COLOR));
             recommendIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.recommendpressed));
         }
         else {
-            recommendText.setTextColor(Color.GRAY);
-            recommendIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.recommend));
+            if(isInNight){
+                recommendText.setTextColor(Color.parseColor(NIGHT_TEXT_COLOR));
+                recommendIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.recommendblue));
+            }else {
+                recommendText.setTextColor(Color.GRAY);
+                recommendIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.recommend));
+            }
         }
     }
 
@@ -120,12 +139,17 @@ public class MainActivity extends AppCompatActivity{
         TextView personalText = findViewById(R.id.PersonalText);
         ImageView personalIcon = findViewById(R.id.PersonalIcon);
         if(WHICH==PERSONAL){
-            personalText.setTextColor(Color.parseColor("#f76442"));
+            personalText.setTextColor(Color.parseColor(PRESSED_TEXT_COLOR));
             personalIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.personaliconpressed));
         }
         else {
-            personalText.setTextColor(Color.GRAY);
-            personalIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.personalicon));
+            if(isInNight){
+                personalText.setTextColor(Color.parseColor(NIGHT_TEXT_COLOR));
+                personalIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.personaliconblue));
+            }else {
+                personalText.setTextColor(Color.GRAY);
+                personalIcon.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.personalicon));
+            }
         }
     }
 
@@ -180,4 +204,5 @@ public class MainActivity extends AppCompatActivity{
         WHICH=PERSONAL;
         setStyle();
     }
+
 }
