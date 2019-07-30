@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_name">智读</string>
     <string name="delete">删除</string>
     <string name="cancel">退出</string>
     <string name="clear">清空</string>
@@ -141,6 +142,13 @@
         <item>单曲循环</item>
         <item>顺序播放</item>
         <item>列表循环</item>
+    </string-array>
+    <string-array name="exitTime">
+        <item>1分钟</item>
+        <item>10分钟</item>
+        <item>30分钟</item>
+        <item>1小时</item>
+        <item>5小时</item>
     </string-array>
 
     <!--修改章节界面的strings-->

@@ -1,20 +1,15 @@
 package com.cpd.soundbook.AudioUtils;
 
 import com.baidu.aip.speech.AipSpeech;
-import it.sauronsoftware.jave.EncoderException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import it.sauronsoftware.jave.Encoder;
-import it.sauronsoftware.jave.MultimediaInfo;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 
 @Component(value = "audioToText")
 public class AudioToText {

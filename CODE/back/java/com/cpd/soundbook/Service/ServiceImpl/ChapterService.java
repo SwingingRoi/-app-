@@ -15,9 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ChapterService implements com.cpd.soundbook.Service.ServiceInterface.ChapterService {
@@ -43,7 +41,7 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
     private FfmpegUtils ffmpegUtils;
 
     @Autowired
-    private AudioUtils audioUtils;
+    private DeleteDir deleteDir;
 
     @Autowired
     private CutAudio cutAudio;
@@ -299,12 +297,13 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
         File resultFile = null;//添加音效后的语音文件
         String text = "";//转化后的文本
 
+        System.out.println("speech to text begin");
         //存储裁剪文件的临时目录
         String tempDir = System.getProperty("user.dir") + "\\mp3\\" + randomName.randomName() + "\\";
         //cuttedResult:裁剪后的文件的路径
         List<String> cuttedResult = cutAudio.cutAudio(srcFile.getAbsolutePath(),tempDir);
 
-        System.out.println("cut done");
+        System.out.println("cut mp3 done");
         /*
         filenamePath:执行ffmpeg concat命令所需txt文件
         resultPath:存放最终结果的文件
@@ -333,7 +332,7 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
                 if(tempText == null) return null;
                 //System.out.println("text" + i + ": " + text);
                 File tempFile = addEffect.addEffect(mp3FileI, tempText);
-                System.out.println("temp text:" + tempText);
+                //System.out.println("temp text:" + tempText);
 
                 //将要合并的文件名写入filenamePath
                 printWriter.write("file " + "\'" + tempFile.getAbsolutePath() + "\'" + System.getProperty("line.separator"));
@@ -343,7 +342,7 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
             printWriter.close();
 
             resultFile = ffmpegUtils.concat(filenamePath,resultPath);
-            mongoDAO.saveFile(resultFile);
+            //mongoDAO.saveFile(resultFile);
 
             for(String path : paths){
                 File file = new File(path);
@@ -353,16 +352,17 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
             System.out.println("speech to text done");
             result.put("speechPath",resultFile.getName());
             result.put("text",text);
+            System.out.println("resultFile: " + resultFile.getAbsolutePath());
 
             //System.out.println("resultFile: " + resultFile.getAbsolutePath());
-            audioUtils.deleteAllFilesOfDir(new File(tempDir));
+            deleteDir.deleteAllFilesOfDir(new File(tempDir));
             //删除临时文件
         }catch (Exception e){
             for(String path : paths){
                 File file = new File(path);
                 if(file.exists()) file.delete();
             }
-            audioUtils.deleteAllFilesOfDir(new File(tempDir));
+            deleteDir.deleteAllFilesOfDir(new File(tempDir));
             if(resultFile != null) resultFile.delete();//删除临时文件
             e.printStackTrace();
         }

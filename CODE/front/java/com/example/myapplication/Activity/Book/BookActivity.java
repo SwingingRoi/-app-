@@ -292,6 +292,7 @@ public class BookActivity extends AppCompatActivity {
         TextView tts = view.findViewById(R.id.Male);
         tts.setText(getResources().getString(R.string.tts));
 
+
         TextView stt = view.findViewById(R.id.Female);
         stt.setText(getResources().getString(R.string.stt));
 

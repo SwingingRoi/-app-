@@ -23,10 +23,10 @@ public class TextToSpeechController {
     @RequestMapping("/audiobook/textToSpeech")
     public void textToSpeech(HttpServletRequest request, HttpServletResponse response){
         try{
-            //System.out.println("text to speech begin");
-            JSONObject text = new JSONObject(httpUtils.getStringParam(request));
+            httpUtils.writeStringBack(response,"hello there!");
+            /*JSONObject text = new JSONObject(httpUtils.getStringParam(request));
             httpUtils.writeStringBack(response,chapterService.textToSpeech(text.getString("text")));
-            //System.out.println("text to speech done");
+               */
         }catch (Exception e){
             e.printStackTrace();
         }

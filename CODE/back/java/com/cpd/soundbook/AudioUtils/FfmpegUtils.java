@@ -49,7 +49,7 @@ public class FfmpegUtils {
             commands.add("-i");
             commands.add(srcF);
             commands.add("-af");
-            commands.add("volume=-8dB");
+            commands.add("volume=20dB");
             commands.add(desF);
 
             ProcessBuilder processBuilder = new ProcessBuilder(commands);
@@ -74,7 +74,7 @@ public class FfmpegUtils {
             commands.add("-i");
             commands.add(srcF2);
             commands.add("-filter_complex");
-            commands.add("amix=inputs=2:duration=first");
+            commands.add("volume=2[a0];volume=0.1[a1];[a0][a1]amix=inputs=2:duration=first");
             commands.add(desF);
             ProcessBuilder processBuilder = new ProcessBuilder(commands);
             Process process = processBuilder.start();

@@ -23,20 +23,19 @@ public class SpeechToTextController {
     @RequestMapping("/audiobook/speechToText")
     public void speechToText(HttpServletRequest request, HttpServletResponse response){
         try{
-            //File srcFile = httpUtils.getMp3Param(request);
-            File srcFile = new File("D:\\AudiobookBack\\mp3\\result\\Vq7ZqMNUIbR5jC3.mp3");
+            //System.out.println("speech to text begin");
+            File srcFile = httpUtils.getMp3Param(request);
+            //File srcFile = new File("D:\\AudiobookBack\\mp3\\result\\Vq7ZqMNUIbR5jC3.mp3");
             JSONObject result = chapterService.speechToText(srcFile);
-            System.out.println(result);
-            /*if(result == null) {
+            //System.out.println(result);
+            if(result == null) {
                 httpUtils.writeStringBack(response,"error");
-                if(srcFile != null && srcFile.exists()) srcFile.delete();
+                if(srcFile.exists()) srcFile.delete();
                 return;
             }
             httpUtils.writeStringBack(response,result.toString());
-            if(srcFile != null && srcFile.exists()) srcFile.delete();
-            /*httpUtils.writeFileBack(response,result);
-            if(result != null && result.exists()) result.delete();
-            if(srcFile != null && srcFile.exists()) srcFile.delete();*/
+            if(srcFile.exists()) srcFile.delete();
+            //System.out.println("speech to text done");
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -53,7 +53,7 @@
             style="@style/avatar"
             android:layout_weight="0.1"
             android:contentDescription="@string/avatarDescription"
-            app:srcCompat="@mipmap/ic_launcher_round" />
+            app:srcCompat="@drawable/noavatar" />
 
         <TextView
             android:id="@+id/Account"

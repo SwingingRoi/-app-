@@ -9,6 +9,7 @@
 
     <application
         android:allowBackup="true"
+        android:label="智读"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
@@ -38,7 +39,8 @@
             android:name=".Activity.LogSign.SignActivity"
             android:parentActivityName=".Activity.LogSign.LogActivity" />
         <activity android:name=".Activity.LogSign.LogActivity" />
-        <activity android:name=".Activity.MainActivity">
+        <activity android:name=".Activity.MainActivity"
+            android:label="智读">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

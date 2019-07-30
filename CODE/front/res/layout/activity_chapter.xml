@@ -56,9 +56,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1.4"
                 android:gravity="center"
-                android:paddingEnd="20dp"
+                android:paddingStart="50dp"
                 android:text="@string/listen"
                 android:textSize="20sp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
+                android:onClick="exitTimerStart"
+                app:srcCompat="@drawable/timer" />
 
             <com.example.myapplication.MyComponent.MySpinner
                 android:id="@+id/menu"
