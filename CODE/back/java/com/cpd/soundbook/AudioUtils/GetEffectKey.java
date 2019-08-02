@@ -1,4 +1,4 @@
-package com.cpd.soundbook.AudioUtils;/*
+﻿package com.cpd.soundbook.AudioUtils;/*
 <dependency>
 <groupId>com.hankcs</groupId>
 <artifactId>hanlp</artifactId>
@@ -169,6 +169,7 @@ public class GetEffectKey {
                         if(term.nature.toString().equals("v") && term.word.equals(noun)){
 
                             targetList.add(term);
+	            result.put(term.offset, jsonObject.getString("filename"));
                             isAdd = true;
 
                         }else{
