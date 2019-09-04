@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -48,8 +50,9 @@ public class SearchActivity extends AppCompatActivity {
     final private int SCROLL = 2;
     private int SEARCHREQ = SEARCHBTN;
     private String searchWhat;
-    private List<Drawable> tag_border_styles;//标签边框样式
     private boolean isInNight = false;//是否处于夜间模式
+    private float preY;//用户触摸屏幕时的手指纵坐标
+    private float nowY;//用户手指离开屏幕时的纵坐标
 
 
 
@@ -67,11 +70,6 @@ public class SearchActivity extends AppCompatActivity {
             setContentView(R.layout.activity_search_all_book);
         }
 
-        tag_border_styles = new ArrayList<>();
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
-
         searchBox = findViewById(R.id.SearchBox);
         bookTable = findViewById(R.id.BookTable);
         normal = findViewById(R.id.normal);
@@ -87,15 +85,21 @@ public class SearchActivity extends AppCompatActivity {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
-                        isRequesting = true;
-                        SEARCHREQ = SCROLL;
-                        new Thread(search).start();//向后端请求更多书本
+                    switch (event.getAction()){
+                        case MotionEvent.ACTION_DOWN:
+                            preY = event.getY();
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            nowY = event.getY();
+                            if(nowY < preY){
+                                if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
+                                    isRequesting = true;
+                                    SEARCHREQ = SCROLL;
+                                    new Thread(search).start();//向后端请求更多书本
+                                }
+                            }
                     }
-                }
-                return false;
+                    return false;
             }
         });
 
@@ -143,7 +147,7 @@ public class SearchActivity extends AppCompatActivity {
     Runnable search = new Runnable() {
         @Override
         public void run() {
-
+            if(SearchActivity.this.isFinishing()) return;
             SearchActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -165,6 +169,7 @@ public class SearchActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream == null){
+                    if(SearchActivity.this.isFinishing()) return;
                     SearchActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -185,6 +190,7 @@ public class SearchActivity extends AppCompatActivity {
                     searchresults.put(resultArray.getJSONObject(i));
                 }
 
+                if(SearchActivity.this.isFinishing()) return;
                 SearchActivity.this.runOnUiThread(new Runnable() {
                     @SuppressLint("SetTextI18n")
                     @Override
@@ -200,7 +206,9 @@ public class SearchActivity extends AppCompatActivity {
                                     @Override
                                     public void run() {
                                         loadView.setVisibility(View.INVISIBLE);
-                                        View noresult = LayoutInflater.from(SearchActivity.this).inflate(R.layout.search_no_result, null);
+                                        View noresult;
+                                        if(isInNight) noresult = LayoutInflater.from(SearchActivity.this).inflate(R.layout.search_no_result_night, null);
+                                        else noresult = LayoutInflater.from(SearchActivity.this).inflate(R.layout.search_no_result, null);
                                         bookTable.removeAllViews();
                                         bookTable.addView(noresult);
                                     }
@@ -230,21 +238,20 @@ public class SearchActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView;
+                                    TextView t = new TextView(SearchActivity.this);
+                                    t.setTextSize(10);
                                     if(isInNight){
-                                        tagView = LayoutInflater.from(SearchActivity.this).inflate(R.layout.book_tag_night, null);
+                                        t.setTextColor(Color.WHITE);
                                     }else {
-                                        tagView = LayoutInflater.from(SearchActivity.this).inflate(R.layout.book_tag, null);
+                                        t.setTextColor(Color.GRAY);
                                     }
-                                    TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
-                                    t.setBackground(tag_border_styles.get(j));
 
                                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                                             LinearLayout.LayoutParams.WRAP_CONTENT);
                                     layoutParams.setMargins(15,0,0,0);
-                                    tagView.setLayoutParams(layoutParams);
-                                    tagsView.addView(tagView);
+                                    t.setLayoutParams(layoutParams);
+                                    tagsView.addView(t);
                                 }
 
                                 bookTable.addView(bookRow);
@@ -313,6 +320,7 @@ public class SearchActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(searchresults.getJSONObject(index).getInt("id"));
 
+                if(SearchActivity.this.isFinishing()) return;
                 SearchActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -323,33 +331,6 @@ public class SearchActivity extends AppCompatActivity {
                         }
                     }
                 });
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private class DeleteSurface extends Thread{
-        private String surfaceName;
-
-        public DeleteSurface(String surfaceName){
-            this.surfaceName = surfaceName;
-        }
-
-        @Override
-        public void run() {
-            try {
-                GetServer getServer = new GetServer();
-                String url = getServer.getIPADDRESS() + "/audiobook/deletesurface?filename=" + this.surfaceName;
-
-                try{
-                    HttpUtils httpUtils = new HttpUtils(url);
-                    httpUtils.doHttp(null, "GET",
-                            "application/json");
-
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
             }catch (Exception e){
                 e.printStackTrace();
             }

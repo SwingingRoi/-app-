@@ -52,6 +52,12 @@ public class MainActivity extends AppCompatActivity{
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle bundle){
+        super.onSaveInstanceState(bundle);
+        bundle.putParcelable("android:support:fragments",null);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         //判断是否登录
         SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);

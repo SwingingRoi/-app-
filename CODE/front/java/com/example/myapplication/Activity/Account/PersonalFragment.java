@@ -9,6 +9,7 @@ import com.example.myapplication.Activity.Setting.SettingActivity;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ public class PersonalFragment extends Fragment {
     private boolean hasLogged;
     private ImageView Avatar;
     private TextView Account;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private boolean isInNight = false;//是否处于夜间模式
 
 
@@ -159,6 +161,22 @@ public class PersonalFragment extends Fragment {
             });
         }
 
+        swipeRefreshLayout = view.findViewById(R.id.swipe_container);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UserState",MODE_PRIVATE);
+                        account = sharedPreferences.getString("Account","");
+                        if(!account.equals("")) Account.setText(account);
+                    }
+                });
+                new Thread(getAvatar).start();
+            }
+        });
+
         return view;
     }
 
@@ -168,9 +186,13 @@ public class PersonalFragment extends Fragment {
         public void run() {
             GetPicture getPicture = new GetPicture();
             final Bitmap avatar = getPicture.getAvatar(account);
+
+            if(getActivity() == null) return;
+            if(getActivity().isFinishing()) return;
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    swipeRefreshLayout.setRefreshing(false);
                     if (avatar != null) {
                         Avatar.setImageBitmap(avatar);
                     }
@@ -184,8 +206,13 @@ public class PersonalFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UserState",MODE_PRIVATE);
+
+        account = sharedPreferences.getString("Account","");
+        if(!account.equals("")){
+            Account.setText(account);
+            new Thread(getAvatar).start();
+        }
 
         boolean isNight = sharedPreferences.getBoolean("night",false);
         if(isNight != isInNight){
@@ -194,9 +221,5 @@ public class PersonalFragment extends Fragment {
             startActivity(intent);
             return;
         }
-        account = sharedPreferences.getString("Account","");
-        if(account.equals("")) return;
-        Account.setText(account);
-        new Thread(getAvatar).start();
     }
 }

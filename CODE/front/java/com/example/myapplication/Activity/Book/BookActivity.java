@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.view.WindowManager;
 
 import com.example.myapplication.Activity.Work.NewChapterForTTSActivity;
 import com.example.myapplication.Activity.Work.NewChapterForSTTActivity;
+import com.example.myapplication.Activity.Work.EditBookActivity;
 
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -29,7 +31,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.myapplication.Activity.LogSign.LogActivity;
-import com.example.myapplication.Activity.Work.EditChapterActivity;
 import com.example.myapplication.Activity.Work.ChapterActivity;
 import com.example.myapplication.InternetUtils.GetServer;
 import com.example.myapplication.InternetUtils.HttpUtils;
@@ -58,13 +59,13 @@ public class BookActivity extends AppCompatActivity {
     private TextView Chapter;
     private ImageView fav;
     private LinearLayout chapterTable;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private ScrollView introScroll;
     private ScrollView chapterScroll;
     private LinearLayout loadingView;
     private MySpinner menu;
     private LinearLayout manageBox;
     private View pullDown;//请求文字提示
-    private List<Drawable> tag_border_styles;//标签边框样式
 
     private int ISFAV=0;
     private boolean isRequesting = false;//判断当前是否在请求新章节
@@ -73,6 +74,8 @@ public class BookActivity extends AppCompatActivity {
     private int bookid;
     private JSONArray chapters;
     private boolean isInNight;//是否处于夜间模式
+    private float preY;//用户触摸屏幕时的手指纵坐标
+    private float nowY;//用户手指离开屏幕时的纵坐标
 
     private String title;
     private String author;
@@ -101,10 +104,13 @@ public class BookActivity extends AppCompatActivity {
         fav = findViewById(R.id.favicon);
         bookinfo = findViewById(R.id.bookinfo);
 
-        tag_border_styles = new ArrayList<>();
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
+        swipeRefreshLayout = findViewById(R.id.swipe_container);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
 
         manageBox = findViewById(R.id.manage);
         menu = findViewById(R.id.menu);
@@ -117,13 +123,21 @@ public class BookActivity extends AppCompatActivity {
                 }//取消spinner的默认选择
 
                 String select = parent.getItemAtPosition(position).toString();
-                if (select.equals("新建章节")) {
-                    toNewChapter();
-                }
-                else {
-                    if(!ismanaging){
-                        toManage();
-                    }
+
+                switch (select){
+                    case "新建章节":
+                        toNewChapter();
+                        break;
+                    case "管理章节":
+                        if(!ismanaging){
+                            toManage();
+                        }
+                        break;
+                    case "编辑图书":
+                        Intent intent = new Intent(BookActivity.this, EditBookActivity.class);
+                        intent.putExtra("id", bookid);
+                        startActivity(intent);
+                        break;
                 }
             }
 
@@ -147,16 +161,24 @@ public class BookActivity extends AppCompatActivity {
         chapterScroll.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_UP) {
 
-                    if (!isRequesting && chapterScroll.getChildAt(0).getHeight() <= chapterScroll.getHeight() + chapterScroll.getScrollY()) {
-                        isRequesting = true;
-                        new Thread(reqChapter).start();//向后端请求更多章节
-                    }
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        preY = event.getY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        nowY = event.getY();
+                        if(nowY < preY){
+                            if (!isRequesting && chapterScroll.getChildAt(0).getMeasuredHeight() <= chapterScroll.getScrollY() + chapterScroll.getHeight()) {
+                                isRequesting = true;
+                                new Thread(reqChapter).start();//向后端请求更多书本
+                            }
+                        }
                 }
                 return false;
             }
         });
+        loadingView = findViewById(R.id.Loading);
 
         //设置顶部状态栏样式
         Window window=getWindow();
@@ -164,11 +186,6 @@ public class BookActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(0XB3371D4E);
 
-        loadingView = findViewById(R.id.Loading);
-        loadingView.setVisibility(View.VISIBLE);
-        bookinfo.setVisibility(View.INVISIBLE);
-        chapterScroll.setVisibility(View.INVISIBLE);
-        introScroll.setVisibility(View.INVISIBLE);
 
         Intent intent = getIntent();
         bookid = intent.getIntExtra("id",0);
@@ -196,10 +213,15 @@ public class BookActivity extends AppCompatActivity {
         };//防止用户高频率点击
         countDownTimer.start();
 
+        bookinfo.setVisibility(View.INVISIBLE);
+        chapterScroll.setVisibility(View.INVISIBLE);
+        introScroll.setVisibility(View.GONE);
         loadingView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
         findViewById(R.id.Remind).setVisibility(View.INVISIBLE);
 
+        LinearLayout tagsView = findViewById(R.id.tags);
+        tagsView.removeAllViews();
         chapterTable.removeAllViews();
         chapters = new JSONArray();
         from = 0;
@@ -226,7 +248,7 @@ public class BookActivity extends AppCompatActivity {
         Chapter.setTextSize(14);
 
         introScroll.setVisibility(View.VISIBLE);
-        chapterScroll.setVisibility(View.INVISIBLE);
+        chapterScroll.setVisibility(View.GONE);
     }
 
     public void switchToChapter(View view){
@@ -237,7 +259,7 @@ public class BookActivity extends AppCompatActivity {
 
         Intro.setTextSize(14);
 
-        introScroll.setVisibility(View.INVISIBLE);
+        introScroll.setVisibility(View.GONE);
         chapterScroll.setVisibility(View.VISIBLE);
     }
 
@@ -343,10 +365,11 @@ public class BookActivity extends AppCompatActivity {
     private void cancelManage(){
 
         ismanaging = false;
-        manageBox.setVisibility(View.INVISIBLE);
+        manageBox.setVisibility(View.GONE);
         for(int i=0;i<chapters.length();i++){
             final View chapterRow = chapterTable.getChildAt(i);
             CheckBox checkBox = chapterRow.findViewById(R.id.checkBox);
+            checkBox.setChecked(false);
             checkBox.setVisibility(View.INVISIBLE);
         }
     }
@@ -386,17 +409,23 @@ public class BookActivity extends AppCompatActivity {
     }
 
     private void toChapter(int chapterID){
-        if(ismanaging) {
+
+        /*if(ismanaging) {
             Intent intent = new Intent(this, EditChapterActivity.class);
             intent.putExtra("id", chapterID);
             startActivity(intent);
         }
-        else {
+        else {*/
             Intent intent = new Intent(this, ChapterActivity.class);
             intent.putExtra("chapterId", chapterID);
             intent.putExtra("bookid",bookid);
+
+            //判断是否有权限修改章节
+            if(author.equals(account)){
+                intent.putExtra("hasPre",true);
+            }
             startActivity(intent);
-        }
+        //}
     }
 
     Runnable addFav = new Runnable() {
@@ -413,6 +442,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
+                    if(BookActivity.this.isFinishing()) return;
                     BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -445,6 +475,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
+                    if(BookActivity.this.isFinishing()) return;
                     BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -471,6 +502,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
+                    if(BookActivity.this.isFinishing()) return;
                     BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -483,6 +515,7 @@ public class BookActivity extends AppCompatActivity {
                     final String result = new String(outputStream.toByteArray(),
                             StandardCharsets.UTF_8);
 
+                    if(BookActivity.this.isFinishing()) return;
                     BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -515,6 +548,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
+                    if(BookActivity.this.isFinishing()) return;
                     BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -522,6 +556,7 @@ public class BookActivity extends AppCompatActivity {
 
                             findViewById(R.id.loadinggif).setVisibility(View.INVISIBLE);
                             findViewById(R.id.Remind).setVisibility(View.VISIBLE);
+                            swipeRefreshLayout.setRefreshing(false);
                         }
                     });
                     return;
@@ -532,6 +567,7 @@ public class BookActivity extends AppCompatActivity {
 
                 final JSONObject book = new JSONObject(result);
 
+                if(BookActivity.this.isFinishing()) return;
                 BookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -540,6 +576,7 @@ public class BookActivity extends AppCompatActivity {
                                 loadingView.setVisibility(View.INVISIBLE);
                                 View deleted = LayoutInflater.from(BookActivity.this).inflate(R.layout.book_deleted, null);
                                 BookActivity.this.setContentView(deleted);
+                                swipeRefreshLayout.setRefreshing(false);
                             }
 
                             else {
@@ -565,21 +602,20 @@ public class BookActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView;
+                                    TextView t = new TextView(BookActivity.this);
+                                    t.setTextSize(10);
                                     if(isInNight){
-                                        tagView = LayoutInflater.from(BookActivity.this).inflate(R.layout.book_tag_night,null);
+                                        t.setTextColor(Color.WHITE);
                                     }else {
-                                        tagView = LayoutInflater.from(BookActivity.this).inflate(R.layout.book_tag,null);
+                                        t.setTextColor(Color.GRAY);
                                     }
-                                    TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
-                                    t.setBackground(tag_border_styles.get(j));
-                                    t.setTextColor(Color.WHITE);
+
                                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                                             LinearLayout.LayoutParams.WRAP_CONTENT);
                                     layoutParams.setMargins(0,15,0,0);
-                                    tagView.setLayoutParams(layoutParams);
-                                    tagsView.addView(tagView);
+                                    t.setLayoutParams(layoutParams);
+                                    tagsView.addView(t);
                                 }
 
                                 new Thread(getSurface).start();
@@ -603,6 +639,7 @@ public class BookActivity extends AppCompatActivity {
             GetPicture getPicture = new GetPicture();
             final Bitmap surface = getPicture.getSurface(bookid);
 
+            if(BookActivity.this.isFinishing()) return;
             BookActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -614,6 +651,7 @@ public class BookActivity extends AppCompatActivity {
                     loadingView.setVisibility(View.INVISIBLE);
                     bookinfo.setVisibility(View.VISIBLE);
                     chapterScroll.setVisibility(View.VISIBLE);
+                    swipeRefreshLayout.setRefreshing(false);
 
                 }
             });
@@ -626,6 +664,7 @@ public class BookActivity extends AppCompatActivity {
             GetPicture getPicture = new GetPicture();
             final Bitmap avatar = getPicture.getAvatar(author);
 
+            if(BookActivity.this.isFinishing()) return;
             BookActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -641,6 +680,7 @@ public class BookActivity extends AppCompatActivity {
     Runnable reqChapter = new Runnable() {
         @Override
         public void run() {
+            if(BookActivity.this.isFinishing()) return;
             BookActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -660,6 +700,7 @@ public class BookActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
+                    if(BookActivity.this.isFinishing()) return;
                     BookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -682,6 +723,7 @@ public class BookActivity extends AppCompatActivity {
                     chapters.put(newChapters.getJSONObject(i));
                 }//向chapters中添加新请求过来的chapter
 
+                if(BookActivity.this.isFinishing()) return;
                 BookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -689,9 +731,10 @@ public class BookActivity extends AppCompatActivity {
 
                         for(int i=0;i < newChapters.length();i++){
                             try{
+                                //System.out.println("new chapter");
                                 final JSONObject chapter = newChapters.getJSONObject(i);
 
-                                View chapterRow;
+                                final View chapterRow;
                                 if(isInNight){
                                     chapterRow = LayoutInflater.from(BookActivity.this).inflate(R.layout.chapter_row_night, null);
                                 }else {
@@ -716,7 +759,10 @@ public class BookActivity extends AppCompatActivity {
                                     @Override
                                     public void onClick(View v) {
                                         try {
-                                            toChapter(chapter.getInt("id"));
+                                            if(ismanaging){
+                                                CheckBox checkBox = chapterRow.findViewById(R.id.checkBox);
+                                                checkBox.setChecked(!checkBox.isChecked());
+                                            }else toChapter(chapter.getInt("id"));
                                         }catch (Exception e){
                                             e.printStackTrace();
                                         }
@@ -776,6 +822,7 @@ public class BookActivity extends AppCompatActivity {
                 BookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        if(BookActivity.this.isFinishing()) return;
                         int hasRemoved=0;
                         for (int i : removes) {
                             try {

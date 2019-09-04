@@ -51,8 +51,9 @@ public class SearchMyWorkActivity extends AppCompatActivity {
     private boolean isRequesting = true;//当前是否在向后端请求书本信息
     private boolean ismanaging = false;//是否处于管理模式
     private String account;
-    private List<Drawable> tag_border_styles;//标签边框样式
     private boolean isInNight = false;//是否处于夜间模式
+    private float preY;//用户触摸屏幕时的手指纵坐标
+    private float nowY;//用户手指离开屏幕时的纵坐标
 
     final private int SEARCHBTN = 1;
     final private int SCROLL = 2;
@@ -84,23 +85,24 @@ public class SearchMyWorkActivity extends AppCompatActivity {
             pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
         }
 
-
-        tag_border_styles = new ArrayList<>();
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
-
         scrollView = findViewById(R.id.scrollView);
         scrollView.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
-                        isRequesting = true;
-                        SEARCHREQ = SCROLL;
-                        new Thread(search).start();//向后端请求更多书本
-                    }
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        preY = event.getY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        nowY = event.getY();
+                        if(nowY < preY){
+                            if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
+                                isRequesting = true;
+                                SEARCHREQ = SCROLL;
+                                new Thread(search).start();//向后端请求更多书本
+                            }
+                        }
                 }
                 return false;
             }
@@ -116,26 +118,22 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
     private void jumpToBook(int bookid){
         //在管理模式下点击bookRow跳转至modify界面
-        if(ismanaging) {
+        /*if(ismanaging) {
             Intent intent = new Intent(this, EditBookActivity.class);
             intent.putExtra("id", bookid);
             startActivity(intent);
         }
 
         //非管理模式下跳转至图书浏览界面
-        else {
+        else {*/
             Intent intent = new Intent(this,BookActivity.class);
             intent.putExtra("id",bookid);
             startActivity(intent);
-        }
+        //}
     }
 
     //开启管理模式
     public void toManage(View view){
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) scrollView.getLayoutParams();
-        params.height = 1400;
-        scrollView.setLayoutParams(params);//设置scrollView的高度
-
         ismanaging = true;
         manageBox.setVisibility(View.VISIBLE);
         for(int i=0;i<searchresults.length();i++){
@@ -147,15 +145,13 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
     //退出管理
     public void cancelManage(View view){
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) scrollView.getLayoutParams();
-        params.height = 1600;
-        scrollView.setLayoutParams(params);//设置scrollView的高度
 
         ismanaging = false;
-        manageBox.setVisibility(View.INVISIBLE);
+        manageBox.setVisibility(View.GONE);
         for(int i=0;i<searchresults.length();i++){
             final View bookRow = bookTable.getChildAt(i);
             CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
+            checkBox.setChecked(false);
             checkBox.setVisibility(View.INVISIBLE);
         }
     }
@@ -201,12 +197,10 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                     }
                 }
 
-
-
-
                 SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        if(SearchMyWorkActivity.this.isFinishing()) return;
                         int hasRemoved=0;
                         for (int i : removes) {
                             try {
@@ -226,6 +220,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                 byte[] param = ids.toString().getBytes();
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "POST", "application/json");//向后端发送删除请求
+
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -268,7 +263,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
     Runnable search = new Runnable() {
         @Override
         public void run() {
-
+            if(SearchMyWorkActivity.this.isFinishing()) return;
             SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -290,6 +285,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream == null){
+                    if(SearchMyWorkActivity.this.isFinishing()) return;
                     SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -310,6 +306,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                     searchresults.put(resultArray.getJSONObject(i));
                 }
 
+                if(SearchMyWorkActivity.this.isFinishing()) return;
                 SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                     @SuppressLint("SetTextI18n")
                     @Override
@@ -322,13 +319,16 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
                             if (searchresults.length() == 0) {//搜索结果为空
                                     loadView.setVisibility(View.INVISIBLE);
-                                    View noresult = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.search_no_result, null);
+                                    View noresult;
+                                    if(isInNight) noresult = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.search_no_result_night, null);
+                                    else noresult = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.search_no_result, null);
                                     bookTable.removeAllViews();
                                     bookTable.addView(noresult);
+                                    return;
                             }
 
                             for (int i = 0; i < resultArray.length(); i++) {
-                                View bookRow;
+                                final View bookRow;
                                 if(isInNight){
                                     bookRow = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_row_style_night, null);
                                 }else {
@@ -344,7 +344,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                                 TextView viewNumber = bookRow.findViewById(R.id.viewnumber);
                                 viewNumber.setText(String.valueOf(result.getInt("views")));
 
-                                TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
+                                final TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
                                 chapterNumber.setText(result.getInt("chapters") + "章");
 
                                 LinearLayout tagsView = bookRow.findViewById(R.id.tags);
@@ -364,21 +364,20 @@ public class SearchMyWorkActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView;
+                                    TextView t = new TextView(SearchMyWorkActivity.this);
+                                    t.setTextSize(10);
                                     if(isInNight){
-                                        tagView = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_tag_night,null);
+                                        t.setTextColor(Color.WHITE);
                                     }else {
-                                        tagView = LayoutInflater.from(SearchMyWorkActivity.this).inflate(R.layout.book_tag,null);
+                                        t.setTextColor(Color.GRAY);
                                     }
-
-                                    TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
-                                    t.setBackground(tag_border_styles.get(j));
+
                                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                                             LinearLayout.LayoutParams.WRAP_CONTENT);
                                     layoutParams.setMargins(15,0,0,0);
-                                    tagView.setLayoutParams(layoutParams);
-                                    tagsView.addView(tagView);
+                                    t.setLayoutParams(layoutParams);
+                                    tagsView.addView(t);
                                 }
 
                                 if(ismanaging){
@@ -392,7 +391,10 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                                 bookRow.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                            jumpToBook(id);
+                                        if(ismanaging){
+                                            CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
+                                            checkBox.setChecked(!checkBox.isChecked());
+                                        }else jumpToBook(id);
                                     }
                                 });
                             }//将搜索结果添加至bookTable中
@@ -452,6 +454,7 @@ public class SearchMyWorkActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(searchresults.getJSONObject(index).getInt("id"));
 
+                if(SearchMyWorkActivity.this.isFinishing()) return;
                 SearchMyWorkActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

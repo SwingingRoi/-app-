@@ -89,8 +89,7 @@
 
         <ScrollView
             android:id="@+id/scrollView"
-            android:layout_width="match_parent"
-            android:layout_height="530dp">
+            style="@style/Scroll">
 
             <LinearLayout
                 android:id="@+id/BookTable"
@@ -102,14 +101,12 @@
 
         <LinearLayout
             android:id="@+id/manage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            style="@style/manageBox"
             android:background="@android:color/white"
             android:elevation="6dp"
             android:gravity="center"
             android:orientation="horizontal"
             android:outlineProvider="bounds"
-            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"

@@ -28,7 +28,7 @@
             android:layout_height="48dp"
             android:layout_marginTop="20dp"
             android:background="@drawable/normal_btn_style"
-            android:onClick="toNight"
+            android:onClick="switchSkin"
             android:text="@string/changeToNight"
             android:textColor="@android:color/white" />
     </LinearLayout>

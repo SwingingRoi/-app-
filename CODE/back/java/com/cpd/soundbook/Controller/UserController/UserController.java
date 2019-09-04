@@ -1,6 +1,6 @@
 package com.cpd.soundbook.Controller.UserController;
 
-import com.cpd.soundbook.HttpUtils;
+import com.cpd.soundbook.HttpUtils.HttpUtils;
 import com.cpd.soundbook.Service.ServiceInterface.UserService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,26 +83,6 @@ public class UserController {
                              HttpServletResponse response){
         try{
             httpUtils.writeStringBack(response,userService.getRecommend(URLDecoder.decode(account,"UTF-8"), from, size).toString());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    @RequestMapping("/audiobook/getPreference")
-    public void getPreference(@RequestParam("account") String account, HttpServletResponse response){
-        try{
-            httpUtils.writeStringBack(response,userService.getPreference(URLDecoder.decode(account,"UTF-8")));
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    @RequestMapping("/audiobook/storePreference")
-    public void storePreference(HttpServletRequest request, @RequestParam("account") String account){
-        try{
-            JSONObject param = new JSONObject(httpUtils.getStringParam(request));
-            userService.storePreference(URLDecoder.decode(account,"UTF-8"),
-                    param.getString("tags"));
         }catch (Exception e){
             e.printStackTrace();
         }

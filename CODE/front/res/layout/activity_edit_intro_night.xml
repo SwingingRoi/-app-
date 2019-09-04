@@ -80,6 +80,7 @@
                     android:paddingStart="10dp"
                     android:paddingTop="10dp"
                     android:textColor="#C2BEBE"
+                    android:textColorHint="#7A7979"
                     android:textSize="14sp" />
             </LinearLayout>
         </ScrollView>

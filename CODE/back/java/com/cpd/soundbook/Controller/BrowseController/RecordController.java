@@ -1,6 +1,6 @@
 package com.cpd.soundbook.Controller.BrowseController;
 
-import com.cpd.soundbook.HttpUtils;
+import com.cpd.soundbook.HttpUtils.HttpUtils;
 import com.cpd.soundbook.Service.ServiceInterface.UserBrowseBookService;
 import org.json.JSONArray;
 import org.json.JSONObject;

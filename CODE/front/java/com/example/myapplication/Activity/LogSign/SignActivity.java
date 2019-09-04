@@ -358,6 +358,7 @@ public class SignActivity extends AppCompatActivity{
     Runnable sign = new Runnable() {
         @Override
         public void run() {
+            if(SignActivity.this.isFinishing()) return;
             SignActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -387,6 +388,7 @@ public class SignActivity extends AppCompatActivity{
                final String result = new String(httpUtils.doHttp(param,"POST","application/json").toByteArray(),
                        StandardCharsets.UTF_8);
 
+                if(SignActivity.this.isFinishing()) return;
                 SignActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -427,6 +429,7 @@ public class SignActivity extends AppCompatActivity{
     Runnable sendEmail = new Runnable() {
         @Override
         public void run() {
+            if(SignActivity.this.isFinishing()) return;
             SendEmail send = new SendEmail();
             send.sendEmail(email.getText().toString(),account.getText().toString());
         }

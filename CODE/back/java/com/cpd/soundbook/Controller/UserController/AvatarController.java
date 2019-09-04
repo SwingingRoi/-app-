@@ -1,6 +1,6 @@
 package com.cpd.soundbook.Controller.UserController;
 
-import com.cpd.soundbook.HttpUtils;
+import com.cpd.soundbook.HttpUtils.HttpUtils;
 import com.cpd.soundbook.Service.ServiceInterface.UserService;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.json.JSONObject;
@@ -30,11 +30,9 @@ public class AvatarController {
     }
 
     @RequestMapping("/audiobook/saveAvatarName")
-    public void saveAvatarName(@RequestParam("id") int id, @RequestParam("avatar") String avatar){
+    public void saveAvatarName(HttpServletRequest request){
         try {
-            JSONObject param = new JSONObject();
-            param.put("id",id);
-            param.put("avatar",avatar);
+            JSONObject param = new JSONObject(httpUtils.getStringParam(request));
             userService.saveAvatarName(param);
         }catch (Exception e){
             e.printStackTrace();

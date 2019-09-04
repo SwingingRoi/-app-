@@ -34,7 +34,7 @@
     <LinearLayout
         android:id="@+id/normal"
         android:layout_width="match_parent"
-        android:layout_height="450dp"
+        android:layout_height="500dp"
         android:background="#3F3E3E"
         android:gravity="center"
         android:orientation="vertical"
@@ -74,7 +74,7 @@
             android:id="@+id/surface"
             android:layout_width="415dp"
             android:layout_height="186dp"
-            android:background="@drawable/booksurface"
+            android:background="@drawable/booksurfacenight"
             android:onClick="getPicture">
 
         </FrameLayout>
@@ -108,7 +108,8 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="20dp"
                 android:singleLine="true"
-                android:textColor="#C2BEBE" />
+                android:textColor="#C2BEBE"
+                android:textColorHint="#7A7979" />
 
             <TextView
                 android:layout_width="0dp"
@@ -154,7 +155,8 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="20dp"
                 android:singleLine="true"
-                android:textColor="#C2BEBE" />
+                android:textColor="#C2BEBE"
+                android:textColorHint="#7A7979" />
 
             <TextView
                 android:layout_width="0dp"
@@ -172,6 +174,50 @@
             android:background="@drawable/gray" />
 
         <LinearLayout
+            android:id="@+id/TagLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:onClick="editTag"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_weight="0.2"
+                android:text="@string/tag"
+                android:textColor="#C2BEBE"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/Tag"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:gravity="end"
+                android:paddingStart="0dp"
+                android:paddingEnd="20dp"
+                android:singleLine="true"
+                android:textColor="#C2BEBE" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="15dp"
+                android:layout_weight="0.06"
+                android:background="@drawable/arrow" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/split6"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:alpha="0.5"
+            android:background="@drawable/gray" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp"
@@ -183,10 +229,10 @@
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="50dp"
-                android:background="@drawable/normal_button_style_night"
+                android:background="@drawable/night_btn_style"
                 android:onClick="publishBook"
                 android:text="@string/publish"
-                android:textColor="#C2BEBE"
+                android:textColor="@android:color/white"
                 android:textSize="17sp" />
 
             <Button
@@ -196,7 +242,7 @@
                 android:background="@drawable/normal_button_style_night"
                 android:onClick="storeModify"
                 android:text="@string/Store"
-                android:textColor="#C2BEBE"
+                android:textColor="@android:color/white"
                 android:textSize="17sp" />
         </LinearLayout>
 
@@ -212,6 +258,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.184"
+        app:layout_constraintVertical_bias="0.14"
         app:srcCompat="@drawable/addsurface" />
 </android.support.constraint.ConstraintLayout>

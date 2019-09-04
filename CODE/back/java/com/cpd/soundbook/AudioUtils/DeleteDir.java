@@ -13,7 +13,7 @@ public class DeleteDir {
     public void deleteAllFilesOfDir(File tempDir) {
         if (!tempDir.exists())
             return;
-        if (tempDir.isFile()) {
+        if (tempDir.isFile() && tempDir.exists()) {
             tempDir.delete();
             return;
         }

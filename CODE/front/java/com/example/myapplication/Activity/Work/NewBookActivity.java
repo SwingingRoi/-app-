@@ -1,5 +1,6 @@
 package com.example.myapplication.Activity.Work;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,9 +15,13 @@ import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -52,10 +57,7 @@ public class NewBookActivity extends AppCompatActivity {
 
     private TextView Title;
     private TextView Intro;
-    private LinearLayout normal;
 
-    private HashMap<String,Boolean> tagStats;//存储标签的选择状态
-    private int count = 0;//已选择标签数
     private boolean isInNight = false;//是否处于夜间模式
 
     @Override
@@ -73,25 +75,37 @@ public class NewBookActivity extends AppCompatActivity {
 
         Title = findViewById(R.id.Title);
         Intro = findViewById(R.id.Intro);
-        normal = findViewById(R.id.normal);
 
         cropPic = new CropPic();
+        Button storeBtn = findViewById(R.id.Store);
+        storeBtn.setClickable(false);
 
+        Title.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-        tagStats = new HashMap<>();
-        initTagStat();
-    }
+            }
 
-    private void initTagStat(){
-        tagStats.put(getResources().getString(R.string.booktag1),false);
-        tagStats.put(getResources().getString(R.string.booktag2),false);
-        tagStats.put(getResources().getString(R.string.booktag3),false);
-        tagStats.put(getResources().getString(R.string.booktag4),false);
-        tagStats.put(getResources().getString(R.string.booktag5),false);
-        tagStats.put(getResources().getString(R.string.booktag6),false);
-        tagStats.put(getResources().getString(R.string.booktag7),false);
-        tagStats.put(getResources().getString(R.string.booktag8),false);//初始标签默认都没有选择
-        count = 0;
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String title = Title.getText().toString();
+                if(title.length() == 0){
+                    Button storeBtn = findViewById(R.id.Store);
+                    storeBtn.setClickable(false);
+                    storeBtn.setBackground(getResources().getDrawable(R.drawable.normal_btn_style));
+                }else {
+                    Button storeBtn = findViewById(R.id.Store);
+                    storeBtn.setClickable(true);
+                    if(isInNight) storeBtn.setBackground(getResources().getDrawable(R.drawable.normal_button_style_night));
+                    else storeBtn.setBackground(getResources().getDrawable(R.drawable.log_sign_btn_style));
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
 
     @Override
@@ -231,7 +245,7 @@ public class NewBookActivity extends AppCompatActivity {
             return;
         }
 
-        final Button store = findViewById(R.id.Store);
+        /*final Button store = findViewById(R.id.Store);
         store.setClickable(false);
         CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
             @Override
@@ -244,79 +258,53 @@ public class NewBookActivity extends AppCompatActivity {
                 store.setClickable(true);
             }
         };//防止用户高频率点击
-        countDownTimer.start();
+        countDownTimer.start();*/
 
         try {
-            chooseTags();//选择标签
+            setTags();//选择标签
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    private void setTagClickListener(final TextView tagView){
+    private void setTags(){
         try{
-            tagView.setOnClickListener(new View.OnClickListener() {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            final View view;
+            if(isInNight)  view = LayoutInflater.from(this).inflate(R.layout.book_tags_night,null);
+            else view = LayoutInflater.from(this).inflate(R.layout.book_tags,null);
+
+            Button positiveBtn = view.findViewById(R.id.positive);
+            positiveBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    String tags="";
 
-                    String tag = tagView.getText().toString();
-                    boolean oldStat = tagStats.get(tag);
+                    EditText tagView1 = view.findViewById(R.id.tag1);
+                    tags += tagView1.getText().toString() + " ";
 
-                    //设置标签样式，更新已选择标签数
-                    if(oldStat == false){//选择标签
-                        if(count == 3){
-                            new MyToast(NewBookActivity.this, getResources().getString(R.string.remind));
-                            return;
-                        }
+                    EditText tagView2 = view.findViewById(R.id.tag2);
+                    tags += tagView2.getText().toString() + " ";
 
-                        count++;
-                        tagView.setTextColor(Color.RED);
-                        tagStats.put(tag,true);//更新标签选择状态
-                    }
-                    else {//取消选择标签
-                        count--;
-                        tagView.setTextColor(Color.GRAY);
-                        tagStats.put(tag,false);//更新标签选择状态
-                    }
-                }
-            });
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+                    EditText tagView3 = view.findViewById(R.id.tag3);
+                    tags += tagView3.getText().toString();
 
-    private void chooseTags(){
-        try{
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            View v = LayoutInflater.from(this).inflate(R.layout.book_tags,null);
-
-            setTagClickListener((TextView) v.findViewById(R.id.tag1));
-            setTagClickListener((TextView) v.findViewById(R.id.tag2));
-            setTagClickListener((TextView) v.findViewById(R.id.tag3));
-            setTagClickListener((TextView) v.findViewById(R.id.tag4));
-            setTagClickListener((TextView) v.findViewById(R.id.tag5));
-            setTagClickListener((TextView) v.findViewById(R.id.tag6));
-            setTagClickListener((TextView) v.findViewById(R.id.tag7));
-            setTagClickListener((TextView) v.findViewById(R.id.tag8));
-
-            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    new Thread(storeNewBook).start();
+                    StoreNewBook storeNewBook = new StoreNewBook(tags);
+                    storeNewBook.start();
                     NewBookActivity.this.finish();
                 }
             });
 
+            builder.setView(view);
+            final Dialog dialog = builder.show();
 
-            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            Button negativeBtn = view.findViewById(R.id.negative);
+            negativeBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    initTagStat();
+                public void onClick(View v) {
+                    dialog.dismiss();
                 }
-            });//重置tagStats
-            builder.setView(v);
-
-            builder.show();
+            });
 
 
         }catch (Exception e){
@@ -331,6 +319,7 @@ public class NewBookActivity extends AppCompatActivity {
             final String result;
 
             if(imageUri!=null) {
+                if(NewBookActivity.this.isFinishing()) return;
                 ImageView surface = findViewById(R.id.booksurface);
                 Bitmap newSurface = ((BitmapDrawable) (surface.getDrawable())).getBitmap();
 
@@ -360,10 +349,16 @@ public class NewBookActivity extends AppCompatActivity {
         }
     };
 
-    //再存储书本信息
-    Runnable storeNewBook = new Runnable() {
+    //存储书本信息
+    private class StoreNewBook extends Thread{
+        private String tags;
+
+        public StoreNewBook(String tags){
+            this.tags = tags;
+        }
+
         @Override
-        public void run() {
+        public void run(){
             GetServer getServer = new GetServer();
             String url = getServer.getIPADDRESS()+"/audiobook/addbook";
 
@@ -373,34 +368,7 @@ public class NewBookActivity extends AppCompatActivity {
                 params.put("intro",Intro.getText().toString());
                 params.put("author",account);
                 params.put("surface",surfaceName);
-
-                String tags = "";
-                if(tagStats.get(getResources().getString(R.string.booktag1)) == true){
-                    tags += getResources().getString(R.string.booktag1) + " ";
-                }
-                if(tagStats.get(getResources().getString(R.string.booktag2)) == true){
-                    tags += getResources().getString(R.string.booktag2) + " ";
-                }
-                if(tagStats.get(getResources().getString(R.string.booktag3)) == true){
-                    tags += getResources().getString(R.string.booktag3) + " ";
-                }
-                if(tagStats.get(getResources().getString(R.string.booktag4)) == true){
-                    tags += getResources().getString(R.string.booktag4) + " ";
-                }
-                if(tagStats.get(getResources().getString(R.string.booktag5)) == true){
-                    tags += getResources().getString(R.string.booktag5) + " ";
-                }
-                if(tagStats.get(getResources().getString(R.string.booktag6)) == true){
-                    tags += getResources().getString(R.string.booktag6) + " ";
-                }
-                if(tagStats.get(getResources().getString(R.string.booktag7)) == true){
-                    tags += getResources().getString(R.string.booktag7) + " ";
-                }
-                if(tagStats.get(getResources().getString(R.string.booktag8)) == true){
-                    tags += getResources().getString(R.string.booktag8) + " ";
-                }
                 params.put("tags",tags);
-                initTagStat();
 
                 byte[] param = params.toString().getBytes();
 
@@ -410,6 +378,7 @@ public class NewBookActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
+                    //if(NewBookActivity.this.isFinishing()) return;
                     NewBookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -422,6 +391,7 @@ public class NewBookActivity extends AppCompatActivity {
                 final String result = new String(outputStream.toByteArray(),
                         StandardCharsets.UTF_8);
 
+                //if(NewBookActivity.this.isFinishing()) return;
                 NewBookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -439,7 +409,7 @@ public class NewBookActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-    };
+    }
 
     Runnable deleteSurface = new Runnable() {
         @Override

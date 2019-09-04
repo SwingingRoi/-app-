@@ -16,6 +16,8 @@ public class Sentiment {
     private static final String API_KEY = "hb1zr741j08cGDyy01P2TrGn";
     private static final String SECRET_KEY ="e1vtiIQnpHQtqrLOGT4kBbSSqRZQ7bnF";
 
+    final private int INFINITE = 999999999;
+
     private static AipNlp instance = null;
     public static synchronized AipNlp getInstance() {
         if (instance == null) {
@@ -27,7 +29,7 @@ public class Sentiment {
 
     //等级计算
     private static int compute_level(double positive){
-        int level=0;
+        int level = 0;
         double val=positive-0.5;
         val*=20;
         String num=String.valueOf(val);
@@ -49,8 +51,10 @@ public class Sentiment {
         // AipNlp client = new AipNlp(APP_ID, API_KEY, SECRET_KEY);
         AipNlp client = getInstance();
         // 可选：设置网络连接参数
-        client.setConnectionTimeoutInMillis(2000);
-        client.setSocketTimeoutInMillis(60000);
+        client.setConnectionTimeoutInMillis(INFINITE);
+        client.setSocketTimeoutInMillis(INFINITE);
+        /*client.setConnectionTimeoutInMillis(2000);
+        client.setSocketTimeoutInMillis(60000);*/
 
         double positive = 0.0;
         try {

@@ -11,6 +11,7 @@ public class Chapter {
     private String speechpath;
     private String time;
     private String bgmpath;
+    private boolean type;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -73,5 +74,13 @@ public class Chapter {
 
     public String getBgmpath() {
         return bgmpath;
+    }
+
+    public void setType(boolean type) {
+        this.type = type;
+    }
+
+    public boolean isType() {
+        return type;
     }
 }

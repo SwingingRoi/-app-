@@ -52,6 +52,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
     private String bgmPath;
     private String speechPath;//转化后的音频在数据库中的存储路径
     private boolean isInNight = false;//是否处于夜间模式
+    private boolean hasPlayerReset = false;
     //private final int WRITE_EXTERNAL_CODE = 1;
 
 
@@ -137,6 +138,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
             public void onCompletion(MediaPlayer mp) {
                 resetPlayer();
 
+                if(NewChapterForTTSActivity.this.isFinishing()) return;
                 NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -188,7 +190,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
         builder.setTitle("保存草稿");
         builder.setMessage("是否保存为草稿?");
 
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -197,6 +199,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                     new Thread(storeDraft).start();
                     new Thread(deleteSpeech).start();
 
+                    hasPlayerReset = true;
                     releasePlayer();
 
                     if(speechFile != null && speechFile.exists()) speechFile.delete();
@@ -210,13 +213,14 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
             }
         });
 
-        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("不保存", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
                 new Thread(deleteDraft).start();
                 new Thread(deleteSpeech).start();
 
+                hasPlayerReset = true;
                 releasePlayer();
                 if(speechFile != null && speechFile.exists()) speechFile.delete();
                 if(bgm != null && bgm.exists()) bgm.delete();
@@ -308,6 +312,8 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
     }
 
     private void resetPlayer(){
+        hasPlayerReset = true;
+
         if(speech_player != null){
             speech_player.reset();
         }
@@ -318,9 +324,13 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
 
         firtstPlay = true;
 
+        if(NewChapterForTTSActivity.this.isFinishing()) return;
         NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                TextView begin = findViewById(R.id.begin);
+                begin.setText(getResources().getString(R.string.initial));
+                seekBar.setProgress(0);
                 ImageView playButton = findViewById(R.id.PlayButton);
                 playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
             }
@@ -405,20 +415,23 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                             bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
                             bgm_player.setLooping(true);//背景音乐循环播放
 
+                            hasPlayerReset = false;
                             //进度条更新
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
                                     while (!Thread.currentThread().isInterrupted()){
                                         try {
-                                            if(speech_player == null) break;
+                                            if(NewChapterForTTSActivity.this.isFinishing()) break;
+                                            if(speech_player == null || hasPlayerReset) break;
                                             seekBar.setProgress(speech_player.getCurrentPosition());
                                             NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                         TextView begin = findViewById(R.id.begin);
-                                                         MilliToHMS milliToHMS = new MilliToHMS();
-                                                         begin.setText(milliToHMS.milliToHMS(speech_player.getCurrentPosition()));
+                                                 TextView begin = findViewById(R.id.begin);
+                                                 MilliToHMS milliToHMS = new MilliToHMS();
+                                                 if(speech_player == null || hasPlayerReset) return;
+                                                 begin.setText(milliToHMS.milliToHMS(speech_player.getCurrentPosition()));
                                                 }
                                             });
                                             Thread.sleep(200);
@@ -475,6 +488,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 resetPlayer();
                 textChanged = false;
 
+                if(NewChapterForTTSActivity.this.isFinishing()) return;
                 NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -488,6 +502,8 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
 
                         LinearLayout translating = findViewById(R.id.translating);
                         translating.setVisibility(View.VISIBLE);
+
+                        normal.setVisibility(View.INVISIBLE);
                     }
                 });
 
@@ -503,6 +519,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(param, "POST", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
+                    if(NewChapterForTTSActivity.this.isFinishing()) return;
                     NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -510,6 +527,8 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
 
                             LinearLayout translating = findViewById(R.id.translating);
                             translating.setVisibility(View.INVISIBLE);
+
+                            normal.setVisibility(View.VISIBLE);
                         }
                     });
                     return;
@@ -540,6 +559,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
+                    if(NewChapterForTTSActivity.this.isFinishing()) return;
                     NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -547,6 +567,8 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
 
                             LinearLayout translating = findViewById(R.id.translating);
                             translating.setVisibility(View.INVISIBLE);
+
+                            normal.setVisibility(View.VISIBLE);
                         }
                     });
                     return;
@@ -565,12 +587,15 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                     getSpeechDone = false;
                     matchBgmDone = false;
 
+                    if(NewChapterForTTSActivity.this.isFinishing()) return;
                     NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(NewChapterForTTSActivity.this, getResources().getString(R.string.translateSuccess));
                             LinearLayout translating = findViewById(R.id.translating);
                             translating.setVisibility(View.INVISIBLE);
+
+                            normal.setVisibility(View.VISIBLE);
 
                             AudioUtils audioUtils = new AudioUtils();
                             MilliToHMS milliToHMS = new MilliToHMS();
@@ -616,6 +641,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(params.toString().getBytes(), "POST", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
+                    if(NewChapterForTTSActivity.this.isFinishing()) return;
                     NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -623,6 +649,8 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
 
                             LinearLayout translating = findViewById(R.id.translating);
                             translating.setVisibility(View.INVISIBLE);
+
+                            normal.setVisibility(View.VISIBLE);
                         }
                     });
                     return;
@@ -664,6 +692,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                     matchBgmDone = false;
                     getSpeechDone = false;
 
+                    if(NewChapterForTTSActivity.this.isFinishing()) return;
                     NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -671,6 +700,8 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                                 new MyToast(NewChapterForTTSActivity.this, getResources().getString(R.string.translateSuccess));
                                 LinearLayout translating = findViewById(R.id.translating);
                                 translating.setVisibility(View.INVISIBLE);
+
+                                normal.setVisibility(View.VISIBLE);
 
                                 AudioUtils audioUtils = new AudioUtils();
                                 MilliToHMS milliToHMS = new MilliToHMS();
@@ -752,6 +783,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
+                    if(NewChapterForTTSActivity.this.isFinishing()) return;
                     NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -767,6 +799,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 final String draft = new String(outputStream.toByteArray(),
                         StandardCharsets.UTF_8);
 
+                if(NewChapterForTTSActivity.this.isFinishing()) return;
                 NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -812,6 +845,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 info.put("content",content);
                 info.put("speechPath",speechPath);
                 info.put("bgmPath",bgmPath);
+                info.put("type",false);
 
                 TextView endView = findViewById(R.id.end);
                 info.put("length",endView.getText().toString());
@@ -821,7 +855,7 @@ public class NewChapterForTTSActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "POST", "application/json");
 
-
+                //if(NewChapterForTTSActivity.this.isFinishing()) return;
                 NewChapterForTTSActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

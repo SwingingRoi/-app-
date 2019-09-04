@@ -32,116 +32,33 @@
             android:alpha="0.5"
             android:background="@drawable/gray" />
 
-        <LinearLayout
+
+        <EditText
+            android:id="@+id/tag1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
+            android:ems="10"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:hint="标签1"
+            android:inputType="textPersonName" />
 
-            <TextView
-                android:id="@+id/tag1"
-                style="@style/booktag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/book_tag_border_gray"
-                android:gravity="center"
-                android:text="@string/booktag1" />
-
-            <TextView
-                android:id="@+id/tag2"
-                style="@style/booktag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:background="@drawable/book_tag_border_gray"
-                android:gravity="center"
-                android:text="@string/booktag2" />
-        </LinearLayout>
-
-
-        <LinearLayout
+        <EditText
+            android:id="@+id/tag2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
+            android:ems="10"
             android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:layout_editor_absoluteX="8dp">
+            android:hint="标签2"
+            android:inputType="textPersonName" />
 
-            <TextView
-                android:id="@+id/tag3"
-                style="@style/booktag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/book_tag_border_gray"
-                android:gravity="center"
-                android:text="@string/booktag3" />
-
-            <TextView
-                android:id="@+id/tag4"
-                style="@style/booktag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:background="@drawable/book_tag_border_gray"
-                android:gravity="center"
-                android:text="@string/booktag4" />
-        </LinearLayout>
-
-        <LinearLayout
+        <EditText
+            android:id="@+id/tag3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
+            android:ems="10"
             android:gravity="center"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tag5"
-                style="@style/booktag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/book_tag_border_gray"
-                android:gravity="center"
-                android:text="@string/booktag5" />
-
-            <TextView
-                android:id="@+id/tag6"
-                style="@style/booktag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:background="@drawable/book_tag_border_gray"
-                android:gravity="center"
-                android:text="@string/booktag6" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tag7"
-                style="@style/booktag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/book_tag_border_gray"
-                android:gravity="center"
-                android:text="@string/booktag7" />
-
-            <TextView
-                android:id="@+id/tag8"
-                style="@style/booktag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:background="@drawable/book_tag_border_gray"
-                android:gravity="center"
-                android:text="@string/booktag8" />
-        </LinearLayout>
+            android:hint="标签3"
+            android:inputType="textPersonName" />
 
         <ImageView
             android:id="@+id/split13"
@@ -160,5 +77,40 @@
             android:text="@string/remind"
             android:textColor="@android:color/holo_red_dark"
             android:textSize="17dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/negative"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:background="@drawable/normal_button_style_night"
+                android:text="@string/negative"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/button3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Button"
+                android:visibility="invisible" />
+
+            <Button
+                android:id="@+id/positive"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:background="@drawable/log_sign_btn_style"
+                android:minHeight="48dip"
+                android:text="@string/positive"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

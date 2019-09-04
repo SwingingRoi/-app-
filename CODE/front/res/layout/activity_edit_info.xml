@@ -322,6 +322,7 @@
             android:layout_marginBottom="20dp"
             android:layout_weight="1.5"
             android:background="@drawable/normal_btn_style"
+            android:clickable="true"
             android:onClick="store"
             android:text="@string/Store" />
 
@@ -331,7 +332,7 @@
         android:id="@+id/storing"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/gray"
+        android:background="@android:color/white"
         android:gravity="center"
         android:orientation="vertical"
         android:visibility="invisible">

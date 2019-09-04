@@ -40,14 +40,18 @@ public class EditBookActivity extends AppCompatActivity {
     private LinearLayout normal;
     private TextView Title;
     private TextView Intro;
+    private TextView Tag;
     private ImageView Surface;
+    private Button storeBtn;
     private int bookid;
     private boolean isInNight = false;//是否处于夜间模式
+    private boolean hasEditBook = false;//是否修改过书本信息
 
     private final int TITLE=1;
     private final int INTRO=2;
-    private final int GET_SURFACE=3;
-    private final int CROP_SURFACE=4;
+    private final int TAG=3;
+    private final int GET_SURFACE=4;
+    private final int CROP_SURFACE=5;
 
     private CropPic cropPic;
 
@@ -76,7 +80,12 @@ public class EditBookActivity extends AppCompatActivity {
         normal = findViewById(R.id.normal);
         Title = findViewById(R.id.Title);
         Intro = findViewById(R.id.Intro);
+        Tag = findViewById(R.id.Tag);
         Surface = findViewById(R.id.booksurface);
+
+        storeBtn  = findViewById(R.id.Store);
+        storeBtn.setClickable(false);
+
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.Remind).setVisibility(View.INVISIBLE);
@@ -180,6 +189,7 @@ public class EditBookActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
+                    if(EditBookActivity.this.isFinishing()) return;
                     EditBookActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -197,6 +207,7 @@ public class EditBookActivity extends AppCompatActivity {
 
                 final JSONObject info = new JSONObject(result);
 
+                if(EditBookActivity.this.isFinishing()) return;
                 EditBookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -204,6 +215,7 @@ public class EditBookActivity extends AppCompatActivity {
                         try {
                             Title.setText(info.getString("name"));
                             Intro.setText(info.getString("intro"));
+                            Tag.setText(info.getString("tags"));
                             surfaceName = info.getString("surface");
                             initialSurface = surfaceName;
 
@@ -230,6 +242,7 @@ public class EditBookActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(bookid);
 
+                if(EditBookActivity.this.isFinishing()) return;
                 EditBookActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -245,17 +258,44 @@ public class EditBookActivity extends AppCompatActivity {
         }
     };
 
+    private void storeBtnClickable(){
+        Button storeBtn = findViewById(R.id.Store);
+        if(isInNight) storeBtn.setBackground(getDrawable(R.drawable.night_btn_style));
+        else storeBtn.setBackground(getDrawable(R.drawable.log_sign_btn_style));
+        storeBtn.setClickable(true);
+    }
 
     public void editTiltle(View view){
         Intent intent = new Intent(this,EditTitleActivity.class);
         intent.putExtra("title",Title.getText().toString());
         startActivityForResult(intent,TITLE);
+
+        if(!hasEditBook) {
+            hasEditBook = true;
+            storeBtnClickable();
+        }
     }
 
     public void editIntro(View view){
         Intent intent = new Intent(this,EditIntroActivity.class);
         intent.putExtra("intro",Intro.getText().toString());
         startActivityForResult(intent,INTRO);
+
+        if(!hasEditBook) {
+            hasEditBook = true;
+            storeBtnClickable();
+        }
+    }
+
+    public void editTag(View view){
+        Intent intent = new Intent(this,EditTagActivity.class);
+        intent.putExtra("tags",Tag.getText().toString());
+        startActivityForResult(intent,TAG);
+
+        if(!hasEditBook) {
+            hasEditBook = true;
+           storeBtnClickable();
+        }
     }
 
     @Override
@@ -280,6 +320,13 @@ public class EditBookActivity extends AppCompatActivity {
                     }
                     break;
 
+                case TAG:
+                    if(data.getExtras() != null){
+                        String tag = data.getExtras().getString("tags");
+                        Tag.setText(tag);
+                    }
+                    break;
+
                 case GET_SURFACE:
                     if (data != null) {
                         pictureCrop(data.getData());
@@ -301,11 +348,21 @@ public class EditBookActivity extends AppCompatActivity {
     public void getPicture(View view){
         Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent,GET_SURFACE);
+
+        if(!hasEditBook) {
+            hasEditBook = true;
+            Button storeBtn = findViewById(R.id.Store);
+            if(isInNight) storeBtn.setBackground(getDrawable(R.drawable.night_btn_style));
+            else storeBtn.setBackground(getDrawable(R.drawable.log_sign_btn_style));
+            storeBtn.setClickable(true);
+        }
     }
 
     //裁剪图片
     private void pictureCrop(Uri uri){
         try {
+
+
             Intent intent = new Intent();
             imageUri = cropPic.setCropParam(intent,uri);
             startActivityForResult(intent, CROP_SURFACE);
@@ -375,15 +432,10 @@ public class EditBookActivity extends AppCompatActivity {
                 result=null;
             }//用户未选择封面
 
-            EditBookActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if(result==null) surfaceName="";
-                    else {
-                        surfaceName = result;
-                    }//返回封面文件名
-                }
-            });
+            if(result==null) surfaceName="";
+            else {
+                surfaceName = result;
+            }//返回封面文件名
         }
     };
 
@@ -412,6 +464,7 @@ public class EditBookActivity extends AppCompatActivity {
                 JSONObject params = new JSONObject();
                 params.put("name",Title.getText().toString());
                 params.put("intro",Intro.getText().toString());
+                params.put("tags",Tag.getText().toString());
                 params.put("surface",surfaceName);
 
                 byte[] param = params.toString().getBytes();

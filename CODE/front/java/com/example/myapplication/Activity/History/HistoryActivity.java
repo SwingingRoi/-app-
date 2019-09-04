@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -41,13 +43,14 @@ public class HistoryActivity extends AppCompatActivity {
     private LinearLayout bookTable;
     private LinearLayout manageBox;
     private ScrollView scrollView;
-    private ImageView refresh;
+    private SwipeRefreshLayout swipeRefreshLayout;//下拉刷新控件
     private View pullDown;//请求文字提示
     private boolean firstIn = true;//是否是第一次进入该页面
     private boolean ismanaging = false;//是否处于管理模式
     private boolean isRequesting = false;//当前是否在向后端请求书本信息
-    private List<Drawable> tag_border_styles;//标签边框样式
     private boolean isInNight = false;//是否处于夜间模式
+    private float preY;//用户触摸屏幕时的手指纵坐标
+    private float nowY;//用户手指离开屏幕时的纵坐标
 
     private JSONArray historyArray;//存储历史记录的数组
 
@@ -64,17 +67,14 @@ public class HistoryActivity extends AppCompatActivity {
         isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_history);
-
-
-        tag_border_styles = new ArrayList<>();
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
+        if(isInNight){
+            setContentView(R.layout.activity_history_night);
+        }else {
+            setContentView(R.layout.activity_history);
+        }
 
         historyArray = new JSONArray();
 
-        refresh = findViewById(R.id.refresh);
         bookTable = findViewById(R.id.BookTable);
 
         if(isInNight){
@@ -91,16 +91,30 @@ public class HistoryActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
-                        isRequesting = true;
-                        new Thread(getHistory).start();//向后端请求更多书本
-                    }
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        preY = event.getY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        nowY = event.getY();
+                        if(nowY < preY){
+                            if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
+                                isRequesting = true;
+                                new Thread(getHistory).start();//向后端请求更多书本
+                            }
+                        }
                 }
                 return false;
             }
         });
 
+        swipeRefreshLayout =findViewById(R.id.swipe_container);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
         manageBox = findViewById(R.id.manage);
 
         normal = findViewById(R.id.Normal);
@@ -127,7 +141,6 @@ public class HistoryActivity extends AppCompatActivity {
 
     public void refresh(){
 
-        refresh.setClickable(false);
         loadView.setClickable(false);
 
         CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
@@ -139,7 +152,6 @@ public class HistoryActivity extends AppCompatActivity {
             @Override
             public void onFinish() {
                 loadView.setClickable(true);
-                refresh.setClickable(true);
             }
         };//防止用户高频率点击
         countDownTimer.start();
@@ -171,10 +183,6 @@ public class HistoryActivity extends AppCompatActivity {
     public void toManage(){
         if(ismanaging) return;
 
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) scrollView.getLayoutParams();
-        params.height = 1400;
-        scrollView.setLayoutParams(params);//设置scrollView的高度
-
         ismanaging = true;
         manageBox.setVisibility(View.VISIBLE);
         for(int i=0;i<historyArray.length();i++){
@@ -190,15 +198,13 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private void cancelManage(){
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) scrollView.getLayoutParams();
-        params.height = 1600;
-        scrollView.setLayoutParams(params);//设置scrollView的高度
 
         ismanaging = false;
-        manageBox.setVisibility(View.INVISIBLE);
+        manageBox.setVisibility(View.GONE);
         for(int i=0;i<historyArray.length();i++){
             View bookRow = bookTable.getChildAt(i);
             CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
+            checkBox.setChecked(false);
             checkBox.setVisibility(View.INVISIBLE);
         }
     }
@@ -278,6 +284,7 @@ public class HistoryActivity extends AppCompatActivity {
     Runnable getHistory = new Runnable() {
         @Override
         public void run() {
+            if(HistoryActivity.this.isFinishing()) return;
             HistoryActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -297,11 +304,13 @@ public class HistoryActivity extends AppCompatActivity {
                         "application/json");
 
                 if (outputStream == null) {//请求超时
+                    if(HistoryActivity.this.isFinishing()) return;
                     HistoryActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(HistoryActivity.this, getResources().getString(R.string.HttpTimeOut));
                             isRequesting = false;
+                            swipeRefreshLayout.setRefreshing(false);
 
                             findViewById(R.id.loadinggif).setVisibility(View.INVISIBLE);
                             if (firstIn) {//如果是首次进入，设置点击屏幕刷新提醒
@@ -324,13 +333,19 @@ public class HistoryActivity extends AppCompatActivity {
                         historyArray.put(newRecords.getJSONObject(i));
                 }//向historyArray中添加新请求过来的records
 
+                if(HistoryActivity.this.isFinishing()) return;
                 HistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         bookTable.removeView(pullDown);
+                        loadView.setVisibility(View.INVISIBLE);
+                        normal.setVisibility(View.VISIBLE);
+                        swipeRefreshLayout.setRefreshing(false);
 
                         if (historyArray.length() == 0) {//说明该用户没有历史记录
-                                View nohisView = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.no_history_style, null);
+                                View nohisView;
+                                if(isInNight) nohisView = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.no_history_style_night, null);
+                                else nohisView = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.no_history_style, null);
                                 if(firstIn) {
                                     firstIn = false;
                                     bookTable.addView(nohisView);
@@ -345,7 +360,7 @@ public class HistoryActivity extends AppCompatActivity {
                             for (int i = 0; i < newRecords.length(); i++) {
                                 JSONObject record = newRecords.getJSONObject(i);
 
-                                View bookRow;
+                                final View bookRow;
                                 if(isInNight){
                                     bookRow = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.history_row_night, null);
                                 }else {
@@ -365,21 +380,20 @@ public class HistoryActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView;
+                                    TextView t = new TextView(HistoryActivity.this);
+                                    t.setTextSize(10);
                                     if(isInNight){
-                                        tagView = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.book_tag_night,null);
+                                        t.setTextColor(Color.WHITE);
                                     }else {
-                                        tagView = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.book_tag,null);
+                                        t.setTextColor(Color.GRAY);
                                     }
-
-                                    TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
-                                    t.setBackground(tag_border_styles.get(j));
+
                                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                                             LinearLayout.LayoutParams.WRAP_CONTENT);
                                     layoutParams.setMargins(15,0,0,0);
-                                    tagView.setLayoutParams(layoutParams);
-                                    tagsView.addView(tagView);
+                                    t.setLayoutParams(layoutParams);
+                                    tagsView.addView(t);
                                 }
 
                                 if(ismanaging){
@@ -392,7 +406,10 @@ public class HistoryActivity extends AppCompatActivity {
                                 bookRow.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        jumpToBook(id);
+                                        if(ismanaging){
+                                            CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
+                                            checkBox.setChecked(!checkBox.isChecked());
+                                        }else jumpToBook(id);
                                     }
                                 });
                             }
@@ -425,14 +442,6 @@ public class HistoryActivity extends AppCompatActivity {
                 }
 
                 from = from + newRecords.length();//更新请求index
-
-                HistoryActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadView.setVisibility(View.INVISIBLE);
-                        normal.setVisibility(View.VISIBLE);
-                    }
-                });
             } catch (Exception e){
                 e.printStackTrace();
             }
@@ -453,6 +462,7 @@ public class HistoryActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(historyArray.getJSONObject(index).getInt("bookid"));
 
+                if(HistoryActivity.this.isFinishing()) return;
                 HistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -498,10 +508,10 @@ public class HistoryActivity extends AppCompatActivity {
                     }
                 }
 
-
                 HistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        if(HistoryActivity.this.isFinishing()) return;
                         int hasRemoved=0;
                         for (int i : removes) {
                             try {

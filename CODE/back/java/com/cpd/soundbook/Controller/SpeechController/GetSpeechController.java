@@ -1,6 +1,6 @@
 package com.cpd.soundbook.Controller.SpeechController;
 
-import com.cpd.soundbook.HttpUtils;
+import com.cpd.soundbook.HttpUtils.HttpUtils;
 import com.cpd.soundbook.Service.ServiceImpl.ChapterService;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,9 @@ public class GetSpeechController {
     @RequestMapping("/audiobook/getSpeech")
     public void getSpeech(@RequestParam("path") String path, HttpServletResponse response){
         try{
+            System.out.println("begin getspeech");
             GridFSDBFile speech = chapterService.getSpeech(path);
+            System.out.println("speech:" + speech);
             if(speech==null){
                 httpUtils.writeStringBack(response,null);
             }
@@ -32,6 +34,7 @@ public class GetSpeechController {
                 speech.writeTo(outputStream);
                 outputStream.close();
             }
+            System.out.println("getspeech done");
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="#3F3E3E"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/choosetag"
+            android:textColor="#C09D9D"
+            android:textSize="20dp" />
+
+        <ImageView
+            android:id="@+id/split12"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="5dp"
+            android:alpha="0.5"
+            android:background="@drawable/nightBtnPressed" />
+
+
+        <EditText
+            android:id="@+id/tag1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/editTextInNight"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="标签1"
+            android:inputType="textPersonName"
+            android:textColor="#C09D9D"
+            android:textColorHint="#FF6D5757" />
+
+        <EditText
+            android:id="@+id/tag2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="标签2"
+            android:inputType="textPersonName"
+            android:textColor="#C09D9D"
+            android:textColorHint="#FF6D5757"
+            android:theme="@style/editTextInNight" />
+
+        <EditText
+            android:id="@+id/tag3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/editTextInNight"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="标签3"
+            android:inputType="textPersonName"
+            android:textColor="#C09D9D"
+            android:textColorHint="#FF6D5757" />
+
+        <ImageView
+            android:id="@+id/split13"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:alpha="0.5"
+            android:background="@drawable/nightBtnPressed" />
+
+        <TextView
+            android:id="@+id/remind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="@string/remind"
+            android:textColor="#EE0909"
+            android:textSize="17dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/negative"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:background="@drawable/normal_button_style_night"
+                android:text="@string/negative"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/button3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Button"
+                android:visibility="invisible" />
+
+            <Button
+                android:id="@+id/positive"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:background="@drawable/night_btn_style"
+                android:minHeight="48dip"
+                android:text="@string/positive"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

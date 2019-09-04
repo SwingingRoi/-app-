@@ -3,6 +3,10 @@
     <string name="delete">删除</string>
     <string name="cancel">退出</string>
     <string name="clear">清空</string>
+    <string name="pullDown">向上轻拉获取更多</string>
+    <string name="positive">确定</string>
+    <string name="negative">取消</string>
+    <string name="tag">标签</string>
 
     <!-- 登录界面的strings-->
     <string name="AppName">智能有声书</string>
@@ -14,10 +18,11 @@
     <string name="accountNotExist">用户名不存在!</string>
     <string name="logError">用户名或密码错误!</string>
     <string name="activeError">账号未激活!</string>
+    <string name="logverifying">登陆信息验证中</string>
 
 
     <!-- 注册界面的strings-->
-    <string name="verifying">注册信息验证中......</string>
+    <string name="signverifying">注册信息验证中......</string>
     <string name="SignAccount">用户名 (4-20位中文/字母/数字)</string>
     <string name="SignPassword">密码 (6-16位字母/数字)</string>
     <string name="SignButton">注册</string>
@@ -135,6 +140,7 @@
     <string name="choosefile">选择文件</string>
     <string name="askchoosefile">请选择音频文件</string>
     <string name="handling">正在处理中......</string>
+    <string name="waittext">待转换......</string>
 
     <!--章节收听界面的strings-->
     <string name="listen">章节收听</string>
@@ -142,6 +148,13 @@
         <item>单曲循环</item>
         <item>顺序播放</item>
         <item>列表循环</item>
+    </string-array>
+    <string-array name="menuHasPre">
+        <item>编辑章节</item>
+        <item>定时退出</item>
+    </string-array>
+    <string-array name="menuHasNotPre">
+        <item>定时退出</item>
     </string-array>
     <string-array name="exitTime">
         <item>1分钟</item>
@@ -164,13 +177,14 @@
     <string name="storenewbook">创建</string>
     <string name="edittitle">编辑标题</string>
     <string name="editintro">编辑简介</string>
+    <string name="edittag">编辑标签</string>
     <string name="titlenull">书名不能为空！</string>
     <string name="namelong">书名不能超过20个字！</string>
     <string name="introlong">简介不能超过200个字！</string>
     <string name="makesuccess">新书创建成功！</string>
     <string name="makefail">新书创建失败！</string>
-    <string name="choosetag">选择标签</string>
-    <string name="remind">最多选择三个标签</string>
+    <string name="choosetag">设置标签</string>
+    <string name="remind">最多设置三个标签</string>
     <string name="booktag1">玄幻修仙</string>
     <string name="booktag2">武侠古典</string>
     <string name="booktag3">历史文化</string>
@@ -193,15 +207,15 @@
     <string name="bookdeleted">该书已被删除</string>
     <string name="newChapter">新建章节</string>
     <string name="mode">选择创建方式</string>
-    <string name="tts">文本转语音</string>
-    <string name="stt">语音转文本</string>
-    <string-array name="manageChapter">
+    <string name="tts">文本创建</string>
+    <string name="stt">语音创建</string>
+    <string-array name="manageBook">
+        <item>编辑图书</item>
         <item>新建章节</item>
         <item>管理章节</item>
     </string-array>
 
     <!--个人作品和搜索个人作品-->
-    <string name="pullDown">向上轻拉获取更多</string>
     <string name="isReq">正在获取中......</string>
     <string name="hasEnd">已经到底啦~</string>
     <string name="noresult">没有结果</string>

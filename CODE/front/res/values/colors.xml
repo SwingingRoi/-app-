@@ -8,4 +8,6 @@
     <drawable name="darkorange">#da4b2a</drawable>
     <drawable name="lightorange">#f76442</drawable>
     <drawable name="yellow">#FFC4</drawable>
+    <drawable name="nightBtnPressed">#FF6D5757</drawable>
+    <drawable name="nightBtnUnPressed">#FF8F7272</drawable>
 </resources>

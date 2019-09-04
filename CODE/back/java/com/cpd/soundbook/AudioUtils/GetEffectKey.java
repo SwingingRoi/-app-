@@ -1,15 +1,13 @@
-﻿package com.cpd.soundbook.AudioUtils;/*
+package com.cpd.soundbook.AudioUtils;/*
 <dependency>
 <groupId>com.hankcs</groupId>
 <artifactId>hanlp</artifactId>
 <version>portable-1.6.1</version>
 </dependency>
-
 Usage:
 getKeyList return a list of terms
 example:
 termList = getKeyList("下雨，打雷, 狗");
-
 Term1:{word:下雨, nature:v, offset:0}
 Term2:{word:打雷, nature:v, offset:3}
 Term3:{word:狗, nature:n, offset:6}
@@ -169,7 +167,7 @@ public class GetEffectKey {
                         if(term.nature.toString().equals("v") && term.word.equals(noun)){
 
                             targetList.add(term);
-	            result.put(term.offset, jsonObject.getString("filename"));
+                            result.put(term.offset, jsonObject.getString("filename"));
                             isAdd = true;
 
                         }else{

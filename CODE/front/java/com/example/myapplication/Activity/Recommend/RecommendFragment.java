@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -20,6 +21,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.myapplication.Activity.Book.BookActivity;
+import com.example.myapplication.Activity.Home.SearchActivity;
 import com.example.myapplication.InternetUtils.GetServer;
 import com.example.myapplication.InternetUtils.HttpUtils;
 import com.example.myapplication.MyComponent.MyToast;
@@ -42,8 +44,8 @@ public class RecommendFragment extends Fragment {
     private boolean hasLogged;//是否登录
     private LinearLayout normal;
     private LinearLayout loadView;
+    private SwipeRefreshLayout swipeRefreshLayout;//下拉刷新控件
     private LinearLayout bookTable;
-    private ImageView refresh;
 
     private ScrollView scrollView;
     private View pullDown;//请求文字提示
@@ -54,8 +56,9 @@ public class RecommendFragment extends Fragment {
 
     final private int PAGESIZE=10;
     private JSONArray books = new JSONArray();
-    private List<Drawable> tag_border_styles;//标签边框样式
     private boolean isInNight = false;//是否处于夜间模式
+    private float preY;//用户触摸屏幕时的手指纵坐标
+    private float nowY;//用户手指离开屏幕时的纵坐标
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -68,20 +71,8 @@ public class RecommendFragment extends Fragment {
 
         isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
 
-        tag_border_styles = new ArrayList<>();
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
-
         normal = view.findViewById(R.id.normal);
         bookTable = view.findViewById(R.id.BookTable);
-        refresh = view.findViewById(R.id.refresh);
-        refresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                refresh();
-            }
-        });
 
         if(isInNight){
             pullDown = LayoutInflater.from(getActivity()).inflate(R.layout.pull_down_night, null);
@@ -98,21 +89,36 @@ public class RecommendFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
-                        isRequesting = true;
-                        new Thread(getBooks).start();//向后端请求更多书本
-                    }
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        preY = event.getY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        nowY = event.getY();
+                        if(nowY < preY){
+                            if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
+                                isRequesting = true;
+                                new Thread(getBooks).start();//向后端请求更多书本
+                            }
+                        }
                 }
                 return false;
             }
         });
 
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        /*DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         int height = displayMetrics.heightPixels;
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)scrollView.getLayoutParams();
         params.height = (int) (height/1.28);
-        scrollView.setLayoutParams(params);
+        scrollView.setLayoutParams(params);*/
+
+        swipeRefreshLayout = view.findViewById(R.id.swipe_container);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
 
         loadView = view.findViewById(R.id.Loading);
         loadView.setOnClickListener(new View.OnClickListener() {
@@ -134,8 +140,6 @@ public class RecommendFragment extends Fragment {
     }
 
     public void refresh(){
-
-        refresh.setClickable(false);
         loadView.setClickable(false);
 
         CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
@@ -146,7 +150,6 @@ public class RecommendFragment extends Fragment {
 
             @Override
             public void onFinish() {
-                refresh.setClickable(true);
                 loadView.setClickable(true);
             }
         };//防止用户高频率点击
@@ -172,6 +175,8 @@ public class RecommendFragment extends Fragment {
     Runnable getBooks = new Runnable() {
         @Override
         public void run() {
+            if(getActivity() == null) return;
+            if(getActivity().isFinishing()) return;
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -192,11 +197,14 @@ public class RecommendFragment extends Fragment {
 
 
                 if (outputStream == null) {//请求超时
+                    if(getActivity() == null) return;
+                    if(getActivity().isFinishing()) return;
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(RecommendFragment.this.getActivity(), getResources().getString(R.string.HttpTimeOut));
                             isRequesting = false;
+                            swipeRefreshLayout.setRefreshing(false);
 
                             loadView.findViewById(R.id.loadinggif).setVisibility(View.INVISIBLE);
                             if (firstIn) {//如果是首次进入，设置点击屏幕刷新提醒
@@ -218,6 +226,8 @@ public class RecommendFragment extends Fragment {
                     books.put(newBooks.getJSONObject(i));
                 }//向works中添加新请求过来的work
 
+                if(getActivity() == null) return;
+                if(getActivity().isFinishing()) return;
                 getActivity().runOnUiThread(new Runnable() {
                     @SuppressLint("SetTextI18n")
                     @Override
@@ -225,12 +235,15 @@ public class RecommendFragment extends Fragment {
                         bookTable.removeView(pullDown);
                         loadView.setVisibility(View.INVISIBLE);
                         normal.setVisibility(View.VISIBLE);
+                        swipeRefreshLayout.setRefreshing(false);
 
                         if (firstIn) {//如果是首次进入该activity
                             firstIn = false;
 
                             if (books.length() == 0) {//说明数据库中没有书本
-                                View nobookView = LayoutInflater.from(RecommendFragment.this.getActivity()).inflate(R.layout.no_book_style, null);
+                                View nobookView;
+                                if(isInNight) nobookView = LayoutInflater.from(RecommendFragment.this.getActivity()).inflate(R.layout.no_book_style_night, null);
+                                else nobookView = LayoutInflater.from(RecommendFragment.this.getActivity()).inflate(R.layout.no_book_style, null);
                                 bookTable.addView(nobookView);
                                 isRequesting = false;
                                 return;
@@ -261,22 +274,20 @@ public class RecommendFragment extends Fragment {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView;
+                                    TextView t = new TextView(getActivity());
+                                    t.setTextSize(10);
                                     if(isInNight){
-                                        tagView = LayoutInflater.from(getActivity()).inflate(R.layout.book_tag_night, null);
+                                        t.setTextColor(Color.WHITE);
                                     }else {
-                                        tagView = LayoutInflater.from(getActivity()).inflate(R.layout.book_tag, null);
+                                        t.setTextColor(Color.GRAY);
                                     }
-                                    TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
-                                    t.setBackground(tag_border_styles.get(j));
 
                                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                                             LinearLayout.LayoutParams.WRAP_CONTENT);
                                     layoutParams.setMargins(15,0,0,0);
-                                    tagView.setLayoutParams(layoutParams);
-
-                                    tagsView.addView(tagView);
+                                    t.setLayoutParams(layoutParams);
+                                    tagsView.addView(t);
                                 }
 
                                 bookTable.addView(bookRow);
@@ -336,6 +347,8 @@ public class RecommendFragment extends Fragment {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(books.getJSONObject(index).getInt("id"));
 
+                if(getActivity() == null) return;
+                if(getActivity().isFinishing()) return;
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

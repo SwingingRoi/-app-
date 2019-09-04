@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -50,8 +52,9 @@ public class SearchHistoryActivity extends AppCompatActivity {
     final private int SCROLL = 2;
     private int SEARCHREQ = SEARCHBTN;
     private boolean isInNight = false;//是否处于夜间模式
+    private float preY;//用户触摸屏幕时的手指纵坐标
+    private float nowY;//用户手指离开屏幕时的纵坐标
 
-    private List<Drawable> tag_border_styles;//标签边框样式
 
     final private int TODAY=0;
     final private int YESTERDAY=1;
@@ -77,12 +80,6 @@ public class SearchHistoryActivity extends AppCompatActivity {
             setContentView(R.layout.activity_search_history);
         }
 
-
-        tag_border_styles = new ArrayList<>();
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
-        tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_blue));
-
         bookTable = findViewById(R.id.BookTable);
         manageBox = findViewById(R.id.manage);
         normal = findViewById(R.id.normal);
@@ -99,13 +96,19 @@ public class SearchHistoryActivity extends AppCompatActivity {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
-                        isRequesting = true;
-                        SEARCHREQ = SCROLL;
-                        new Thread(search).start();//向后端请求更多书本
-                    }
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        preY = event.getY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        nowY = event.getY();
+                        if(nowY < preY){
+                            if (!isRequesting && scrollView.getChildAt(0).getMeasuredHeight() <= scrollView.getScrollY() + scrollView.getHeight()) {
+                                isRequesting = true;
+                                SEARCHREQ = SCROLL;
+                                new Thread(search).start();//向后端请求更多书本
+                            }
+                        }
                 }
                 return false;
             }
@@ -167,10 +170,6 @@ public class SearchHistoryActivity extends AppCompatActivity {
     public void toManage(View view){
         if(ismanaging) return;
 
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) scrollView.getLayoutParams();
-        params.height = 1400;
-        scrollView.setLayoutParams(params);//设置scrollView的高度
-
         ismanaging = true;
         manageBox.setVisibility(View.VISIBLE);
         for(int i=0;i<searchresults.length();i++){
@@ -182,15 +181,13 @@ public class SearchHistoryActivity extends AppCompatActivity {
 
     //退出管理
     public void cancelManage(View view){
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) scrollView.getLayoutParams();
-        params.height = 1600;
-        scrollView.setLayoutParams(params);//设置scrollView的高度
 
         ismanaging = false;
-        manageBox.setVisibility(View.INVISIBLE);
+        manageBox.setVisibility(View.GONE);
         for(int i=0;i<searchresults.length();i++){
             final View bookRow = bookTable.getChildAt(i);
             CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
+            checkBox.setChecked(false);
             checkBox.setVisibility(View.INVISIBLE);
         }
     }
@@ -228,7 +225,7 @@ public class SearchHistoryActivity extends AppCompatActivity {
         @Override
         public void run() {
             try{
-
+                if(SearchHistoryActivity.this.isFinishing()) return;
                 SearchHistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -246,6 +243,7 @@ public class SearchHistoryActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream == null){
+                    if(SearchHistoryActivity.this.isFinishing()) return;
                     SearchHistoryActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -266,6 +264,7 @@ public class SearchHistoryActivity extends AppCompatActivity {
                     searchresults.put(resultArray.getJSONObject(i));
                 }
 
+                if(SearchHistoryActivity.this.isFinishing()) return;
                 SearchHistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -280,7 +279,9 @@ public class SearchHistoryActivity extends AppCompatActivity {
                                     @Override
                                     public void run() {
                                         loadView.setVisibility(View.INVISIBLE);
-                                        View noresult = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.search_no_result, null);
+                                        View noresult;
+                                        if(isInNight) noresult = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.search_no_result_night, null);
+                                        else noresult = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.search_no_result, null);
                                         bookTable.removeAllViews();
                                         bookTable.addView(noresult);
                                     }
@@ -290,7 +291,7 @@ public class SearchHistoryActivity extends AppCompatActivity {
 
                             for (int i = 0; i < resultArray.length(); i++) {
                                 JSONObject record = resultArray.getJSONObject(i);
-                                View bookRow;
+                                final View bookRow;
                                 if(isInNight){
                                     bookRow = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.history_row_night, null);
                                 }else {
@@ -309,21 +310,20 @@ public class SearchHistoryActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView;
+                                    TextView t = new TextView(SearchHistoryActivity.this);
+                                    t.setTextSize(10);
                                     if(isInNight){
-                                        tagView = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.book_tag_night,null);
+                                        t.setTextColor(Color.WHITE);
                                     }else {
-                                        tagView = LayoutInflater.from(SearchHistoryActivity.this).inflate(R.layout.book_tag,null);
+                                        t.setTextColor(Color.GRAY);
                                     }
-
-                                    TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
-                                    t.setBackground(tag_border_styles.get(j));
+
                                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                                             LinearLayout.LayoutParams.WRAP_CONTENT);
                                     layoutParams.setMargins(15,0,0,0);
-                                    tagView.setLayoutParams(layoutParams);
-                                    tagsView.addView(tagView);
+                                    t.setLayoutParams(layoutParams);
+                                    tagsView.addView(t);
                                 }
 
                                 if(ismanaging){
@@ -337,7 +337,10 @@ public class SearchHistoryActivity extends AppCompatActivity {
                                 bookRow.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        jumpToBook(id);
+                                        if(ismanaging){
+                                            CheckBox checkBox = bookRow.findViewById(R.id.checkBox);
+                                            checkBox.setChecked(!checkBox.isChecked());
+                                        }else jumpToBook(id);
                                     }
                                 });
                             }//将搜索结果添加至bookTable中
@@ -396,6 +399,7 @@ public class SearchHistoryActivity extends AppCompatActivity {
                 GetPicture getPicture = new GetPicture();
                 final Bitmap surface = getPicture.getSurface(searchresults.getJSONObject(index).getInt("bookid"));
 
+                if(SearchHistoryActivity.this.isFinishing()) return;
                 SearchHistoryActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -470,6 +474,7 @@ public class SearchHistoryActivity extends AppCompatActivity {
                   SearchHistoryActivity.this.runOnUiThread(new Runnable() {
                       @Override
                       public void run() {
+                          if(SearchHistoryActivity.this.isFinishing()) return;
                           int hasRemoved=0;
                           for (int i : removes) {
                               try {

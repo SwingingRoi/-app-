@@ -1,6 +1,6 @@
 package com.cpd.soundbook.Controller.BookController;
 
-import com.cpd.soundbook.HttpUtils;
+import com.cpd.soundbook.HttpUtils.HttpUtils;
 import com.cpd.soundbook.Service.ServiceInterface.BookService;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ public class SurfaceController {
     private HttpUtils httpUtils;
 
     @RequestMapping("/audiobook/saveSurface")
-    public void saveAvatar(HttpServletRequest request, HttpServletResponse response){
+    public void saveSurface(HttpServletRequest request, HttpServletResponse response){
         File surface = httpUtils.getPngParam(request);
         System.out.println(surface.getName());
         httpUtils.writeStringBack(response,bookService.saveSurface(surface));

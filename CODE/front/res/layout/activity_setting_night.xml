@@ -28,7 +28,7 @@
             android:layout_height="48dp"
             android:layout_marginTop="20dp"
             android:background="@drawable/normal_button_style_night"
-            android:onClick="toDay"
+            android:onClick="switchSkin"
             android:text="@string/changeToDay"
             android:textColor="#C2BEBE" />
     </LinearLayout>

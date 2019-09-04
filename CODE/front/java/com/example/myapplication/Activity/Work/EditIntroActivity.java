@@ -14,11 +14,11 @@ public class EditIntroActivity extends AppCompatActivity {
 
     private String intro;
     private EditText Intro;
-    private boolean isInNight = false;//是否处于夜间模式
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
-        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+        boolean isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
 
         super.onCreate(savedInstanceState);
         if(isInNight){

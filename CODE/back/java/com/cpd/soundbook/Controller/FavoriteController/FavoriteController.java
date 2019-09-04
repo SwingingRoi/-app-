@@ -1,9 +1,8 @@
 package com.cpd.soundbook.Controller.FavoriteController;
 
 
-import com.cpd.soundbook.HttpUtils;
+import com.cpd.soundbook.HttpUtils.HttpUtils;
 import com.cpd.soundbook.Service.ServiceImpl.UserFavBookService;
-import com.cpd.soundbook.Service.ServiceImpl.UserService;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

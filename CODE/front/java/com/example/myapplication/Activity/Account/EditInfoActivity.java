@@ -1,16 +1,20 @@
 package com.example.myapplication.Activity.Account;
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.CountDownTimer;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -28,6 +32,9 @@ import com.example.myapplication.PicUtils.GetPicture;
 import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.example.myapplication.PicUtils.CropPic;
 
 public class EditInfoActivity extends AppCompatActivity {
@@ -44,6 +51,7 @@ public class EditInfoActivity extends AppCompatActivity {
     private CropPic cropPic;
     private Uri avatarUri;
     private boolean isInNight = false;//是否处于夜间模式
+    final private int WRITE_EXTERNAL_STORAGE = 1;
 
 
     public void onBackPressed(View view){
@@ -67,20 +75,21 @@ public class EditInfoActivity extends AppCompatActivity {
         loadView = findViewById(R.id.Loading);
         normal.setVisibility(View.INVISIBLE);
 
-
-
         Account = findViewById(R.id.Account);
         Password = findViewById(R.id.Password);
         Name = findViewById(R.id.Name);
         Gender = findViewById(R.id.Gender);
         Email = findViewById(R.id.Email);
         Account.setText(accountNow);
+        Button storeBtn = findViewById(R.id.Store);
+        storeBtn.setClickable(false);
 
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.Remind).setVisibility(View.INVISIBLE);
 
         cropPic = new CropPic();
+
 
         new Thread(setAvatar).start();
     }
@@ -91,6 +100,7 @@ public class EditInfoActivity extends AppCompatActivity {
         public void run() {
             try {
                 GetPicture getPicture = new GetPicture();
+                if(EditInfoActivity.this.isFinishing()) return;//判断当前activity是否已被销毁，若已被销毁，则不执行请求
                 final ImageView Avatar = findViewById(R.id.Avatar);
                 final Bitmap avatar = getPicture.getAvatar(accountNow);
                 normal.post(new Runnable() {
@@ -100,6 +110,7 @@ public class EditInfoActivity extends AppCompatActivity {
                             Avatar.setImageBitmap(avatar);
                         }
                         new Thread(setOldInfo).start();
+
                     }
                 });
             }catch (Exception e){
@@ -121,6 +132,7 @@ public class EditInfoActivity extends AppCompatActivity {
                         "application/json");
 
                 if(outputStream==null) {//请求超时
+                    if(EditInfoActivity.this.isFinishing()) return;
                     EditInfoActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -137,6 +149,7 @@ public class EditInfoActivity extends AppCompatActivity {
 
                 final JSONObject oldInfo = new JSONObject(result);
 
+                if(EditInfoActivity.this.isFinishing()) return;
                 EditInfoActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {//更新UI
@@ -169,8 +182,8 @@ public class EditInfoActivity extends AppCompatActivity {
 
     //存储修改后的用户资料
     public void store(View view){
-        final Button store = findViewById(R.id.Store);
-        store.setClickable(false);
+        final Button storeBtn = findViewById(R.id.Store);
+        storeBtn.setClickable(false);
 
         CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
             @Override
@@ -180,7 +193,7 @@ public class EditInfoActivity extends AppCompatActivity {
 
             @Override
             public void onFinish() {
-                store.setClickable(true);
+                storeBtn.setClickable(true);
             }
         };//防止用户高频率点击
         countDownTimer.start();
@@ -227,11 +240,15 @@ public class EditInfoActivity extends AppCompatActivity {
         public void run() {
             GetServer getServer = new GetServer();
             String url =getServer.getIPADDRESS() +
-                    "/audiobook/saveAvatarName?id=" + id + "&avatar=" + avatarName;
+                    "/audiobook/saveAvatarName";
 
             try {
                 HttpUtils httpUtils = new HttpUtils(url);
-                httpUtils.doHttp(null,"POST","application/json");
+                JSONObject params = new JSONObject();
+                params.put("id",id);
+                params.put("avatar",avatarName);
+                byte[] param = params.toString().getBytes();
+                httpUtils.doHttp(param,"POST","application/json");
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -347,6 +364,12 @@ public class EditInfoActivity extends AppCompatActivity {
                     msg(error);
                 }
                 else {
+
+                    Button storeBtn = findViewById(R.id.Store);
+                    if(isInNight) storeBtn.setBackground(getDrawable(R.drawable.night_btn_style));
+                    else storeBtn.setBackground(getDrawable(R.drawable.log_sign_btn_style));
+                    storeBtn.setClickable(true);
+
                     if(des== Password) {
                         des.setText(editText.getText().toString().replaceAll(".","*"));
                         password = editText.getText().toString();
@@ -432,8 +455,27 @@ public class EditInfoActivity extends AppCompatActivity {
     /*修改头像*/
     //打开本地图片文件夹
     public void getPictureDir(View view){
-        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent,GET_PICTURE);
+        int permission = ActivityCompat.checkSelfPermission(EditInfoActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if(permission != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(EditInfoActivity.this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    WRITE_EXTERNAL_STORAGE);
+        }
+        else {
+            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(intent,GET_PICTURE);
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String []permissions, int[] grantResults){
+        if (requestCode == WRITE_EXTERNAL_STORAGE){
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent,GET_PICTURE);
+            }
+        }
     }
 
     //startActivityForResult回调函数
@@ -480,6 +522,8 @@ public class EditInfoActivity extends AppCompatActivity {
             Bitmap output = drawAsCircle.draw(picture);
             ImageView Avatar = findViewById(R.id.Avatar);
             Avatar.setImageBitmap(output);
+
+            Thread thread = new Thread(setAvatar);
             new Thread(saveAvatar).start();
     }
 

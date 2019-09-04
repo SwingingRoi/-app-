@@ -38,20 +38,23 @@
 
         </LinearLayout>
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginTop="10dp"
             android:layout_weight="1.1"
-            android:background="@android:color/white"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/rotation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/record" />
-        </LinearLayout>
+            android:background="#ffffff"
+            android:ems="10"
+            android:gravity="start|top"
+            android:hint="@string/waittext"
+            android:letterSpacing="0.05"
+            android:lineSpacingExtra="11sp"
+            android:maxLength="3000"
+            android:maxLines="1000000000"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:textSize="15sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -84,7 +87,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="storeChapter"
-                android:text="@string/Store" />
+                android:text="@string/storenewbook" />
         </LinearLayout>
 
 

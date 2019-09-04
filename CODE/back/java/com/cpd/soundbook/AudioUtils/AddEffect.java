@@ -2,9 +2,6 @@ package com.cpd.soundbook.AudioUtils;
 
 import com.cpd.soundbook.MongoDB.MongoDBInter;
 import com.mongodb.gridfs.GridFSDBFile;
-import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.mp3.MP3AudioHeader;
-import org.jaudiotagger.audio.mp3.MP3File;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,36 +28,47 @@ public class AddEffect {
     @Autowired
     private MongoDBInter mongoDAO;
 
-    public File addEffect(File srcFile,String text){
+    @Autowired
+    private GetMP3Length getMP3Length;
+
+    /*
+    @Param:srcFile 原音频
+    @Param:text 音频对应文本
+    @Param:tempDir 临时文件夹
+     */
+    public File addEffect(File srcFile,String text,String tempDir){
 
         List<String> paths = new ArrayList<>();
+        //System.out.println("srcFile:" + srcFile.getAbsolutePath());
+        //System.out.println("text: " + text);
+        //System.out.println("tempDir: " + tempDir);
         //存储音效的临时文件
-        String effectPath = System.getProperty("user.dir") + "\\mp3\\effectSpeech\\" + randomName.randomName() + ".mp3";
+        String effectPath = tempDir + randomName.randomName() + ".mp3";
         paths.add(effectPath);
 
         //将text从关键词处分割为两部分
         //tempPath1:存储前半部分
-        String tempPath1 = System.getProperty("user.dir") + "\\mp3\\effectSpeech\\" + randomName.randomName() + ".mp3";
+        String tempPath1 = tempDir + randomName.randomName() + ".mp3";
         paths.add(tempPath1);
 
         //tempPath2:存储后半部分
-        String tempPath2 = System.getProperty("user.dir") + "\\mp3\\effectSpeech\\" + randomName.randomName() + ".mp3";
+        String tempPath2 = tempDir + randomName.randomName() + ".mp3";
         paths.add(tempPath2);
 
         //downEffectPath:存储降低音量后的音效文件
-        String downEffectPath = System.getProperty("user.dir") + "\\mp3\\effectSpeech\\" + randomName.randomName()+ ".mp3";
+        String downEffectPath = tempDir + randomName.randomName()+ ".mp3";
         paths.add(downEffectPath);
 
         //tempEffectPath:存储后半部分和音效的合成文件
-        String tempEffectPath = System.getProperty("user.dir") + "\\mp3\\effectSpeech\\" + randomName.randomName() + ".mp3";
+        String tempEffectPath = tempDir + randomName.randomName() + ".mp3";
         paths.add(tempEffectPath);
 
         //txtPath:存储ffmpeg执行MP3文件合并所需文件参数
-        String txtPath = System.getProperty("user.dir") + "\\mp3\\effectSpeech\\" + randomName.randomName() + ".txt";
+        String txtPath = tempDir + randomName.randomName() + ".txt";
         paths.add(txtPath);
 
         //resultPath:存储最后的合成结果
-        String resultPath = System.getProperty("user.dir") + "\\mp3\\effectSpeech\\" + randomName.randomName() + ".mp3";
+        String resultPath = tempDir + randomName.randomName() + ".mp3";
 
 /*
         System.out.println("tempPath1: " + tempPath1);
@@ -73,9 +81,9 @@ public class AddEffect {
         File file = null;
         try{
             //plainSpeechLength为srcFile的时长
-            MP3File plainSpeech = (MP3File)AudioFileIO.read(srcFile);
-            MP3AudioHeader plainSpeechAudioHeader = (MP3AudioHeader) plainSpeech.getAudioHeader();
-            int plainSpeechLength = plainSpeechAudioHeader.getTrackLength();
+
+            //取python脚本返回的时长的整数部分
+            int plainSpeechLength = Double.valueOf(getMP3Length.getLength(srcFile.getAbsolutePath())).intValue();
 
             HashMap<Integer,String> divideResult = getEffectKey.getKeyList(text);
 

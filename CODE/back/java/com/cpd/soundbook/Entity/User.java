@@ -16,7 +16,6 @@ public class User {
     private String gender;
     private boolean activated;
     private String avatar;
-    private String preferences;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -111,13 +110,5 @@ public class User {
 
     public String getAvatar() {
         return avatar;
-    }
-
-    public void setPreferences(String preferences) {
-        this.preferences = preferences;
-    }
-
-    public String getPreferences() {
-        return preferences;
     }
 }

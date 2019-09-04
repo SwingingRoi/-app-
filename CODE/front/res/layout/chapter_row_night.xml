@@ -46,6 +46,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="left"
+                    android:singleLine="true"
                     android:textColor="#C2BEBE"
                     android:textSize="15dp" />
 

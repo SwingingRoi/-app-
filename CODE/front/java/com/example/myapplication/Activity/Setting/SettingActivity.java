@@ -66,8 +66,18 @@ public class SettingActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+    public void switchSkin(View view){
+        if(isInNight){
+            toDay();
+            isInNight = false;
+        }else {
+            toNight();
+            isInNight = true;
+        }
+    }
+
     //切换到日间模式
-    public void toDay(View view){
+    private void toDay(){
         LinearLayout background = findViewById(R.id.background);
         background.setBackgroundColor(Color.WHITE);
 
@@ -86,7 +96,7 @@ public class SettingActivity extends AppCompatActivity {
     }
 
     //切换到夜间模式
-    public void toNight(View view){
+    private void toNight(){
         LinearLayout background = findViewById(R.id.background);
         background.setBackgroundColor(Color.parseColor("#3F3E3E"));
 

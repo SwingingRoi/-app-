@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.Work.EditTagActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#3F3E3E"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/ActionBar"
+            style="@style/actionbar"
+            android:background="#ffffff"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/BackArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
+                android:onClick="onBackPressed"
+                app:srcCompat="?attr/actionModeCloseDrawable" />
+
+            <TextView
+                android:id="@+id/partname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingStart="87dp"
+                android:paddingEnd="20dp"
+                android:text="@string/edittag"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/Store"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="0.4"
+                android:onClick="storeTag"
+                android:text="@string/Store"
+                android:textColor="@color/colorAccent"
+                android:textSize="14sp" />
+
+
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/tag1"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="30dp"
+            android:background="#5C5A5A"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="标签1"
+            android:inputType="textPersonName"
+            android:textColor="#C2BEBE"
+            android:textColorHint="#7A7979" />
+
+        <EditText
+            android:id="@+id/tag2"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="10dp"
+            android:background="#5C5A5A"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="标签2"
+            android:inputType="textPersonName"
+            android:textColor="#C2BEBE"
+            android:textColorHint="#7A7979" />
+
+        <EditText
+            android:id="@+id/tag3"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="10dp"
+            android:background="#5C5A5A"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="标签3"
+            android:inputType="textPersonName"
+            android:textColor="#C2BEBE"
+            android:textColorHint="#7A7979" />
+
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

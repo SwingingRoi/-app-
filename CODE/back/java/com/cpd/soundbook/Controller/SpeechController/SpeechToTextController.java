@@ -1,6 +1,6 @@
 package com.cpd.soundbook.Controller.SpeechController;
 
-import com.cpd.soundbook.HttpUtils;
+import com.cpd.soundbook.HttpUtils.HttpUtils;
 import com.cpd.soundbook.Service.ServiceImpl.ChapterService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,8 @@ public class SpeechToTextController {
         try{
             //System.out.println("speech to text begin");
             File srcFile = httpUtils.getMp3Param(request);
+            //File srcFile = new File("C:\\Users\\09\\Desktop\\test\\15670882725344.mp3");
+            //System.out.println("srcFile:" + srcFile.getAbsolutePath());
             //File srcFile = new File("D:\\AudiobookBack\\mp3\\result\\Vq7ZqMNUIbR5jC3.mp3");
             JSONObject result = chapterService.speechToText(srcFile);
             //System.out.println(result);

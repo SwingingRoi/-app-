@@ -27,8 +27,4 @@ public interface UserService {
     GridFSDBFile getAvatar(String account);
 
     JSONArray getRecommend(String account,int from,int size);
-
-    String getPreference(String account);
-
-    void storePreference(String account,String preference);
 }

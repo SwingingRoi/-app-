@@ -117,6 +117,7 @@ public class BookService implements com.cpd.soundbook.Service.ServiceInterface.B
             book.setId(id);
             book.setName(info.getString("name"));
             book.setIntro(info.getString("intro"));
+            book.setTags(info.getString("tags"));
             book.setSurface(info.getString("surface"));
             bookDAO.updateBook(book);
         }catch (Exception e){

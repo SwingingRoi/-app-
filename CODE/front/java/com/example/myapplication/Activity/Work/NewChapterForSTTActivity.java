@@ -64,6 +64,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
     private String BGM_LOCATION;
     private boolean getSpeechDone = false;
     private boolean matchBgmDone = false;//音频时长
+    private boolean hasPlayerReset = false;
 
     final private int WRITE_EXTERNAL_STORAGE = 1;
 
@@ -134,21 +135,8 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
         });
     }
 
-    private void setAnimation(){
-        ImageView rotation = findViewById(R.id.rotation);
-        Animation rotate = AnimationUtils.loadAnimation(this,R.anim.image_rotate);
-        LinearInterpolator linearInterpolator = new LinearInterpolator();
-        rotate.setInterpolator(linearInterpolator);
-        rotation.setAnimation(rotate);
-        rotation.startAnimation(rotate);
-    }
-
-    private void clearAnimation(){
-        ImageView rotation = findViewById(R.id.rotation);
-        rotation.clearAnimation();
-    }
-
     private void resetPlayer(){
+        hasPlayerReset = true;
         if(speech_player != null){
             speech_player.reset();
         }
@@ -156,16 +144,19 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
         if(bgm_player != null){
             bgm_player.reset();
         }
+        firstPlay = true;
 
+        if(NewChapterForSTTActivity.this.isFinishing()) return;
         NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                TextView begin = findViewById(R.id.begin);
+                begin.setText(getResources().getString(R.string.initial));
+                seekBar.setProgress(0);
                 ImageView playButton = findViewById(R.id.PlayButton);
                 playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
-                clearAnimation();
             }
         });
-        firstPlay = true;
     }
 
     private void releasePlayer(){
@@ -214,6 +205,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 try{
                     dialog.dismiss();
 
+                    hasPlayerReset = true;
                     releasePlayer();
 
                     if(speechFile != null && speechFile.exists()) speechFile.delete();
@@ -239,7 +231,6 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
     }
 
     public void SpeechToText(View view){
-        System.out.println("asfads");
         if(speechFile == null){
             new MyToast(NewChapterForSTTActivity.this,getResources().getString(R.string.askchoosefile));
             return;
@@ -251,6 +242,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
     //保存章节
     public void storeChapter(View view){
         if(speechChanged){
+            if(NewChapterForSTTActivity.this.isFinishing()) return;
             new MyToast(NewChapterForSTTActivity.this,"请转换修改后的音频");
             return;
         }
@@ -274,7 +266,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                     return;
                 }
 
-                StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,"",speechPath,bgmPath);
+                StoreChapter storeChapter = new StoreChapter(chapterTitle,bookid,text,speechPath,bgmPath);
                 storeChapter.start();
                 releasePlayer();
 
@@ -367,6 +359,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 speechFile = new File(MP3_LOCATION);
 
                 //更新MP3文件时长
+                if(NewChapterForSTTActivity.this.isFinishing()) return;
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -388,24 +381,24 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
             if(speech_player.isPlaying()) {
                 speech_player.pause();
                 bgm_player.pause();
+                if(NewChapterForSTTActivity.this.isFinishing()) return;
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
                         playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.play));
-                        clearAnimation();
                     }
                 });
             }
             else {
                 speech_player.start();
                 bgm_player.start();
+                if(NewChapterForSTTActivity.this.isFinishing()) return;
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ImageView playButton = findViewById(R.id.PlayButton);
                         playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.pause));
-                        setAnimation();
                     }
                 });
             }
@@ -446,19 +439,22 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                         bgm_player.setVolume(0.2f,0.2f);//设置背景音乐音量
                         bgm_player.setLooping(true);//背景音乐循环播放
 
+                        hasPlayerReset = false;
                         //进度条更新
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 while (!Thread.currentThread().isInterrupted()){
                                     try {
-                                        if(speech_player == null) break;
+                                        if(NewChapterForSTTActivity.this.isFinishing()) break;
+                                        if(speech_player == null || hasPlayerReset) break;
                                         seekBar.setProgress(speech_player.getCurrentPosition());
                                         NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
                                                 TextView begin = findViewById(R.id.begin);
                                                 MilliToHMS milliToHMS = new MilliToHMS();
+                                                if(speech_player == null || hasPlayerReset) return;
                                                 begin.setText(milliToHMS.milliToHMS(speech_player.getCurrentPosition()));
                                             }
                                         });
@@ -476,8 +472,6 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                                 firstPlay = false;
                                 ImageView playButton = findViewById(R.id.PlayButton);
                                 playButton.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause));
-
-                                setAnimation();
                             }
                         });
                     }
@@ -497,6 +491,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 resetPlayer();
                 speechChanged = false;
 
+                if(NewChapterForSTTActivity.this.isFinishing()) return;
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -510,6 +505,9 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
                         LinearLayout translating = findViewById(R.id.translating);
                         translating.setVisibility(View.VISIBLE);
+
+                        LinearLayout normal = findViewById(R.id.normal);
+                        normal.setVisibility(View.INVISIBLE);
                     }
                 });
 
@@ -532,6 +530,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(param, "POST", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
+                    if(NewChapterForSTTActivity.this.isFinishing()) return;
                     NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -539,6 +538,9 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
                             LinearLayout translating = findViewById(R.id.translating);
                             translating.setVisibility(View.INVISIBLE);
+
+                            LinearLayout normal = findViewById(R.id.normal);
+                            normal.setVisibility(View.VISIBLE);
                         }
                     });
                     return;
@@ -548,6 +550,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                         StandardCharsets.UTF_8);
 
                 if(result.equals("error")){
+                    if(NewChapterForSTTActivity.this.isFinishing()) return;
                     NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -557,8 +560,12 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
                             ImageView playButton = findViewById(R.id.PlayButton);
                             playButton.setVisibility(View.INVISIBLE);
+
+                            LinearLayout normal = findViewById(R.id.normal);
+                            normal.setVisibility(View.VISIBLE);
                         }
                     });
+                    return;
                 }
 
                 JSONObject resultObj = new JSONObject(result);
@@ -566,8 +573,17 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 speechPath = resultObj.getString("speechPath");
                 text = resultObj.getString("text");
 
-                System.out.println(speechPath);
-                System.out.println(text);
+                if(NewChapterForSTTActivity.this.isFinishing()) return;
+                NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TextView content = findViewById(R.id.content);
+                        content.setText(text);
+                    }
+                });
+
+                //System.out.println(speechPath);
+                //System.out.println(text);
                 new Thread(getSpeech).start();
                 new Thread(matchBGM).start();
 
@@ -588,6 +604,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 final ByteArrayOutputStream resultStream = httpUtils.doHttp(null, "GET", "application/json");//向后端发送请求
 
                 if (resultStream == null) {//请求超时
+                    if(NewChapterForSTTActivity.this.isFinishing()) return;
                     NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -595,6 +612,9 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
                             LinearLayout translating = findViewById(R.id.translating);
                             translating.setVisibility(View.INVISIBLE);
+
+                            LinearLayout normal = findViewById(R.id.normal);
+                            normal.setVisibility(View.VISIBLE);
                         }
                     });
                     return;
@@ -614,12 +634,16 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                     getSpeechDone = false;
                     matchBgmDone = false;
 
+                    if(NewChapterForSTTActivity.this.isFinishing()) return;
                     NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(NewChapterForSTTActivity.this, getResources().getString(R.string.translateSuccess));
                             LinearLayout translating = findViewById(R.id.translating);
                             translating.setVisibility(View.INVISIBLE);
+
+                            LinearLayout normal = findViewById(R.id.normal);
+                            normal.setVisibility(View.VISIBLE);
 
                             ImageView playButton = findViewById(R.id.PlayButton);
                             playButton.setVisibility(View.VISIBLE);
@@ -672,6 +696,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                         "application/json");
 
                 if (resultStream == null) {//请求超时
+                    if(NewChapterForSTTActivity.this.isFinishing()) return;
                     NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -679,6 +704,9 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
 
                             LinearLayout translating = findViewById(R.id.translating);
                             translating.setVisibility(View.INVISIBLE);
+
+                            LinearLayout normal = findViewById(R.id.normal);
+                            normal.setVisibility(View.VISIBLE);
                         }
                     });
                     return;
@@ -721,12 +749,16 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                     matchBgmDone = false;
                     getSpeechDone = false;
 
+                    if(NewChapterForSTTActivity.this.isFinishing()) return;
                     NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             new MyToast(NewChapterForSTTActivity.this, getResources().getString(R.string.translateSuccess));
                             LinearLayout translating = findViewById(R.id.translating);
                             translating.setVisibility(View.INVISIBLE);
+
+                            LinearLayout normal = findViewById(R.id.normal);
+                            normal.setVisibility(View.VISIBLE);
 
                             ImageView playButton = findViewById(R.id.PlayButton);
                             playButton.setVisibility(View.VISIBLE);
@@ -773,6 +805,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 info.put("content",content);
                 info.put("speechPath",speechPath);
                 info.put("bgmPath",bgmPath);
+                info.put("type",true);
 
                 TextView endView = findViewById(R.id.end);
                 info.put("length",endView.getText().toString());
@@ -782,6 +815,7 @@ public class NewChapterForSTTActivity extends AppCompatActivity {
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(param, "POST", "application/json");
 
+                //if(NewChapterForSTTActivity.this.isFinishing()) return;
                 NewChapterForSTTActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

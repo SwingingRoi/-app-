@@ -6,113 +6,96 @@
     android:layout_height="match_parent"
     tools:context=".Activity.MainActivity">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#3F3E3E"
-        android:scrollbars="none"
-        tools:layout_editor_absoluteY="686dp">
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/BookTable"
+        <FrameLayout
+            android:id="@+id/content"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-        </LinearLayout>
-
-    </ScrollView>
-
-    <LinearLayout
-        android:id="@+id/manage"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:background="#646262"
-        android:elevation="6dp"
-        android:gravity="bottom"
-        android:orientation="horizontal"
-        android:outlineProvider="bounds"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="#3F3E3E" />
 
         <LinearLayout
-            android:id="@+id/check"
-            style="@style/bottom_navigation"
-            android:onClick="toHome"
-            android:orientation="vertical">
+            android:id="@+id/manage"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.08"
+            android:background="#646262"
+            android:elevation="6dp"
+            android:gravity="bottom"
+            android:orientation="horizontal"
+            android:outlineProvider="bounds">
 
-            <ImageView
-                android:id="@+id/HomeIcon"
-                style="@style/navigation_icon"
-                app:srcCompat="@drawable/homeiconblue" />
+            <LinearLayout
+                android:id="@+id/check"
+                style="@style/bottom_navigation"
+                android:onClick="toHome"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/HomeText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/Home"
-                android:textColor="#C2BEBE" />
-        </LinearLayout>
+                <ImageView
+                    android:id="@+id/HomeIcon"
+                    style="@style/navigation_icon"
+                    app:srcCompat="@drawable/homeiconblue" />
 
-        <LinearLayout
-            android:id="@+id/recommend"
-            style="@style/bottom_navigation"
-            android:onClick="toRecommend"
-            android:orientation="vertical">
+                <TextView
+                    android:id="@+id/HomeText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/Home"
+                    android:textColor="#C2BEBE" />
+            </LinearLayout>
 
-            <ImageView
-                android:id="@+id/RecommendIcon"
-                style="@style/navigation_icon"
-                android:layout_width="27dp"
-                android:layout_height="27dp"
-                app:srcCompat="@drawable/recommendblue" />
+            <LinearLayout
+                android:id="@+id/recommend"
+                style="@style/bottom_navigation"
+                android:onClick="toRecommend"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/RecommendText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/recommend"
-                android:textColor="#C2BEBE" />
-        </LinearLayout>
+                <ImageView
+                    android:id="@+id/RecommendIcon"
+                    style="@style/navigation_icon"
+                    android:layout_width="27dp"
+                    android:layout_height="27dp"
+                    app:srcCompat="@drawable/recommendblue" />
 
-        <LinearLayout
-            android:id="@+id/cancel"
-            style="@style/bottom_navigation"
-            android:onClick="toPersonal"
-            android:orientation="vertical">
+                <TextView
+                    android:id="@+id/RecommendText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/recommend"
+                    android:textColor="#C2BEBE" />
+            </LinearLayout>
 
-            <ImageView
-                android:id="@+id/PersonalIcon"
-                style="@style/navigation_icon"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                app:srcCompat="@drawable/personaliconblue"
-                tools:srcCompat="@drawable/personaliconblue" />
+            <LinearLayout
+                android:id="@+id/cancel"
+                style="@style/bottom_navigation"
+                android:onClick="toPersonal"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/PersonalText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/unLogged"
-                android:textColor="#C2BEBE" />
+                <ImageView
+                    android:id="@+id/PersonalIcon"
+                    style="@style/navigation_icon"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    app:srcCompat="@drawable/personaliconblue"
+                    tools:srcCompat="@drawable/personaliconblue" />
+
+                <TextView
+                    android:id="@+id/PersonalText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/unLogged"
+                    android:textColor="#C2BEBE" />
+            </LinearLayout>
+
         </LinearLayout>
 
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#3F3E3E"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
 </android.support.constraint.ConstraintLayout>

@@ -6,7 +6,7 @@ import com.cpd.soundbook.DAO.DAOInterface.UserDAO;
 import com.cpd.soundbook.Entity.Book;
 import com.cpd.soundbook.Entity.User;
 import com.cpd.soundbook.MongoDB.MongoDBInter;
-import com.cpd.soundbook.TopKTags;
+import com.cpd.soundbook.TopKtags.TopKTags;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -216,7 +216,6 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
          */
             JSONArray browses = userBrowseBookService.getRecords(account, from, 20);//找最近20条浏览记录
 
-
             HashMap<String, Integer> inputs = new HashMap<>();
 
             //计算收藏夹中各标签的权重
@@ -253,49 +252,25 @@ public class UserService implements com.cpd.soundbook.Service.ServiceInterface.U
             topK.size() == 0对应两种情况：
             1、新建的用户，没有收藏和浏览记录.
             2、老用户，但清空了收藏夹和历史记录.
-            此时推荐所需的tags从数据库中users的preference中获取
+            此时的推荐按所有书本收听量从多到少进行推荐
              */
-            User user = userDAO.findUserByAccount(account);
-            if(topK.size() == 0){
-                String[] tags = user.getPreferences().split(" ");
-                for(String tag : tags){
-                    kTags.add(tag);
+            if(topK.size() ==0){
+                List<Book> books = bookDAO.findAllBookByViews(from, size);
+                for(Book book : books){
+                    result.put(book.toJSONObject());
+                }
+            }else {
+                for (Map.Entry<String, Integer> entry : topK) kTags.add(entry.getKey());
+
+                List<Book> books = bookDAO.findBookByTags(kTags,from,size);
+                for(Book book : books){
+                    result.put(book.toJSONObject());
                 }
             }
-            else {
-                String newPreferences = "";
-                for (Map.Entry<String, Integer> entry : topK) {
-                    kTags.add(entry.getKey());
-                    newPreferences += entry.getKey() + " ";
-                }
-                //更新数据库中users的preference
-                user.setPreferences(newPreferences);
-                userDAO.updateUser(user);
-            }
-
-            List<Book> books = bookDAO.findBookByTags(kTags,from,size);
-            for(Book book : books){
-                result.put(book.toJSONObject());
-            }
-
         }catch (Exception e){
             e.printStackTrace();
         }
 
         return result;
-    }
-
-    @Override
-    public String getPreference(String account) {
-        String result = userDAO.findUserByAccount(account).getPreferences();
-        if(result == null) return "";
-        return result;
-    }
-
-    @Override
-    public void storePreference(String account, String preferences) {
-        User user = userDAO.findUserByAccount(account);
-        user.setPreferences(preferences);
-        userDAO.updateUser(user);
     }
 }

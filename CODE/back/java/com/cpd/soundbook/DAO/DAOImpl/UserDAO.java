@@ -15,9 +15,6 @@ import javax.transaction.Transactional;
 public class UserDAO implements com.cpd.soundbook.DAO.DAOInterface.UserDAO {
 
     @Autowired
-    private EntityManagerFactory factory;
-
-    @Autowired
     private UserRepository userRepository;
 
 
@@ -63,6 +60,6 @@ public class UserDAO implements com.cpd.soundbook.DAO.DAOInterface.UserDAO {
 
     @Override
     public void updateUser(User user) {
-        userRepository.modifyInfo(user.getAccount(),user.getPassword(),user.getName(),user.getGender(),user.getEmail(),user.getPreferences(),user.getId());
+        userRepository.modifyInfo(user.getAccount(),user.getPassword(),user.getName(),user.getGender(),user.getEmail(),user.getId());
     }
 }

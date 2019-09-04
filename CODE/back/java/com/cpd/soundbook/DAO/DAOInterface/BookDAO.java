@@ -27,4 +27,6 @@ public interface BookDAO {
     List<Book> findBookByTags(List<String> tags,int from,int size);
 
     void publishBook(int bookid);
+
+    List<Book> findAllBookByViews(int from,int size);
 }

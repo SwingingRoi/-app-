@@ -151,8 +151,10 @@
             android:layout_height="0dp"
             android:layout_marginTop="35dp"
             android:layout_weight="0.25"
+            android:background="@drawable/normal_btn_style"
             android:onClick="storeNewBook"
             android:text="@string/storenewbook"
+            android:textColor="@android:color/white"
             android:textSize="17sp" />
 
     </LinearLayout>
@@ -167,7 +169,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.184"
+        app:layout_constraintVertical_bias="0.145"
         app:srcCompat="@drawable/addsurface" />
 
 </android.support.constraint.ConstraintLayout>

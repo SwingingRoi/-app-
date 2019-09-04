@@ -1,5 +1,6 @@
 package com.cpd.soundbook.DAO.DAOImpl;
 
+import com.cpd.soundbook.Entity.Book;
 import com.cpd.soundbook.Entity.UserBrowseBook;
 import com.cpd.soundbook.Repository.BookRepository;
 import com.cpd.soundbook.Repository.UserBrowseBookRepository;
@@ -32,7 +33,8 @@ public class UserBrowseBookDAO implements com.cpd.soundbook.DAO.DAOInterface.Use
 
     @Override
     public void addRecord(UserBrowseBook userBrowseBook) {
-        bookRepository.increaView(userBrowseBook.getBookid());
+        Book book = bookRepository.findBookById(userBrowseBook.getBookid());
+        if(!book.getAuthor().equals(userBrowseBook.getAccount())) bookRepository.increaView(userBrowseBook.getBookid());
         if(userBrowseBookRepository.findRecord(userBrowseBook.getAccount(),userBrowseBook.getBookid(),userBrowseBook.getTime()) == null) {
             userBrowseBookRepository.save(userBrowseBook);
         }

@@ -160,6 +160,7 @@ public class LogActivity extends AppCompatActivity {
     Runnable logCheck = new Runnable() {
         @Override
         public void run() {
+            if(LogActivity.this.isFinishing()) return;
             LogActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -181,6 +182,7 @@ public class LogActivity extends AppCompatActivity {
                 final String result = new String(httpUtils.doHttp(param,"POST","application/json").toByteArray(),
                         StandardCharsets.UTF_8);
 
+                if(LogActivity.this.isFinishing()) return;
                 LogActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -231,6 +233,7 @@ public class LogActivity extends AppCompatActivity {
     Runnable sendEmail = new Runnable() {
         @Override
         public void run() {
+            if(LogActivity.this.isFinishing()) return;
             SendEmail send = new SendEmail();
             send.sendEmail(email,account.getText().toString());
         }

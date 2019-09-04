@@ -60,17 +60,19 @@
                 android:text="@string/listen"
                 android:textSize="20sp" />
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.4"
-                android:onClick="exitTimerStart"
-                app:srcCompat="@drawable/timer" />
-
             <com.example.myapplication.MyComponent.MySpinner
                 android:id="@+id/menu"
-                android:layout_width="30dp"
-                android:layout_height="wrap_content"
+                android:layout_width="25dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="30dp"
+                android:background="@drawable/menu"
+                android:entries="@array/menuHasNotPre"
+                android:visibility="visible" />
+
+            <com.example.myapplication.MyComponent.MySpinner
+                android:id="@+id/playMode"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:layout_marginEnd="20dp"
                 android:background="@drawable/singleloop"
                 android:entries="@array/audioMode" />
@@ -84,14 +86,6 @@
             android:layout_height="40dp"
             android:gravity="center"
             android:textSize="17sp" />
-
-        <ImageView
-            android:id="@+id/split10"
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:layout_weight="0"
-            android:alpha="0.5"
-            android:background="@drawable/gray" />
 
         <TextView
             android:id="@+id/content"
@@ -109,6 +103,14 @@
             android:paddingTop="10dp"
             android:singleLine="false"
             android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/split10"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_weight="0"
+            android:alpha="0.5"
+            android:background="@drawable/gray" />
 
         <LinearLayout
             android:id="@+id/rotateLayout"

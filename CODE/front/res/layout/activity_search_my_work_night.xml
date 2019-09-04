@@ -90,8 +90,7 @@
 
         <ScrollView
             android:id="@+id/scrollView"
-            android:layout_width="match_parent"
-            android:layout_height="530dp"
+            style="@style/Scroll"
             android:background="#3F3E3E">
 
             <LinearLayout
@@ -104,14 +103,12 @@
 
         <LinearLayout
             android:id="@+id/manage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            style="@style/manageBox"
             android:background="#5C5A5A"
             android:elevation="6dp"
             android:gravity="center"
             android:orientation="horizontal"
             android:outlineProvider="bounds"
-            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"

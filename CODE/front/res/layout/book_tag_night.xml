@@ -16,11 +16,11 @@
 
         <TextView
             android:id="@+id/tag"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.9"
-            android:background="@drawable/book_tag_border_gray"
+
             android:gravity="center"
+            android:singleLine="true"
             android:text="TextView"
             android:textColor="#C2BEBE"
             android:textSize="10dp" />

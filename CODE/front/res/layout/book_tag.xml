@@ -8,6 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@android:color/black"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -16,12 +17,13 @@
 
         <TextView
             android:id="@+id/tag"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.9"
-            android:background="@drawable/book_tag_border_gray"
+
             android:gravity="center"
+            android:singleLine="true"
             android:text="TextView"
+            android:textColor="#00BE6868"
             android:textSize="10dp" />
 
     </LinearLayout>

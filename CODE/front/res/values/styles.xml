@@ -60,4 +60,21 @@
         <item name="android:textColor">#ff888888</item>
         <item name="android:alpha">0.7</item>
     </style>
+
+    <style name="Scroll">
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_width">match_parent</item>
+    </style>
+    <style name="manageBox">
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_weight">0.1</item>
+        <item name="android:visibility">gone</item>
+        <item name="android:layout_width">match_parent</item>
+    </style>
+
+    <style name="editTextInNight" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">#FF6D5757</item>
+        <item name="colorControlActivated">#C09D9D</item>
+    </style>
 </resources>

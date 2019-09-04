@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 
 //合成文本长度必须小于1024字节，如果本文长度较长，可以采用多次请求的方式。切忌文本长度超过限制。
+//百度API还有QPS限制，当请求失败时，重新发送请求
 @Component(value = "tts")
 public class TextToSpeech {
 
@@ -18,6 +19,7 @@ public class TextToSpeech {
     private static final String API_KEY="F5aW7RA96u6GyzIG2tzwoZNP";
     private static final String SECRET_KEY="YnpKVuzxdEaOeWq9Bt5x6tUven3BvggP";//百度API调用所需APPID、APPKEY、SECRETKEY
 
+    final private int INFINITE = 999999999;
 
     private static AipSpeech instance = null;
     public static synchronized AipSpeech getInstance(){
@@ -28,13 +30,13 @@ public class TextToSpeech {
         return instance;
     }
 
-    public File translate(String text){
+    public File translate(String text,String tempDir){
 
         try{
 
             RandomName randomName = new RandomName();
 
-            String path = System.getProperty("user.dir") + "\\mp3\\plainSpeech\\" + randomName.randomName() + ".mp3";
+            String path = tempDir + randomName.randomName() + ".mp3";
             File result = new File(path);
             if(!result.exists()){
                 result.createNewFile();
@@ -42,8 +44,8 @@ public class TextToSpeech {
 
             //百度API
             AipSpeech client = getInstance();
-            client.setConnectionTimeoutInMillis(2000);
-            client.setSocketTimeoutInMillis(60000);
+            client.setConnectionTimeoutInMillis(INFINITE);
+            client.setSocketTimeoutInMillis(INFINITE);
 
             HashMap<String,Object> options = new HashMap<String,Object>();
             options.put("spd","4");//语速
@@ -52,6 +54,16 @@ public class TextToSpeech {
             OutputStream outputStream = new FileOutputStream(result);
 
             TtsResponse res = client.synthesis(text, "zh", 1, options);//中文
+
+            /*if (res.getResult() != null) {
+                /*System.out.println("thread: " + Thread.currentThread().getName() + "sleep");
+                Thread.sleep(200);
+                System.out.println("thread: " + Thread.currentThread().getName() + "wake");
+
+                return null;
+            }*/
+
+
             byte[] data = res.getData();
             if (data != null) {
                 try {

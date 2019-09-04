@@ -1,7 +1,7 @@
 package com.cpd.soundbook.Service.ServiceImpl;
 
 import com.cpd.soundbook.AudioUtils.*;
-import com.cpd.soundbook.CutAudio;
+import com.cpd.soundbook.AudioUtils.CutAudio;
 import com.cpd.soundbook.DAO.DAOInterface.ChapterDAO;
 import com.cpd.soundbook.DAO.DAOInterface.DraftDAO;
 import com.cpd.soundbook.Entity.Chapter;
@@ -58,6 +58,7 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
             c.setSpeechPath(chapter.getString("speechPath"));
             c.setTime(chapter.getString("length"));
             c.setBgmpath(chapter.getString("bgmPath"));
+            c.setType(chapter.getBoolean("type"));
             chapterDAO.storeChapter(c);
             draftDAO.deleteDraftByBookid(chapter.getInt("bookid"));//删除上次的草稿
         }catch (Exception e){
@@ -113,6 +114,7 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
             result.put("speechPath",chapter.getSpeechPath());
             result.put("bgmPath",chapter.getBgmpath());
             result.put("length",chapter.getTime());
+            result.put("type",chapter.isType());
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -144,6 +146,7 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
         int preindex1 = 0;
         List<Integer> pLevels = new ArrayList<>();
 
+        System.out.println("begin compute feel level");
         for(int i = 0;i<text.length();i++){
             if(text.charAt(i) == '\n' || i == text.length() - 1){
                 String paragraph = text.substring(preindex1,i);
@@ -196,11 +199,14 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
         PrintWriter printWriter;
 
         //逐句转化为语音并添加音效
-        String filenamePath = System.getProperty("user.dir")+"\\mp3\\result\\" + randomName.randomName() + ".txt";
-        String resultPath = System.getProperty("user.dir")+"\\mp3\\result\\" + randomName.randomName() + ".mp3";
+        //System.getProperty("user.dir") + "\\mp3\\tts\\" + randomName.randomName() + "\\"
+        //"/audiobook/mp3/tts/" + randomName.randomName() + "/"
+        String tempDir = "/audiobook/mp3/tts/" + randomName.randomName() + "/";//临时文件夹
+        File tempD = new File(tempDir);
+        if(!tempD.exists()) tempD.mkdir();
 
-        List<String> paths = new ArrayList<>();
-        paths.add(filenamePath);
+        String filenamePath = tempDir + randomName.randomName() + ".txt";
+        String resultPath = tempDir + randomName.randomName() + ".mp3";
 
         System.out.println("text to speech begin");
         try {
@@ -212,12 +218,11 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
                 if(text.charAt(i) == ',' || text.charAt(i) == '，' || text.charAt(i) == '.' || text.charAt(i) == '。' || i==text.length() - 1){
                     textNow = text.substring(preIndex,i+1);
                     preIndex = preIndex + textNow.length();
-                    File srcFile = tts.translate(textNow);
+                    File srcFile = tts.translate(textNow,tempDir);
+                    //System.out.println("srcFile: " + srcFile);
 
-                    File file = addEffect.addEffect(srcFile,textNow);
-
-                    paths.add(srcFile.getAbsolutePath());
-                    paths.add(file.getAbsolutePath());
+                    File file = addEffect.addEffect(srcFile,textNow,tempDir);
+                    //System.out.println("file :" + file.getAbsolutePath());
 
                     printWriter.write("file " + "\'" + file.getAbsolutePath() + "\'" + System.getProperty("line.separator"));
                     printWriter.flush();
@@ -230,15 +235,12 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
             result = resultFile.getName();
             //System.out.println("reultFile: " + resultFile.getAbsolutePath());
 
-            for(String path : paths){
-                File file = new File(path);
-                if(file.exists()) file.delete();
-            }
-
+            deleteDir.deleteAllFilesOfDir(new File(tempDir));//删除临时文件
             System.out.println("text to speech done");
 
         }catch (Exception e){
             e.printStackTrace();
+            deleteDir.deleteAllFilesOfDir(new File(tempDir));//删除临时文件
         }
         return result;
     }
@@ -294,77 +296,81 @@ public class ChapterService implements com.cpd.soundbook.Service.ServiceInterfac
         JSONObject result = new JSONObject();//返回结果
         RandomName randomName = new RandomName();
         PrintWriter printWriter;
-        File resultFile = null;//添加音效后的语音文件
+        File resultFile;//添加音效后的语音文件
         String text = "";//转化后的文本
 
         System.out.println("speech to text begin");
         //存储裁剪文件的临时目录
-        String tempDir = System.getProperty("user.dir") + "\\mp3\\" + randomName.randomName() + "\\";
+        //System.getProperty("user.dir") + "\\mp3\\stt\\" + randomName.randomName() + "\\"
+        //"/audiobook/mp3/stt/" + randomName.randomName() + "/"
+        String tempDir = "/audiobook/mp3/stt/" + randomName.randomName() + "/";
+        File tempD = new File(tempDir);
+        if(!tempD.exists()) tempD.mkdirs();
         //cuttedResult:裁剪后的文件的路径
         List<String> cuttedResult = cutAudio.cutAudio(srcFile.getAbsolutePath(),tempDir);
 
-        System.out.println("cut mp3 done");
+
+        //System.out.println("cut mp3 done");
+        //System.out.println("cutted result: ");
+
+        //if(cuttedResult.size() == 0) return null;
         /*
         filenamePath:执行ffmpeg concat命令所需txt文件
         resultPath:存放最终结果的文件
          */
-        String filenamePath = System.getProperty("user.dir")+"\\mp3\\result\\" + randomName.randomName() + ".txt";
-        String resultPath = System.getProperty("user.dir")+"\\mp3\\result\\" + randomName.randomName() + ".mp3";
 
-        //System.out.println("filenamePath:" + filenamePath);
-        //System.out.println("resultPath:" + resultPath);
-        //paths:存储临时文件的文件路径
-        List<String> paths = new ArrayList<>();
-        paths.add(filenamePath);
+        String filenamePath = tempDir + randomName.randomName() + ".txt";
+        String resultPath = tempDir + randomName.randomName() + ".mp3";
+
 
         try {
             printWriter = new PrintWriter(filenamePath);
             for (int i = 0;i<cuttedResult.size();i++) {
                 String pathI = cuttedResult.get(i);
-                //将切割后的wav文件转化为pcm文件，以便调用百度接口
+                //将切割后的mp3文件转化为pcm文件，以便调用百度接口
                 File mp3FileI = new File(pathI);
+
+
+                /*
                 ffmpegUtils.transformFormat(pathI,
                         tempDir + i + ".pcm");
                 File pcmFileI = new File(tempDir + i + ".pcm");
-
-                String tempText = audioToText.audioToText(pcmFileI);
+                System.out.println("pcmFile" + i + " " + pcmFileI.getAbsolutePath());
+*/
+                String tempText = audioToText.audioToText(mp3FileI);
                 text += tempText;
-                if(tempText == null) return null;
+                if(tempText == null) {
+                    deleteDir.deleteAllFilesOfDir(new File(tempDir));
+                    return null;
+                }
                 //System.out.println("text" + i + ": " + text);
-                File tempFile = addEffect.addEffect(mp3FileI, tempText);
+                //System.out.println("srcFile: " + mp3FileI.getAbsolutePath());
+                File tempFile = addEffect.addEffect(mp3FileI, tempText,tempDir);
+                //System.out.println("tempFile" + i + " " + tempFile.getAbsolutePath());
                 //System.out.println("temp text:" + tempText);
 
                 //将要合并的文件名写入filenamePath
                 printWriter.write("file " + "\'" + tempFile.getAbsolutePath() + "\'" + System.getProperty("line.separator"));
                 printWriter.flush();
-                paths.add(tempFile.getAbsolutePath());
             }
             printWriter.close();
 
+            //System.out.println("concat file begin");
             resultFile = ffmpegUtils.concat(filenamePath,resultPath);
-            //mongoDAO.saveFile(resultFile);
-
-            for(String path : paths){
-                File file = new File(path);
-                if(file.exists()) file.delete();
-            }
+            //System.out.println("concat file done");
+            mongoDAO.saveFile(resultFile);
 
             System.out.println("speech to text done");
             result.put("speechPath",resultFile.getName());
             result.put("text",text);
-            System.out.println("resultFile: " + resultFile.getAbsolutePath());
-
             //System.out.println("resultFile: " + resultFile.getAbsolutePath());
+
             deleteDir.deleteAllFilesOfDir(new File(tempDir));
             //删除临时文件
         }catch (Exception e){
-            for(String path : paths){
-                File file = new File(path);
-                if(file.exists()) file.delete();
-            }
             deleteDir.deleteAllFilesOfDir(new File(tempDir));
-            if(resultFile != null) resultFile.delete();//删除临时文件
             e.printStackTrace();
+            return null;
         }
         return result;
     }
