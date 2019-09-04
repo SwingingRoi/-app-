@@ -19,15 +19,21 @@ public interface ChapterService {
 
     void modifyChapter(JSONObject chapter);
 
-    String matchBGM(String text);
+    String matchBGMByText(String text);
 
     GridFSDBFile getBGM(String filename);
 
-    File textToSpeech(String text);
+    String textToSpeech(String text);
 
-    void storeSpeech(File speech);
+    String storeSpeech(File speech);
 
     GridFSDBFile getSpeech(String path);
 
-    void updateSpeech(String oldpath,File newspeech);
+    String updateSpeech(String oldpath,File newspeech);
+
+    JSONArray getChapterIDs(int bookid);
+
+    JSONObject speechToText(File file);
+
+    void deletSpeech(String path);
 }

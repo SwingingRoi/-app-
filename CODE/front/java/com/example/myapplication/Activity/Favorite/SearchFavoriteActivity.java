@@ -51,6 +51,7 @@ public class SearchFavoriteActivity extends AppCompatActivity {
     private boolean ismanaging = false;//是否处于管理模式
     private String account;
     private List<Drawable> tag_border_styles;//标签边框样式
+    private boolean isInNight = false;//是否处于夜间模式
 
     final private int SEARCHBTN = 1;
     final private int SCROLL = 2;
@@ -60,8 +61,16 @@ public class SearchFavoriteActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
+        account = sharedPreferences.getString("Account","");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_favorite);
+        if(isInNight){
+            setContentView(R.layout.activity_search_favorite_night);
+        }else {
+            setContentView(R.layout.activity_search_favorite);
+        }
 
         tag_border_styles = new ArrayList<>();
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
@@ -73,10 +82,14 @@ public class SearchFavoriteActivity extends AppCompatActivity {
         manageBox = findViewById(R.id.manage);
         normal = findViewById(R.id.normal);
         loadView = findViewById(R.id.Loading);
-        pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("UserState",MODE_PRIVATE);
-        account = sharedPreferences.getString("Account","");
+        if(isInNight){
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down_night, null);
+        }else {
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        }
+
+
 
         scrollView = findViewById(R.id.scrollView);
         scrollView.setOnTouchListener(new View.OnTouchListener() {
@@ -323,7 +336,12 @@ public class SearchFavoriteActivity extends AppCompatActivity {
                             }
 
                             for (int i = 0; i < resultArray.length(); i++) {
-                                View bookRow = LayoutInflater.from(SearchFavoriteActivity.this).inflate(R.layout.book_row_style, null);
+                                View bookRow;
+                                if(isInNight){
+                                    bookRow = LayoutInflater.from(SearchFavoriteActivity.this).inflate(R.layout.book_row_style_night, null);
+                                }else {
+                                    bookRow = LayoutInflater.from(SearchFavoriteActivity.this).inflate(R.layout.book_row_style, null);
+                                }
 
                                 TextView title = bookRow.findViewById(R.id.BookName);
                                 title.setText(resultArray.getJSONObject(i).getString("name"));
@@ -340,7 +358,13 @@ public class SearchFavoriteActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView = LayoutInflater.from(SearchFavoriteActivity.this).inflate(R.layout.book_tag,null);
+                                    View tagView;
+                                    if(isInNight){
+                                        tagView = LayoutInflater.from(SearchFavoriteActivity.this).inflate(R.layout.book_tag_night,null);
+                                    }else {
+                                        tagView = LayoutInflater.from(SearchFavoriteActivity.this).inflate(R.layout.book_tag,null);
+                                    }
+
                                     TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
                                     t.setBackground(tag_border_styles.get(j));

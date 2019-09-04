@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -42,6 +43,7 @@ public class RecommendFragment extends Fragment {
     private LinearLayout normal;
     private LinearLayout loadView;
     private LinearLayout bookTable;
+    private ImageView refresh;
 
     private ScrollView scrollView;
     private View pullDown;//请求文字提示
@@ -53,6 +55,7 @@ public class RecommendFragment extends Fragment {
     final private int PAGESIZE=10;
     private JSONArray books = new JSONArray();
     private List<Drawable> tag_border_styles;//标签边框样式
+    private boolean isInNight = false;//是否处于夜间模式
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -63,6 +66,8 @@ public class RecommendFragment extends Fragment {
         hasLogged = sharedPreferences.getBoolean("HasLogged",false);
         account = sharedPreferences.getString("Account","");
 
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         tag_border_styles = new ArrayList<>();
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
@@ -70,8 +75,21 @@ public class RecommendFragment extends Fragment {
 
         normal = view.findViewById(R.id.normal);
         bookTable = view.findViewById(R.id.BookTable);
+        refresh = view.findViewById(R.id.refresh);
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refresh();
+            }
+        });
 
-        pullDown = LayoutInflater.from(getActivity()).inflate(R.layout.pull_down, null);
+        if(isInNight){
+            pullDown = LayoutInflater.from(getActivity()).inflate(R.layout.pull_down_night, null);
+            TextView remind = view.findViewById(R.id.Remind);
+            remind.setTextColor(Color.WHITE);
+        }else {
+            pullDown = LayoutInflater.from(getActivity()).inflate(R.layout.pull_down, null);
+        }
         bookTable.addView(pullDown);
 
         scrollView = view.findViewById(R.id.scroll);
@@ -117,6 +135,7 @@ public class RecommendFragment extends Fragment {
 
     public void refresh(){
 
+        refresh.setClickable(false);
         loadView.setClickable(false);
 
         CountDownTimer countDownTimer = new CountDownTimer(5000,1000) {
@@ -127,6 +146,7 @@ public class RecommendFragment extends Fragment {
 
             @Override
             public void onFinish() {
+                refresh.setClickable(true);
                 loadView.setClickable(true);
             }
         };//防止用户高频率点击
@@ -136,12 +156,11 @@ public class RecommendFragment extends Fragment {
 
         isRequesting = true;
 
-        if (!firstIn) {
-            from = 0;
-            firstIn = true;
-            bookTable.removeAllViews();
-            books = new JSONArray();
-        }
+        from = 0;
+        firstIn = true;
+        bookTable.removeAllViews();
+        books = new JSONArray();
+
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         loadView.findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
@@ -220,7 +239,12 @@ public class RecommendFragment extends Fragment {
 
                         for (int i = 0; i < newBooks.length(); i++) {
                             try {
-                                View bookRow = LayoutInflater.from(RecommendFragment.this.getActivity()).inflate(R.layout.book_row_style, null);
+                                View bookRow;
+                                if(isInNight){
+                                    bookRow = LayoutInflater.from(RecommendFragment.this.getActivity()).inflate(R.layout.book_row_style_night, null);
+                                }else {
+                                    bookRow = LayoutInflater.from(RecommendFragment.this.getActivity()).inflate(R.layout.book_row_style, null);
+                                }
 
                                 TextView title = bookRow.findViewById(R.id.BookName);
                                 title.setText(newBooks.getJSONObject(i).getString("name"));
@@ -237,7 +261,12 @@ public class RecommendFragment extends Fragment {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView = LayoutInflater.from(getActivity()).inflate(R.layout.book_tag,null);
+                                    View tagView;
+                                    if(isInNight){
+                                        tagView = LayoutInflater.from(getActivity()).inflate(R.layout.book_tag_night, null);
+                                    }else {
+                                        tagView = LayoutInflater.from(getActivity()).inflate(R.layout.book_tag, null);
+                                    }
                                     TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
                                     t.setBackground(tag_border_styles.get(j));

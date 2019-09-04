@@ -47,6 +47,7 @@ public class HistoryActivity extends AppCompatActivity {
     private boolean ismanaging = false;//是否处于管理模式
     private boolean isRequesting = false;//当前是否在向后端请求书本信息
     private List<Drawable> tag_border_styles;//标签边框样式
+    private boolean isInNight = false;//是否处于夜间模式
 
     private JSONArray historyArray;//存储历史记录的数组
 
@@ -58,11 +59,13 @@ public class HistoryActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserState", MODE_PRIVATE);
+        account = sharedPreferences.getString("Account", "");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("UserState", MODE_PRIVATE);
-        account = sharedPreferences.getString("Account", "");
 
         tag_border_styles = new ArrayList<>();
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
@@ -73,7 +76,13 @@ public class HistoryActivity extends AppCompatActivity {
 
         refresh = findViewById(R.id.refresh);
         bookTable = findViewById(R.id.BookTable);
-        pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+
+        if(isInNight){
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down_night, null);
+        }else {
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        }
+
         bookTable.addView(pullDown);
 
         scrollView = findViewById(R.id.scroll);
@@ -139,14 +148,12 @@ public class HistoryActivity extends AppCompatActivity {
 
         isRequesting = true;
 
-        if (!firstIn) {
-            from = 0;
-            firstIn = true;
-            if(ismanaging) cancelManage();
-            ismanaging = false;
-            bookTable.removeAllViews();
-            historyArray = new JSONArray();
-        }
+        from = 0;
+        firstIn = true;
+        if(ismanaging) cancelManage();
+        ismanaging = false;
+        bookTable.removeAllViews();
+        historyArray = new JSONArray();
 
         normal.setVisibility(View.INVISIBLE);
         loadView.setVisibility(View.VISIBLE);//加载画面
@@ -243,6 +250,9 @@ public class HistoryActivity extends AppCompatActivity {
             public void onClick(View v) {
                 dialog.dismiss();
                 new MyToast(HistoryActivity.this,"已清空!");
+                historyArray = new JSONArray();
+                bookTable.removeAllViews();
+                from = 0;//更新请求书本的index
 
                 final LinearLayout clear = findViewById(R.id.clear);
                 clear.setClickable(false);
@@ -335,7 +345,13 @@ public class HistoryActivity extends AppCompatActivity {
                             for (int i = 0; i < newRecords.length(); i++) {
                                 JSONObject record = newRecords.getJSONObject(i);
 
-                                View bookRow = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.history_row, null);
+                                View bookRow;
+                                if(isInNight){
+                                    bookRow = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.history_row_night, null);
+                                }else {
+                                    bookRow = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.history_row, null);
+                                }
+
 
                                 TextView title = bookRow.findViewById(R.id.BookName);
                                 title.setText(record.getString("name"));
@@ -349,7 +365,13 @@ public class HistoryActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.book_tag,null);
+                                    View tagView;
+                                    if(isInNight){
+                                        tagView = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.book_tag_night,null);
+                                    }else {
+                                        tagView = LayoutInflater.from(HistoryActivity.this).inflate(R.layout.book_tag,null);
+                                    }
+
                                     TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
                                     t.setBackground(tag_border_styles.get(j));
@@ -510,22 +532,11 @@ public class HistoryActivity extends AppCompatActivity {
         public void run() {
 
             try {
-
                 GetServer getServer = new GetServer();
                 String url = getServer.getIPADDRESS()+"/audiobook/clearHistory?account=" + URLEncoder.encode(account,"UTF-8");
 
-                HistoryActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        historyArray = new JSONArray();
-                        bookTable.removeAllViews();
-                        from = 0;//更新请求书本的index
-                    }
-                });
-
                 HttpUtils httpUtils = new HttpUtils(url);
                 httpUtils.doHttp(null, "POST", "application/json");//向后端发送删除请求
-
             }catch (Exception e){
                 e.printStackTrace();
             }

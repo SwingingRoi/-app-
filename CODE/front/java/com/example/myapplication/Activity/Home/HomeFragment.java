@@ -63,6 +63,7 @@ public class HomeFragment extends Fragment {
     private List<Drawable> tag_border_styles;//标签边框样式
     private HashMap<String,Boolean> tagStats;//存储标签的选择状态
     private int count = 0;//已选择标签数
+    private boolean isInNight = false;//是否处于夜间模式
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -83,6 +84,13 @@ public class HomeFragment extends Fragment {
         hasLogged = sharedPreferences.getBoolean("HasLogged",false);
         account = sharedPreferences.getString("Account","");
 
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
+
+        if(isInNight) {
+            TextView remind = view.findViewById(R.id.Remind);
+            remind.setTextColor(Color.WHITE);
+        }
         tag_border_styles = new ArrayList<>();
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_red));
         tag_border_styles.add(getResources().getDrawable(R.drawable.book_tag_border_brown));
@@ -98,7 +106,11 @@ public class HomeFragment extends Fragment {
                 refresh();
             }
         });
-        pullDown = LayoutInflater.from(getActivity()).inflate(R.layout.pull_down, null);
+        if(isInNight){
+            pullDown = LayoutInflater.from(getActivity()).inflate(R.layout.pull_down_night, null);
+        }else {
+            pullDown = LayoutInflater.from(getActivity()).inflate(R.layout.pull_down, null);
+        }
         bookTable.addView(pullDown);
 
         scrollView = view.findViewById(R.id.scroll);
@@ -187,12 +199,11 @@ public class HomeFragment extends Fragment {
 
         isRequesting = true;
 
-        if (!firstIn) {
-            from = 0;
-            firstIn = true;
-            bookTable.removeAllViews();
-            books = new JSONArray();
-        }
+        from = 0;
+        firstIn = true;
+        bookTable.removeAllViews();
+        books = new JSONArray();
+
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         loadView.findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
@@ -331,6 +342,8 @@ public class HomeFragment extends Fragment {
                 public void run() {
                     try {
                         bookTable.removeView(pullDown);
+                        loadView.setVisibility(View.INVISIBLE);
+                        normal.setVisibility(View.VISIBLE);
 
                         if (firstIn) {//如果是首次进入该activity
                             firstIn = false;
@@ -345,7 +358,12 @@ public class HomeFragment extends Fragment {
 
                         for (int i = 0; i < newBooks.length(); i++) {
                             try {
-                                View bookRow = LayoutInflater.from(HomeFragment.this.getActivity()).inflate(R.layout.book_row_style, null);
+                                View bookRow;
+                                if(isInNight){
+                                    bookRow = LayoutInflater.from(HomeFragment.this.getActivity()).inflate(R.layout.book_row_style_night, null);
+                                }else {
+                                    bookRow = LayoutInflater.from(HomeFragment.this.getActivity()).inflate(R.layout.book_row_style, null);
+                                }
 
                                 TextView title = bookRow.findViewById(R.id.BookName);
                                 title.setText(newBooks.getJSONObject(i).getString("name"));
@@ -362,7 +380,12 @@ public class HomeFragment extends Fragment {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView = LayoutInflater.from(getActivity()).inflate(R.layout.book_tag,null);
+                                    View tagView;
+                                    if(isInNight){
+                                        tagView = LayoutInflater.from(getActivity()).inflate(R.layout.book_tag_night, null);
+                                    }else {
+                                        tagView = LayoutInflater.from(getActivity()).inflate(R.layout.book_tag, null);
+                                    }
                                     TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
                                     t.setBackground(tag_border_styles.get(j));
@@ -410,10 +433,6 @@ public class HomeFragment extends Fragment {
                         }
 
                         from = from + newBooks.length();//更新请求index
-
-                        loadView.setVisibility(View.INVISIBLE);
-                        normal.setVisibility(View.VISIBLE);
-
                     }catch (Exception e){
                         e.printStackTrace();
                     }

@@ -100,7 +100,7 @@
                         android:layout_marginStart="70dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginEnd="20dp"
-                        app:srcCompat="@android:drawable/sym_def_app_icon" />
+                        app:srcCompat="@drawable/nopicture" />
 
                     <LinearLayout
                         android:layout_width="200dp"
@@ -134,7 +134,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0.3"
-                                app:srcCompat="@mipmap/ic_launcher_round" />
+                                app:srcCompat="@drawable/noavatar" />
 
                             <TextView
                                 android:id="@+id/author"

@@ -25,4 +25,6 @@ public interface BookDAO {
     void deleteBooks(JSONArray ids);
 
     List<Book> findBookByTags(List<String> tags,int from,int size);
+
+    void publishBook(int bookid);
 }

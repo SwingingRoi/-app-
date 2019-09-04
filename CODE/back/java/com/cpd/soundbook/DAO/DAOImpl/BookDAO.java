@@ -35,7 +35,7 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         List<Book> books = new ArrayList<>();
         try {
 
-            String hql = "from com.cpd.soundbook.Entity.Book";
+            String hql = "from com.cpd.soundbook.Entity.Book where publish = true";
             Query query = session.createQuery(hql);
 
             query.setFirstResult(from);
@@ -80,7 +80,7 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
         List<Book> books = new ArrayList<>();
         try {
 
-            String hql = "from com.cpd.soundbook.Entity.Book where author=:search or name=:search";
+            String hql = "from com.cpd.soundbook.Entity.Book where author=:search or name=:search and publish = true";
             Query query = session.createQuery(hql);
             query.setParameter("search",search);
 
@@ -153,20 +153,20 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
 
             switch (tags.size()){
                 case 1:
-                    hql = "from com.cpd.soundbook.Entity.Book where tags like :tag";
+                    hql = "from com.cpd.soundbook.Entity.Book where tags like :tag and publish = true ";
                     query = session.createQuery(hql);
                     query.setParameter("tag","%" + tags.get(0) + "%");
                     break;
                 case 2:
-                    hql = "from com.cpd.soundbook.Entity.Book where tags like :tag1 or " +
-                            "tags like :tag2";
+                    hql = "from com.cpd.soundbook.Entity.Book where (tags like :tag1 or " +
+                            "tags like :tag2)  and publish = true ";
                     query = session.createQuery(hql);
                     query.setParameter("tag1","%" + tags.get(0) + "%");
                     query.setParameter("tag2","%" + tags.get(1) + "%");
                     break;
                 case 3:
-                    hql = "from com.cpd.soundbook.Entity.Book where tags like :tag1 or " +
-                            "tags like :tag2 or tags like :tag3";
+                    hql = "from com.cpd.soundbook.Entity.Book where (tags like :tag1 or " +
+                            "tags like :tag2 or tags like :tag3) and publish = true";
                     query = session.createQuery(hql);
                     query.setParameter("tag1","%" + tags.get(0) + "%");
                     query.setParameter("tag2","%" + tags.get(1) + "%");
@@ -187,5 +187,10 @@ public class BookDAO implements com.cpd.soundbook.DAO.DAOInterface.BookDAO {
             session.close();
         }
         return books;
+    }
+
+    @Override
+    public void publishBook(int bookid) {
+        bookRepository.publishBook(bookid);
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.myapplication">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -8,12 +9,15 @@
 
     <application
         android:allowBackup="true"
+        android:label="智读"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
-        <activity android:name=".Activity.Work.ChapterActivity"></activity>
+        android:usesCleartextTraffic="true"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".Activity.Work.NewChapterForSTTActivity"></activity>
+        <activity android:name=".Activity.Work.ChapterActivity" />
         <activity android:name=".Activity.Work.EditChapterActivity" />
         <activity android:name=".Activity.Work.EditBookActivity" />
         <activity android:name=".Activity.Book.BookActivity" />
@@ -23,7 +27,7 @@
         <activity android:name=".Activity.Work.EditTitleActivity" />
         <activity android:name=".Activity.Work.NewBookActivity" />
         <activity android:name=".Activity.Work.SearchMyWorkActivity" />
-        <activity android:name=".Activity.Work.NewChapterActivity" />
+        <activity android:name=".Activity.Work.NewChapterForTTSActivity" />
         <activity android:name=".Activity.Favorite.FavoriteActivity" />
         <activity android:name=".Activity.History.HistoryActivity" />
         <activity android:name=".Activity.Work.PersonalWorkActivity" />
@@ -35,7 +39,8 @@
             android:name=".Activity.LogSign.SignActivity"
             android:parentActivityName=".Activity.LogSign.LogActivity" />
         <activity android:name=".Activity.LogSign.LogActivity" />
-        <activity android:name=".Activity.MainActivity">
+        <activity android:name=".Activity.MainActivity"
+            android:label="智读">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -47,6 +47,7 @@ public class FavoriteActivity extends AppCompatActivity {
     private boolean ismanaging = false;//是否处于管理模式
     private boolean isRequesting = false;//当前是否在向后端请求书本信息
     private List<Drawable> tag_border_styles;//标签边框样式
+    private boolean isInNight = false;//是否处于夜间模式
 
     private JSONArray books;
 
@@ -58,12 +59,17 @@ public class FavoriteActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_favorite);
-
-
         SharedPreferences sharedPreferences = getSharedPreferences("UserState", MODE_PRIVATE);
         account = sharedPreferences.getString("Account", "");
+        isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
+        super.onCreate(savedInstanceState);
+        if(isInNight){
+            setContentView(R.layout.activity_favorite_night);
+        }else {
+            setContentView(R.layout.activity_favorite);
+        }
+
 
         books = new JSONArray();
 
@@ -74,7 +80,12 @@ public class FavoriteActivity extends AppCompatActivity {
 
         refresh = findViewById(R.id.refresh);
         bookTable = findViewById(R.id.BookTable);
-        pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+
+        if(isInNight){
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down_night, null);
+        }else {
+            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+        }
         bookTable.addView(pullDown);
 
         scrollView = findViewById(R.id.scroll);
@@ -130,14 +141,13 @@ public class FavoriteActivity extends AppCompatActivity {
 
         isRequesting = true;
 
-        if (!firstIn) {
-            from = 0;
-            firstIn = true;
-            if(ismanaging) cancelManage();
-            ismanaging = false;
-            bookTable.removeAllViews();
-            books = new JSONArray();
-        }
+        from = 0;
+        firstIn = true;
+        if(ismanaging) cancelManage();
+        ismanaging = false;
+        bookTable.removeAllViews();
+        books = new JSONArray();
+
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
@@ -358,7 +368,13 @@ public class FavoriteActivity extends AppCompatActivity {
                         //依次添加作品到bookTable中
                         for (int i = 0; i < newBooks.length(); i++) {
                             try {
-                                View bookRow = LayoutInflater.from(FavoriteActivity.this).inflate(R.layout.book_row_style, null);
+                                View bookRow;
+                                if(isInNight){
+                                    bookRow = LayoutInflater.from(FavoriteActivity.this).inflate(R.layout.book_row_style_night, null);
+                                }else {
+                                    bookRow = LayoutInflater.from(FavoriteActivity.this).inflate(R.layout.book_row_style, null);
+                                }
+
 
                                 TextView title = bookRow.findViewById(R.id.BookName);
                                 title.setText(newBooks.getJSONObject(i).getString("name"));
@@ -375,7 +391,13 @@ public class FavoriteActivity extends AppCompatActivity {
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView = LayoutInflater.from(FavoriteActivity.this).inflate(R.layout.book_tag,null);
+                                    View tagView;
+                                    if(isInNight){
+                                        tagView = LayoutInflater.from(FavoriteActivity.this).inflate(R.layout.book_tag_night,null);
+                                    }else {
+                                        tagView = LayoutInflater.from(FavoriteActivity.this).inflate(R.layout.book_tag,null);
+                                    }
+
                                     TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
                                     t.setBackground(tag_border_styles.get(j));

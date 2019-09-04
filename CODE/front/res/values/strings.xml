@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_name">智读</string>
     <string name="delete">删除</string>
     <string name="cancel">退出</string>
     <string name="clear">清空</string>
@@ -16,6 +17,7 @@
 
 
     <!-- 注册界面的strings-->
+    <string name="verifying">注册信息验证中......</string>
     <string name="SignAccount">用户名 (4-20位中文/字母/数字)</string>
     <string name="SignPassword">密码 (6-16位字母/数字)</string>
     <string name="SignButton">注册</string>
@@ -62,6 +64,8 @@
     <!-- 设置界面的strings-->
     <string name="Login">登录</string>
     <string name="Logout">退出登录</string>
+    <string name="changeToNight">夜间模式</string>
+    <string name="changeToDay">日间模式</string>
 
 
     <!-- 图鉴界面的strings-->
@@ -79,6 +83,7 @@
     <string name="EditName">姓名</string>
     <string name="EditGender">性别</string>
     <string name="EditEmail">邮箱</string>
+    <string name="storing">保存中......</string>
 
     <!--搜索界面的strings-->
     <string name="Search">搜索</string>
@@ -117,7 +122,7 @@
     <string name="SearchFav">搜索收藏夹</string>
 
     <string name="initial">00:00</string>
-    <!--制作新章节界面的strings-->
+    <!--文本转语音界面的strings-->
     <string name="trylisten">试听</string>
     <string name="translate">转换</string>
     <string name="input">输入文字(不超过3000字)</string>
@@ -126,8 +131,25 @@
     <string name="translateSuccess">转换成功!</string>
     <string name="titlelong">标题不能超过20个字!</string>
 
+    <!--语音转文本界面的strings-->
+    <string name="choosefile">选择文件</string>
+    <string name="askchoosefile">请选择音频文件</string>
+    <string name="handling">正在处理中......</string>
+
     <!--章节收听界面的strings-->
     <string name="listen">章节收听</string>
+    <string-array name="audioMode">
+        <item>单曲循环</item>
+        <item>顺序播放</item>
+        <item>列表循环</item>
+    </string-array>
+    <string-array name="exitTime">
+        <item>1分钟</item>
+        <item>10分钟</item>
+        <item>30分钟</item>
+        <item>1小时</item>
+        <item>5小时</item>
+    </string-array>
 
     <!--修改章节界面的strings-->
     <string name="editchapter">修改章节</string>
@@ -170,6 +192,9 @@
     <string name="cancelfav">已取消收藏</string>
     <string name="bookdeleted">该书已被删除</string>
     <string name="newChapter">新建章节</string>
+    <string name="mode">选择创建方式</string>
+    <string name="tts">文本转语音</string>
+    <string name="stt">语音转文本</string>
     <string-array name="manageChapter">
         <item>新建章节</item>
         <item>管理章节</item>
@@ -181,10 +206,14 @@
     <string name="hasEnd">已经到底啦~</string>
     <string name="noresult">没有结果</string>
     <string name="manage">管理</string>
+    <string name="published">已发布</string>
+    <string name="nopublished">未发布</string>
 
 
     <!--修改书本信息-->
     <string name="modifybook">修改作品</string>
+    <string name="publish">发布</string>
+    <string name="publishSuccess">发布成功!</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

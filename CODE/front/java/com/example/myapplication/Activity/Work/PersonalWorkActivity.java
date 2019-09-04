@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
@@ -52,8 +53,8 @@ public class PersonalWorkActivity extends AppCompatActivity {
     private boolean hasClickMenu = false;//是否点击菜单
     private boolean ismanaging = false;//是否处于管理模式
     private boolean isRequesting = false;//当前是否在向后端请求书本信息
-    final private int NEWBOOK=1;
     private List<Drawable> tag_border_styles;//标签边框样式
+    private boolean isInNight = false;//是否处于夜间模式
 
     private JSONArray works;
 
@@ -66,11 +67,17 @@ public class PersonalWorkActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         try {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_personal_work);
-
             SharedPreferences sharedPreferences = getSharedPreferences("UserState", MODE_PRIVATE);
             account = sharedPreferences.getString("Account", "");
+            isInNight = sharedPreferences.getBoolean("night",false);//是否处于夜间模式
+
+            super.onCreate(savedInstanceState);
+            if(isInNight){
+                setContentView(R.layout.activity_personal_work_night);
+            }else {
+                setContentView(R.layout.activity_personal_work);
+            }
+
 
             works = new JSONArray();
 
@@ -81,7 +88,12 @@ public class PersonalWorkActivity extends AppCompatActivity {
 
             refresh = findViewById(R.id.refresh);
             bookTable = findViewById(R.id.BookTable);
-            pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+            if(isInNight){
+                pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down_night, null);
+            }else {
+                pullDown = LayoutInflater.from(this).inflate(R.layout.pull_down, null);
+            }
+
             bookTable.addView(pullDown);
 
             scrollView = findViewById(R.id.scroll);
@@ -146,7 +158,7 @@ public class PersonalWorkActivity extends AppCompatActivity {
     //跳转至新书创建页面
     private void toNewBook(){
         Intent intent = new Intent(this, NewBookActivity.class);
-        startActivityForResult(intent,NEWBOOK);
+        startActivity(intent);
     }
 
     //开启管理模式
@@ -317,14 +329,13 @@ public class PersonalWorkActivity extends AppCompatActivity {
 
         isRequesting = true;
 
-        if (!firstIn) {
-            from = 0;
-            firstIn = true;
-            if(ismanaging) cancelManage();
-            ismanaging = false;
-            bookTable.removeAllViews();
-            works = new JSONArray();
-        }
+        from = 0;
+        firstIn = true;
+        if(ismanaging) cancelManage();
+        ismanaging = false;
+        bookTable.removeAllViews();
+        works = new JSONArray();
+
 
         loadView.setVisibility(View.VISIBLE);//加载画面
         findViewById(R.id.loadinggif).setVisibility(View.VISIBLE);
@@ -337,20 +348,6 @@ public class PersonalWorkActivity extends AppCompatActivity {
     //刷新界面
     public void refresh(View view){
         refresh();
-    }
-
-    //startActivityforResult的回调函数
-    @Override
-    protected void onActivityResult(int requestCode,int resultCode,Intent data){
-        try{
-
-            if(resultCode == RESULT_CANCELED) return;
-
-
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
     }
 
     //获取已有作品
@@ -429,25 +426,49 @@ public class PersonalWorkActivity extends AppCompatActivity {
                         //依次添加作品到bookTable中
                         for (int i = 0; i < newWorks.length(); i++) {
                             try {
-                                View bookRow = LayoutInflater.from(PersonalWorkActivity.this).inflate(R.layout.book_row_style, null);
+                                View bookRow;
+                                if(isInNight){
+                                    bookRow = LayoutInflater.from(PersonalWorkActivity.this).inflate(R.layout.book_row_style_night, null);
+                                }else {
+                                    bookRow = LayoutInflater.from(PersonalWorkActivity.this).inflate(R.layout.book_row_style, null);
+                                }
 
+
+                                JSONObject work = newWorks.getJSONObject(i);
 
                                 TextView title = bookRow.findViewById(R.id.BookName);
-                                title.setText(newWorks.getJSONObject(i).getString("name"));
+                                title.setText(work.getString("name"));
 
                                 TextView viewNumber = bookRow.findViewById(R.id.viewnumber);
-                                viewNumber.setText(String.valueOf(newWorks.getJSONObject(i).getInt("views")));
+                                viewNumber.setText(String.valueOf(work.getInt("views")));
 
                                 TextView chapterNumber = bookRow.findViewById(R.id.chapternumber);
-                                chapterNumber.setText(newWorks.getJSONObject(i).getInt("chapters") + "章");
+                                chapterNumber.setText(work.getInt("chapters") + "章");
 
                                 LinearLayout tagsView = bookRow.findViewById(R.id.tags);
-                                String tagStr = newWorks.getJSONObject(i).getString("tags");
+                                String tagStr = work.getString("tags");
                                 String[] tags = tagStr.split(" ");
+
+                                TextView publishView = bookRow.findViewById(R.id.hasPublished);
+                                publishView.setVisibility(View.VISIBLE);
+                                if(work.getBoolean("publish")){
+                                    publishView.setText(getResources().getString(R.string.published));
+                                    publishView.setTextColor(Color.GREEN);
+                                }
+                                else {
+                                    publishView.setText(getResources().getString(R.string.nopublished));
+                                    publishView.setTextColor(Color.RED);
+                                }
 
                                 for(int j=0;j<tags.length;j++){
                                     String tag = tags[j];
-                                    View tagView = LayoutInflater.from(PersonalWorkActivity.this).inflate(R.layout.book_tag,null);
+                                    View tagView;
+                                    if(isInNight){
+                                        tagView = LayoutInflater.from(PersonalWorkActivity.this).inflate(R.layout.book_tag_night,null);
+                                    }else {
+                                        tagView = LayoutInflater.from(PersonalWorkActivity.this).inflate(R.layout.book_tag,null);
+                                    }
+
                                     TextView t = tagView.findViewById(R.id.tag);
                                     t.setText(tag);
                                     t.setBackground(tag_border_styles.get(j));
